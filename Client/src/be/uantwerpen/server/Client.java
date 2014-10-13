@@ -7,15 +7,16 @@ import java.rmi.*;
 
 public class Client{
    public static void main(String argv[]) {
-
+	   String nameClient = "Test-client";
       try {
          String name = "//localhost/nameServer";
          nodeHandlingInterface fi = (nodeHandlingInterface) Naming.lookup(name);
 
-         System.out.println("u ip adress is:" + fi.connect());
+         System.out.println("u ip adress is:" + fi.connect(nameClient));
       } catch(Exception e) {
          System.err.println("FileServer exception: "+ e.getMessage());
          e.printStackTrace();
       }
    }
+   
 }
