@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<ip-list>
+<clients>
 	<node id="1">
-		<name>9914</name>
-		<ipaddress>192.168.56.1</ipaddress>
+		<hashedName>9913</hashedName>
+		<IP>192.168.56.2</IP>
 	</node>
-</ip-list>
+</clients>
