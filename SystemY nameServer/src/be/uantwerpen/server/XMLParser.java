@@ -1,6 +1,7 @@
 package be.uantwerpen.server;
 
 import java.io.File;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -10,11 +11,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
  
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-public class writeXML {
+public class XMLParser {
 	public static void main(String argv[]) {
 	  try {
 		  
@@ -65,5 +69,42 @@ public class writeXML {
 		tfe.printStackTrace();
 	  }
 	}
+	public void CreateXML() {
+		
+	}
+	public void UpdateXML() {
+		
+	}
+	/*public void ReadXML() {
+    	try {
+    		File fXmlFile = new File("ip-list.xml");
+    		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+    		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+    		Document doc = dBuilder.parse(fXmlFile);
 
+    		doc.getDocumentElement().normalize();
+    	 
+    	 
+    		NodeList nList = doc.getElementsByTagName("clients");
+    	 
+    	 
+    		for (int temp = 0; temp < nList.getLength(); temp++) {
+    	 
+    			Node nNode = nList.item(temp);
+    	 
+    			//System.out.println("\nCurrent Element :" + nNode.getNodeName());
+    			
+    			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+    	 
+    				Element eElement = (Element) nNode;
+    				
+    				fileImpl.hashMap.put(eElement.getElementsByTagName("hashedName").item(0).getTextContent(), eElement.getElementsByTagName("IP").item(0).getTextContent());
+    			}
+    		}
+    		fileImpl.PrintMap();
+	    } 
+	    catch (Exception e) {
+	    	e.printStackTrace();
+	    }
+    }*/
 }

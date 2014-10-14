@@ -2,31 +2,34 @@ package be.uantwerpen.server;
 
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import java.util.*;
 import java.lang.Math;
 import java.net.*;
 
 public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInterface {
 	private static final long serialVersionUID = 1L;
-	HashMap hashMap = new HashMap();
+	HashMap nodeMap = new HashMap();
 	
 	public nodeHandling() throws RemoteException{
 		super();
 	}
 	public String connect(String name)
 	{
-		int hashedName = HashName(name);
-		String clientIP = null;
+		int hashedName = -1;
+		String clientIP;
 		try {
-		    System.out.println(clientIP = getClientHost()); // display message
-		    //hashMap.put(hashedName, clientIP);
+			hashedName = hashString(name);
+			clientIP = getClientHost();
+			nodeMap.put(hashedName, clientIP);
+			//Update XML file here
+			
+		    System.out.println("New client connected. Hashed name: " + hashedName + " IP: " + clientIP); // display message
 		} catch(Exception e) { clientIP = "none";}
-		return hashedName + "";
+		return "Hashed name: " + hashedName + " IP: " + clientIP;
 	}
-	public void PrintMap() {
+	public void printMap() {
 		// Get a set of the entries
-	    Set set = hashMap.entrySet();
+	    Set set = nodeMap.entrySet();
 	    // Get an iterator
 	    Iterator i = set.iterator();
 	    // Display elements
@@ -37,7 +40,7 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 	    }
 	}
 	
-	public int HashName(String name) {
+	public int hashString(String name) {
 		return Math.abs(name.hashCode()) % 32768;
 	}
 

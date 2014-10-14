@@ -17,6 +17,8 @@ import org.w3c.dom.NodeList;
 public class nameServer {
 	
 	static nodeHandling fileImpl;
+	
+	/* GET/SET */
 	public static nodeHandling getFileImpl() {
 		return fileImpl;
 	}
@@ -30,7 +32,7 @@ public class nameServer {
        try { 
 			LocateRegistry.createRegistry(1099);
 			Naming.bind(bindLocation, getFileImpl());
-			ReadXML();
+			//ReadXML();
 	        System.out.println("FileServer Server is ready at:" + bindLocation);
             System.out.println("java RMI registry created.");
         } catch (MalformedURLException | AlreadyBoundException e) {
@@ -63,10 +65,10 @@ public class nameServer {
     	 
     				Element eElement = (Element) nNode;
     				
-    				fileImpl.hashMap.put(eElement.getElementsByTagName("hashedName").item(0).getTextContent(), eElement.getElementsByTagName("IP").item(0).getTextContent());
+    				fileImpl.nodeMap.put(eElement.getElementsByTagName("hashedName").item(0).getTextContent(), eElement.getElementsByTagName("IP").item(0).getTextContent());
     			}
     		}
-    		fileImpl.PrintMap();
+    		fileImpl.printMap();
     	    } catch (Exception e) {
     	    	e.printStackTrace();
     	    }

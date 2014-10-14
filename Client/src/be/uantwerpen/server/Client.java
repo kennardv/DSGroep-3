@@ -12,7 +12,7 @@ public class Client{
          String name = "//localhost/nameServer";
          nodeHandlingInterface fi = (nodeHandlingInterface) Naming.lookup(name);
 
-         System.out.println("u ip adress is:" + fi.connect(nameClient));
+         System.out.println(fi.connect(nameClient));
       } catch(Exception e) {
          System.err.println("FileServer exception: "+ e.getMessage());
          e.printStackTrace();
