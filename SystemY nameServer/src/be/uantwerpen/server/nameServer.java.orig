@@ -38,6 +38,7 @@ public class nameServer {
         }
        
     }
+<<<<<<< HEAD
     
     public static void ReadXML() {
     	try {
@@ -72,4 +73,7 @@ public class nameServer {
     	    }
     	
     }
+}
+=======
 }	
+>>>>>>> a6e748ebdc2320483149cd587bc343046db1283d
