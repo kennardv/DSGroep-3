@@ -10,101 +10,166 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
- 
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+
+import org.xml.sax.SAXException;
 
 public class XMLParser {
-	public static void main(String argv[]) {
-	  try {
-		  
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
-		// root elements
-		Document doc = docBuilder.newDocument();
-		Element rootElement = doc.createElement("ip-list");
-		doc.appendChild(rootElement);
+	private static String path = "ip-list.xml";
 
-		// staff elements
-		Element node = doc.createElement("node");
-		rootElement.appendChild(node);
-
-		// set attribute to name element
-		Attr attr = doc.createAttribute("id");
-		attr.setValue("1");
-		node.setAttributeNode(attr);
+	
+	public static void main(String[] args) {
+		//test gegevens
+		String naam = "test"; 
+		String ipaddress = "192.168.1.1";
 		
-		// ip address elements
-		Element name = doc.createElement("name");
-		name.appendChild(doc.createTextNode("9914"));
-		node.appendChild(name);
+		//kijkt of het bestand op de server al bestaat, indien niet wordt er een bestand aangemaakt
+		File f = new File(path);
+		if (f.exists()) {
+			nodeToevoegen(naam, ipaddress);
+			System.out.println("gelukt, bestand was aanwezig");
+		} else {
+			bestandMakenEnNodeToevoegen(naam, ipaddress);
+			System.out
+					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
+		}
 
-		// ip address elements
-		Element ipaddress = doc.createElement("ipaddress");
-		ipaddress.appendChild(doc.createTextNode("192.168.56.1"));
-		node.appendChild(ipaddress);
-
-
-		// write the content into xml file
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer = transformerFactory.newTransformer();
-		DOMSource source = new DOMSource(doc);
-		StreamResult result = new StreamResult(new File("C:\\Users\\asush\\Desktop\\file.xml"));
-
-		// Output to console for testing
-		// StreamResult result = new StreamResult(System.out);
-
-		transformer.transform(source, result);
-
-		System.out.println("File saved!");
-
-	  } catch (ParserConfigurationException pce) {
-		pce.printStackTrace();
-	  } catch (TransformerException tfe) {
-		tfe.printStackTrace();
-	  }
 	}
-	public void CreateXML() {
+	
+	public static void nodeToevoegen(String invoerNaam, String invoerIpaddress) {
+		try {
+			File xmlFile = new File(path);
+			// Create the documentBuilderFactory
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
+					.newInstance();
+
+			// Create the documentBuilder
+			DocumentBuilder documentBuilder = documentBuilderFactory
+					.newDocumentBuilder();
+
+			// Create the Document by parsing the file
+			Document document = documentBuilder.parse(xmlFile);
+
+			// Get the root element of the xml Document;
+			Element documentElement = document.getDocumentElement();
+
+			// Get childNodes of the rootElement
+			// Create a textNode element
+			Element ipaddress = document.createElement("ipaddress");
+			ipaddress.setTextContent(invoerIpaddress);
+			
+			Element name = document.createElement("name");
+			name.setTextContent(invoerNaam);
+
+
+			// Create a Node element
+			Element nodeElement = document.createElement("node");
+			Attr attr = document.createAttribute("id");
+
+			// autoincrement
+			NodeList ns = document.getElementsByTagName("node");
+			int el = ns.getLength() + 1;
+
+			attr.setValue(el + "");
+			nodeElement.setAttributeNode(attr);
+
+			// append textNode to Node element;
+			nodeElement.appendChild(name);
+			nodeElement.appendChild(ipaddress);
 		
-	}
-	public void UpdateXML() {
-		
-	}
-	/*public void ReadXML() {
-    	try {
-    		File fXmlFile = new File("ip-list.xml");
-    		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-    		Document doc = dBuilder.parse(fXmlFile);
+			
+			// append Node to rootNode element
+			documentElement.appendChild(nodeElement);
+			document.replaceChild(documentElement, documentElement);
+			Transformer tFormer = TransformerFactory.newInstance()
+					.newTransformer();
 
-    		doc.getDocumentElement().normalize();
-    	 
-    	 
-    		NodeList nList = doc.getElementsByTagName("clients");
-    	 
-    	 
-    		for (int temp = 0; temp < nList.getLength(); temp++) {
-    	 
-    			Node nNode = nList.item(temp);
-    	 
-    			//System.out.println("\nCurrent Element :" + nNode.getNodeName());
-    			
-    			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-    	 
-    				Element eElement = (Element) nNode;
-    				
-    				fileImpl.hashMap.put(eElement.getElementsByTagName("hashedName").item(0).getTextContent(), eElement.getElementsByTagName("IP").item(0).getTextContent());
-    			}
-    		}
-    		fileImpl.PrintMap();
-	    } 
-	    catch (Exception e) {
-	    	e.printStackTrace();
-	    }
-    }*/
+			// Set output file to xml
+			tFormer.setOutputProperty(OutputKeys.METHOD, "xml");
+
+			// Write the document back to the file
+			Source source = new DOMSource(document);
+			Result result = new StreamResult(xmlFile);
+			tFormer.transform(source, result);
+
+		} catch (TransformerException ex) {
+			Logger.getLogger(XMLParser.class.getName()).log(Level.SEVERE, null,
+					ex);
+		} catch (SAXException ex) {
+			Logger.getLogger(XMLParser.class.getName()).log(Level.SEVERE, null,
+					ex);
+		} catch (IOException ex) {
+			Logger.getLogger(XMLParser.class.getName()).log(Level.SEVERE, null,
+					ex);
+		} catch (ParserConfigurationException ex) {
+			Logger.getLogger(XMLParser.class.getName()).log(Level.SEVERE, null,
+					ex);
+		}
+
+	}
+
+	public static void bestandMakenEnNodeToevoegen(String invoerNaam, String invoerIpaddress) {
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+			// root elements
+			Document doc = docBuilder.newDocument();
+			Element rootElement = doc.createElement("ip-list");
+			doc.appendChild(rootElement);
+
+			// staff elements
+			Element node = doc.createElement("node");
+			rootElement.appendChild(node);
+
+			// set attribute to name element
+			Attr attr = doc.createAttribute("id");
+			attr.setValue("1");
+			node.setAttributeNode(attr);
+
+			// ip address elements
+			Element name = doc.createElement("name");
+			name.appendChild(doc.createTextNode(invoerNaam));
+			node.appendChild(name);
+
+			// ip address elements
+			Element ipaddress = doc.createElement("ipaddress");
+			ipaddress.appendChild(doc.createTextNode(invoerIpaddress));
+			node.appendChild(ipaddress);
+
+			// write the content into xml file
+			TransformerFactory transformerFactory = TransformerFactory
+					.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(new File(path));
+
+			// Output to console for testing
+			// StreamResult result = new StreamResult(System.out);
+
+			transformer.transform(source, result);
+
+			System.out.println("File saved!");
+
+		} catch (ParserConfigurationException pce) {
+			pce.printStackTrace();
+		} catch (TransformerException tfe) {
+			tfe.printStackTrace();
+		}
+	}
+
+
+
 }
