@@ -30,8 +30,9 @@ public class nameServer {
 	// main functie: aanroepen bij opstart van de server
     public static void main(String[] argv) throws RemoteException {
     	setFileImpl(new nodeHandling());
-    	//XMLParser parser = new XMLParser("joske", "192.168.1.1", "test.mp3");
-    	//parser.main(null);
+    	String[] filenames = {"Java", "Scala", "C++", "Ruby", "Python", "Perl"};
+    	XMLParser parser = new XMLParser("joske", "192.168.1.1",filenames );
+    	parser.main(null);
     	
     	// locatie van nameserver
        String bindLocation = "//localhost/nameServer";
