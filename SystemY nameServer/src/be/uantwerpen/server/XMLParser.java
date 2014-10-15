@@ -64,7 +64,6 @@ public class XMLParser {
 				bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
 				System.out.println(filename[i]);
 			}
-
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}

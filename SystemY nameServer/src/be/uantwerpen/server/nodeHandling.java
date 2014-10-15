@@ -4,7 +4,6 @@ import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.lang.Math;
-import java.net.*;
 
 public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInterface {
 	private static final long serialVersionUID = 1L;
@@ -44,14 +43,15 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 	public int hashString(String name) {
 		return Math.abs(name.hashCode()) % 32768;
 	}
-	
-	public void giveFiles(String name, String ipadres, String[] filenames){
+	public void giveFiles(String name, String ipadres, String[] filenames) {
+		XMLParser parser = new XMLParser(name, ipadres, filenames);
+		parser.main(null);
+	}
+	/*public void giveFiles(String name, String ipadres, String[] filenames){
 		
 		XMLParser parserxml = new XMLParser(name, ipadres, filenames);
 		parserxml.main(null);
-		
-		
-	}
+	}*/
 
 
 }
