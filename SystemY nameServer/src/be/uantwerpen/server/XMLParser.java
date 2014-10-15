@@ -34,16 +34,13 @@ public class XMLParser {
 	public static String ipaddress;
 	public static String[] filename;
 
-	XMLParser(String pName, String pIpaddress, String[] pFilenames) {
+	XMLParser() {
 
-		name = pName;
-		ipaddress = pIpaddress;
-		filename = pFilenames;
 	}
 
 	public static void main(String[] args) {
 	
-		startup(name, ipaddress, filename);
+		//startup(name, ipaddress, filename);
 
 	}
 
@@ -51,6 +48,9 @@ public class XMLParser {
 			String[] invoerFilenames) {
 		// kijkt of het bestand op de server al bestaat, indien niet wordt er
 		// een bestand aangemaakt
+		name = invoerNaam;
+		ipaddress = invoerIpaddress;
+		filename = invoerFilenames;
 		File f = new File(path);
 		if (f.exists()) {
 			for (int i = 0; i < filename.length; i++) {

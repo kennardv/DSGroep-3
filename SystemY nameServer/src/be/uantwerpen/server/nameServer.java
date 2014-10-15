@@ -32,7 +32,7 @@ public class nameServer {
     	setFileImpl(new nodeHandling());
     	String[] filenames = {"Java", "Scala", "C++", "Ruby", "Python", "Perl"};
     	XMLParser parser = new XMLParser("joske", "192.168.1.1",filenames );
-    	parser.main(null);
+    	parser.(null);
     	
     	// locatie van nameserver
        String bindLocation = "//localhost/nameServer";
