@@ -38,9 +38,8 @@ public class nameServer {
         } catch (MalformedURLException | AlreadyBoundException e) {
             System.out.println("java RMI registry already exists.");
         }
-       
     }
-    
+
     public static void ReadXML() {
     	try {
     		 
