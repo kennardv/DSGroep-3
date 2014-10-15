@@ -27,19 +27,13 @@ public class nameServer {
 		fileImpl = nodeHandling;
 	}
 	
-	
-<<<<<<< HEAD
-	
-    public static void main(String[] argv) throws RemoteException {
-    	setFileImpl(new nodeHandling());
-    	XMLParser parser = new XMLParser("joske", "192.168.1.1");
-    	parser.main(null);
-=======
 	// main functie: aanroepen bij opstart van de server
     public static void main(String[] argv) throws RemoteException {
     	setFileImpl(new nodeHandling());
+    	XMLParser parser = new XMLParser("joske", "192.168.1.1", "test.mp3");
+    	parser.main(null);
+    	
     	// locatie van nameserver
->>>>>>> origin/master
        String bindLocation = "//localhost/nameServer";
        try { 
 			LocateRegistry.createRegistry(1099);

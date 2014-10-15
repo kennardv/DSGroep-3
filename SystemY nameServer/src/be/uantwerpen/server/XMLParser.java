@@ -31,8 +31,9 @@ public class XMLParser {
 	
 	public static String name;
 	public static String ipaddress;
+	public static String filename;
 	
-	XMLParser (String pName, String pIpaddress) {
+	XMLParser (String pName, String pIpaddress, String pFilename) {
 		
 		name = pName;
 		ipaddress = pIpaddress;
@@ -45,17 +46,17 @@ public class XMLParser {
 		//kijkt of het bestand op de server al bestaat, indien niet wordt er een bestand aangemaakt
 		File f = new File(path);
 		if (f.exists()) {
-			nodeToevoegen(name, ipaddress);
+			nodeToevoegen(name, ipaddress, filename);
 			System.out.println("gelukt, bestand was aanwezig");
 		} else {
-			bestandMakenEnNodeToevoegen(name, ipaddress);
+			bestandMakenEnNodeToevoegen(name, ipaddress, filename);
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}
 
 	}
 	
-	public static void nodeToevoegen(String invoerNaam, String invoerIpaddress) {
+	public static void nodeToevoegen(String invoerNaam, String invoerIpaddress, String invoerFilename) {
 		try {
 			File xmlFile = new File(path);
 			// Create the documentBuilderFactory
@@ -80,6 +81,8 @@ public class XMLParser {
 			Element name = document.createElement("name");
 			name.setTextContent(invoerNaam);
 
+			Element bestandsnaam = document.createElement("bestandsnaam");
+			bestandsnaam.setTextContent(invoerFilename);
 
 			// Create a Node element
 			Element nodeElement = document.createElement("node");
@@ -95,7 +98,7 @@ public class XMLParser {
 			// append textNode to Node element;
 			nodeElement.appendChild(name);
 			nodeElement.appendChild(ipaddress);
-		
+			nodeElement.appendChild(bestandsnaam);
 			
 			// append Node to rootNode element
 			documentElement.appendChild(nodeElement);
@@ -127,7 +130,7 @@ public class XMLParser {
 
 	}
 
-	public static void bestandMakenEnNodeToevoegen(String invoerNaam, String invoerIpaddress) {
+	public static void bestandMakenEnNodeToevoegen(String invoerNaam, String invoerIpaddress, String invoerFilename) {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory
 					.newInstance();
@@ -147,7 +150,7 @@ public class XMLParser {
 			attr.setValue("1");
 			node.setAttributeNode(attr);
 
-			// ip address elements
+			// name elements
 			Element name = doc.createElement("name");
 			name.appendChild(doc.createTextNode(invoerNaam));
 			node.appendChild(name);
@@ -156,6 +159,11 @@ public class XMLParser {
 			Element ipaddress = doc.createElement("ipaddress");
 			ipaddress.appendChild(doc.createTextNode(invoerIpaddress));
 			node.appendChild(ipaddress);
+			
+			// bestandsnaam elements
+			Element filename = doc.createElement("filename");
+			filename.appendChild(doc.createTextNode(invoerFilename));
+			node.appendChild(filename);
 
 			// write the content into xml file
 			TransformerFactory transformerFactory = TransformerFactory
