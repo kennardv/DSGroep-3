@@ -35,7 +35,7 @@ public class nameServer {
     	
     	// locatie van nameserver
        String bindLocation = "//localhost/nameServer";
-       try { 
+       try {
 			LocateRegistry.createRegistry(1099);
 			Naming.bind(bindLocation, getFileImpl());
 			//ReadXML();

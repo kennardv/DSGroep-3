@@ -43,5 +43,13 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 	public int hashString(String name) {
 		return Math.abs(name.hashCode()) % 32768;
 	}
+	
+	public void giveFiles(String[] filenames){
+		XMLParser parserxml = new XMLParser();
+		parserxml.main();
+		
+		
+	}
+
 
 }
