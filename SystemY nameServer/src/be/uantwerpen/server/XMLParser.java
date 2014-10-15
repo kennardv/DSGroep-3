@@ -60,18 +60,10 @@ public class XMLParser {
 
 			System.out.println("gelukt, bestand was aanwezig");
 		} else {
-<<<<<<< HEAD
-			   for(int i=0; i<filename.length; i++){
-				   bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
-		            System.out.println(filename[i]);
-		        }
-=======
 			for (int i = 0; i < filename.length; i++) {
 				bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
 				System.out.println(filename[i]);
 			}
-
->>>>>>> origin/master
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}
