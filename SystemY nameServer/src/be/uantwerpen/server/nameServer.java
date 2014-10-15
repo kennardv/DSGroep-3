@@ -19,6 +19,7 @@ public class nameServer {
 	static nodeHandling fileImpl;
 	
 	/* GET/SET */
+	// instantie aanmaken
 	public static nodeHandling getFileImpl() {
 		return fileImpl;
 	}
@@ -27,11 +28,18 @@ public class nameServer {
 	}
 	
 	
+<<<<<<< HEAD
 	
     public static void main(String[] argv) throws RemoteException {
     	setFileImpl(new nodeHandling());
     	XMLParser parser = new XMLParser("joske", "192.168.1.1");
     	parser.main(null);
+=======
+	// main functie: aanroepen bij opstart van de server
+    public static void main(String[] argv) throws RemoteException {
+    	setFileImpl(new nodeHandling());
+    	// locatie van nameserver
+>>>>>>> origin/master
        String bindLocation = "//localhost/nameServer";
        try { 
 			LocateRegistry.createRegistry(1099);
@@ -42,9 +50,8 @@ public class nameServer {
         } catch (MalformedURLException | AlreadyBoundException e) {
             System.out.println("java RMI registry already exists.");
         }
-       
     }
-    
+
     public static void ReadXML() {
     	try {
     		 
