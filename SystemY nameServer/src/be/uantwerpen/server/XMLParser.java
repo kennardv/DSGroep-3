@@ -47,15 +47,25 @@ public class XMLParser {
 		//kijkt of het bestand op de server al bestaat, indien niet wordt er een bestand aangemaakt
 		File f = new File(path);
 		if (f.exists()) {
-			nodeToevoegen(name, ipaddress, "filename");
+			   for(int i=0; i<filename.length; i++){
+				   nodeToevoegen(name, ipaddress, filename[i]);
+		            System.out.println(filename[i]);
+		        }
+			
+			
 			System.out.println("gelukt, bestand was aanwezig");
 		} else {
-			bestandMakenEnNodeToevoegen(name, ipaddress, "filename");
+			   for(int i=0; i<filename.length; i++){
+				   bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
+		            System.out.println(filename[i]);
+		        }
+			
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}
 
 	}
+
 	
 	public static void nodeToevoegen(String invoerNaam, String invoerIpaddress, String invoerFilename) {
 		try {
