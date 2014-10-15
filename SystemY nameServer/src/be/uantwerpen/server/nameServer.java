@@ -19,6 +19,7 @@ public class nameServer {
 	static nodeHandling fileImpl;
 	
 	/* GET/SET */
+	// instantie aanmaken
 	public static nodeHandling getFileImpl() {
 		return fileImpl;
 	}
@@ -26,8 +27,11 @@ public class nameServer {
 		fileImpl = nodeHandling;
 	}
 	
+	
+	// main functie: aanroepen bij opstart van de server
     public static void main(String[] argv) throws RemoteException {
     	setFileImpl(new nodeHandling());
+    	// locatie van nameserver
        String bindLocation = "//localhost/nameServer";
        try { 
 			LocateRegistry.createRegistry(1099);
