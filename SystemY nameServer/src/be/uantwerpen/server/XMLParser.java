@@ -64,6 +64,7 @@ public class XMLParser {
 				bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
 				System.out.println(filename[i]);
 			}
+
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}
@@ -182,9 +183,15 @@ public class XMLParser {
 			node.appendChild(ipaddress);
 
 			// bestandsnaam elements
-			Element filename = doc.createElement("filename");
-			filename.appendChild(doc.createTextNode(invoerFilename));
-			node.appendChild(filename);
+			Element filenames = doc.createElement("filename");
+			node.appendChild(filenames);
+		
+			for (int i = 0; i < filename.length; i++) {
+				Element valueFileName = doc.createElement("value");
+				valueFileName.appendChild(doc.createTextNode(filename[i]));
+				filenames.appendChild(valueFileName);
+			}
+
 
 			// write the content into xml file
 			TransformerFactory transformerFactory = TransformerFactory
