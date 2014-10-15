@@ -13,7 +13,7 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 	public nodeHandling() throws RemoteException{
 		super();
 	}
-	public String connect(String name)
+	public String[] connect(String name)
 	{
 		int hashedName = -1;
 		String clientIP;
@@ -25,7 +25,8 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 			
 		    System.out.println("New client connected. Hashed name: " + hashedName + " IP: " + clientIP); // display message
 		} catch(Exception e) { clientIP = "none";}
-		return "Hashed name: " + hashedName + " IP: " + clientIP;
+		String[] infoArray = {hashedName +"", clientIP};
+		return infoArray;
 	}
 	public void printMap() {
 		// Get a set of the entries
@@ -44,10 +45,10 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 		return Math.abs(name.hashCode()) % 32768;
 	}
 	
-	public void giveFiles(String[] filenames){
-		String ipadress = '192.152.12.54';
-		XMLParser parserxml = new XMLParser();
-		parserxml.main();
+	public void giveFiles(String name, String ipadres, String[] filenames){
+		
+		XMLParser parserxml = new XMLParser(name, ipadres, filenames);
+		parserxml.main(null);
 		
 		
 	}
