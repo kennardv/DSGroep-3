@@ -19,10 +19,12 @@ public class nameServer {
 	static nodeHandling fileImpl;
 	
 	/* GET/SET */
-	// instantie aanmaken
 	public static nodeHandling getFileImpl() {
 		return fileImpl;
 	}
+	/** 
+	Instantiate new object
+	*/
 	public static void setFileImpl(nodeHandling nodeHandling) {
 		fileImpl = nodeHandling;
 	}
@@ -31,12 +33,10 @@ public class nameServer {
     public static void main(String[] argv) throws RemoteException {
     	setFileImpl(new nodeHandling());
     	String[] arrayFiles = {"1.mp3", "x.jpg"};
-    	XMLParser parser = new XMLParser();
-    	parser.startup("Bob", "192.168.54.100", arrayFiles);
     	
     	// locatie van nameserver
-       String bindLocation = "//localhost/nameServer";
-       try {
+    	String bindLocation = "//localhost/nameServer";
+    	try {
 			LocateRegistry.createRegistry(1099);
 			Naming.bind(bindLocation, getFileImpl());
 			//ReadXML();

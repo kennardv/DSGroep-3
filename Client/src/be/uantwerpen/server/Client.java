@@ -7,21 +7,22 @@ import java.rmi.*;
 
 public class Client{
    public static void main(String argv[]) {
-	   String nameClient = "Test-client";
-      try {
-         String name = "//localhost/nameServer";
-         nodeHandlingInterface fi = (nodeHandlingInterface) Naming.lookup(name);
-         //System.out.println(fi.connect(nameClient));
-         String[] arrayInfo = fi.connect(nameClient);
-         String[] arrayFiles = {"1.mp3", "xxx.jpg"};         
-         fi.giveFiles(arrayInfo[0], arrayInfo[1], arrayFiles);
+	   String nameClient = "Client1";
+	   String[] filenames = {"file1.jpg", "file2.txt", "file3.gif"};
+	   
+	   try {
+		   String name = "//localhost/nameServer";
+		   nodeHandlingInterface fi = (nodeHandlingInterface) Naming.lookup(name);
+		   try {
+			   String[] arrayInfo = fi.connect(nameClient, filenames);
+		   } catch (RemoteException e) {
+			   System.out.println(e);
+		   }
 
       } catch(Exception e) {
-         System.err.println("FileServer exception: "+ e.getMessage());
-         e.printStackTrace();
+    	  System.err.println("FileServer exception: "+ e.getMessage());
+    	  e.printStackTrace();
       }
      
    }
-   
-
 }

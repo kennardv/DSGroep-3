@@ -5,6 +5,7 @@ import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.soap.Node;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -23,6 +24,9 @@ import java.util.logging.Logger;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
 import org.xml.sax.SAXException;
 
@@ -35,52 +39,52 @@ public class XMLParser {
 	public static String[] filename;
 
 	XMLParser() {
+		//Needs review
+		/*File f = new File(path);
+		if (!f.exists()) {
+			try {
+				DocumentBuilderFactory docFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
+				// root elements
+				Document doc = docBuilder.newDocument();
+				Element rootElement = doc.createElement("ip-list");
+				doc.appendChild(rootElement);
+				doc.replaceChild(documentElement, documentElement);
+				Transformer tFormer = TransformerFactory.newInstance().newTransformer();
+
+				// Set output file to xml
+				tFormer.setOutputProperty(OutputKeys.METHOD, "xml");
+
+				// Write the document back to the file
+				Source source = new DOMSource(doc);
+				Result result = new StreamResult(f);
+				tFormer.transform(source, result);
+
+				System.out.println("File created!");
+			} catch (ParserConfigurationException pce) {
+				pce.printStackTrace();
+			} catch (TransformerException tfe) {
+				tfe.printStackTrace();
+			}
+		}*/
 	}
 
 	public static void main(String[] args) {
+	}
 	
-		//startup(name, ipaddress, filename);
-
-	}
-
-	public static void startup(String invoerNaam, String invoerIpaddress,
-			String[] invoerFilenames) {
-		// kijkt of het bestand op de server al bestaat, indien niet wordt er
-		// een bestand aangemaakt
-		name = invoerNaam;
-		ipaddress = invoerIpaddress;
-		filename = invoerFilenames;
-		File f = new File(path);
-		if (f.exists()) {
-			for (int i = 0; i < filename.length; i++) {
-				nodeToevoegen(name, ipaddress, filename[i]);
-				System.out.println(filename[i]);
-			}
-
-			System.out.println("gelukt, bestand was aanwezig");
-		} else {
-			for (int i = 0; i < filename.length; i++) {
-				bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
-				System.out.println(filename[i]);
-			}
-
-			System.out
-					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
-		}
-	}
-
-	public static void nodeToevoegen(String invoerNaam, String invoerIpaddress,
-			String invoerFilename) {
+	/** 
+	Add a new node with a name and ipaddress
+	*/
+	public static void addNode(int hashedName, String invoerIpaddress) {
 		try {
 			File xmlFile = new File(path);
 			// Create the documentBuilderFactory
-			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
-					.newInstance();
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
 			// Create the documentBuilder
-			DocumentBuilder documentBuilder = documentBuilderFactory
-					.newDocumentBuilder();
+			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
 			// Create the Document by parsing the file
 			Document document = documentBuilder.parse(xmlFile);
@@ -94,14 +98,14 @@ public class XMLParser {
 			ipaddress.setTextContent(invoerIpaddress);
 
 			Element name = document.createElement("name");
-			name.setTextContent(invoerNaam);
+			name.setTextContent(hashedName + "");
 
-			Element bestandsnaam = document.createElement("filename");
+			/*Element bestandsnaam = document.createElement("filename");
 			for (int i = 0; i < filename.length; i++) {
 				Element valueFileName = document.createElement("value");
 				valueFileName.appendChild(document.createTextNode(filename[i]));
 				bestandsnaam.appendChild(valueFileName);
-			}
+			}*/
 
 
 
@@ -119,7 +123,7 @@ public class XMLParser {
 			// append textNode to Node element;
 			nodeElement.appendChild(name);
 			nodeElement.appendChild(ipaddress);
-			nodeElement.appendChild(bestandsnaam);
+			//nodeElement.appendChild(bestandsnaam);
 
 			// append Node to rootNode element
 			documentElement.appendChild(nodeElement);
@@ -148,70 +152,75 @@ public class XMLParser {
 			Logger.getLogger(XMLParser.class.getName()).log(Level.SEVERE, null,
 					ex);
 		}
-
 	}
-
-	public static void bestandMakenEnNodeToevoegen(String invoerNaam,
-			String invoerIpaddress, String invoerFilename) {
+	
+	/** 
+	Add files to a specific node identified by name and ipaddress
+	*/
+	public static void addFilesToNode(int hashedName, String ipaddress, String[] filenames) {
 		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-			// root elements
-			Document doc = docBuilder.newDocument();
-			Element rootElement = doc.createElement("ip-list");
-			doc.appendChild(rootElement);
-
-			// staff elements
-			Element node = doc.createElement("node");
-			rootElement.appendChild(node);
-
-			// set attribute to name element
-			Attr attr = doc.createAttribute("id");
-			attr.setValue("1");
-			node.setAttributeNode(attr);
-
-			// name elements
-			Element name = doc.createElement("name");
-			name.appendChild(doc.createTextNode(invoerNaam));
-			node.appendChild(name);
-
-			// ip address elements
-			Element ipaddress = doc.createElement("ipaddress");
-			ipaddress.appendChild(doc.createTextNode(invoerIpaddress));
-			node.appendChild(ipaddress);
-
-			// bestandsnaam elements
-			Element filenames = doc.createElement("filename");
-			node.appendChild(filenames);
+		File xmlFile = new File(path);
 		
-			for (int i = 0; i < filename.length; i++) {
-				Element valueFileName = doc.createElement("value");
-				valueFileName.appendChild(doc.createTextNode(filename[i]));
-				filenames.appendChild(valueFileName);
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+		Document doc = docBuilder.parse(xmlFile);
+
+		// Get the root element of the xml Document;
+		Element root = doc.getDocumentElement();
+		
+		//get name and ip elements in the document
+	    NodeList names = root.getElementsByTagName("name");
+	    Element nameEl = null;
+	    
+	    nameElements: {
+		    for (int i = 0; i < names.getLength(); i++) {
+				nameEl = (Element)names.item(i);
+				if (nameEl.getTextContent() == hashedName + "") {
+					//break out for loop
+					break nameElements;
+				}
 			}
+	    }
+	    NodeList ipaddresses = root.getElementsByTagName("ipaddress");
+	    Element ipEl = null;
+	    
+	    ipElements : {
+	    	for (int i = 0; i < ipaddresses.getLength(); i++) {
+				ipEl = (Element)ipaddresses.item(i);
+				if (ipEl.getTextContent() == ipaddress) {
+					break ipElements;
+				}
+			}
+	    }
+	    
+	    //check if name and ip belong to same node
+	    if(nameEl.getParentNode() == ipEl.getParentNode()) {
+	    	Element parent = (Element)nameEl.getParentNode();
+	    	Element files = (Element)parent.getLastChild();
+	    	if (files.getNodeName() != "files") {
+	    		files = doc.createElement("files");
+	    		parent.appendChild(files);
+	    	}
+			for (int i = 0; i < filenames.length; i++) {
+				Element name = doc.createElement("name");
+				name.appendChild(doc.createTextNode(filenames[i]));
+				files.appendChild(name);
+			}
+			
+			// append Node to rootNode element
+	 		root.appendChild(parent);
+	 		doc.replaceChild(root, root);
+	 		Transformer tFormer = TransformerFactory.newInstance()
+	 				.newTransformer();
 
+	 		// Set output file to xml
+	 		tFormer.setOutputProperty(OutputKeys.METHOD, "xml");
 
-			// write the content into xml file
-			TransformerFactory transformerFactory = TransformerFactory
-					.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(new File(path));
-
-			// Output to console for testing
-			// StreamResult result = new StreamResult(System.out);
-
-			transformer.transform(source, result);
-
-			System.out.println("File saved!");
-
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch (TransformerException tfe) {
-			tfe.printStackTrace();
-		}
+	 		// Write the document back to the file
+	 		Source source = new DOMSource(doc);
+	 		Result result = new StreamResult(xmlFile);
+	 		tFormer.transform(source, result);
+	    }
+		} catch (Exception e) {}
 	}
-
 }

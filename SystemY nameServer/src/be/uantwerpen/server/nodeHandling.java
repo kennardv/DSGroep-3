@@ -12,17 +12,22 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 	public nodeHandling() throws RemoteException{
 		super();
 	}
-	public String[] connect(String name)
+	public String[] connect(String name, String[] filenames)
 	{
 		int hashedName = -1;
 		String clientIP;
 		try {
 			hashedName = hashString(name);
 			clientIP = getClientHost();
-			nodeMap.put(hashedName, clientIP);
-			//Update XML file here
 			
-		    System.out.println("New client connected. Hashed name: " + hashedName + " IP: " + clientIP); // display message
+			nodeMap.put(hashedName, clientIP);
+			
+			//Update XML file here
+			XMLParser xmlParser = new XMLParser();
+			xmlParser.addNode(hashedName, clientIP);
+			xmlParser.addFilesToNode(hashedName, clientIP, filenames);
+			
+		    //System.out.println("New client connected. Hashed name: " + hashedName + " IP: " + clientIP); // display message
 		} catch(Exception e) { clientIP = "none";}
 		String[] infoArray = {hashedName +"", clientIP};
 		return infoArray;
@@ -40,21 +45,12 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 	    }
 	}
 	
-	public int hashString(String name) {
-		return Math.abs(name.hashCode()) % 32768;
+	/**
+	 * This method returns a hash from 0 to 32768
+	 * @param str
+	 * @return hashed result
+	 */
+	public int hashString(String str) {
+		return Math.abs(str.hashCode()) % 32768;
 	}
-	
-	public void giveFiles(String name, String ipadres, String[] filenames) {
-    	XMLParser parser = new XMLParser();
-    	String[] arrayFiles = {"1.mp3", "x.jpg"};
-    	parser.startup("Bob", "192.168.54.100", arrayFiles);
-    	
-	}
-	/*public void giveFiles(String name, String ipadres, String[] filenames){
-		
-		XMLParser parserxml = new XMLParser(name, ipadres, filenames);
-		parserxml.main(null);
-	}*/
-
-
 }
