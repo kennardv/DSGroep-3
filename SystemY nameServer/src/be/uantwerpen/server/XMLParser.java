@@ -31,9 +31,9 @@ public class XMLParser {
 	
 	public static String name;
 	public static String ipaddress;
-	public static String filename;
+	public static String[] filename;
 	
-	XMLParser (String pName, String pIpaddress, String pFilename) {
+	XMLParser (String pName, String pIpaddress, String[] pFilename) {
 		
 		name = pName;
 		ipaddress = pIpaddress;
