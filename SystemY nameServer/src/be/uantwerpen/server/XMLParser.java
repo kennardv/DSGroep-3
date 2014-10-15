@@ -47,10 +47,10 @@ public class XMLParser {
 		//kijkt of het bestand op de server al bestaat, indien niet wordt er een bestand aangemaakt
 		File f = new File(path);
 		if (f.exists()) {
-			nodeToevoegen(name, ipaddress, filename);
+			nodeToevoegen(name, ipaddress, "filename");
 			System.out.println("gelukt, bestand was aanwezig");
 		} else {
-			bestandMakenEnNodeToevoegen(name, ipaddress, filename);
+			bestandMakenEnNodeToevoegen(name, ipaddress, "filename");
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}
@@ -83,8 +83,13 @@ public class XMLParser {
 			name.setTextContent(invoerNaam);
 
 			Element bestandsnaam = document.createElement("bestandsnaam");
-			bestandsnaam.setTextContent(invoerFilename);
-
+			
+			
+			Element valueFileName = document.createElement("value");
+			valueFileName.appendChild(document.createTextNode("joske.mp3"));
+			bestandsnaam.appendChild(valueFileName);
+	 
+			
 			// Create a Node element
 			Element nodeElement = document.createElement("node");
 			Attr attr = document.createAttribute("id");
