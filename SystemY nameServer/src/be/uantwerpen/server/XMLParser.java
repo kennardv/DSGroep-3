@@ -15,9 +15,11 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -28,46 +30,48 @@ public class XMLParser {
 
 	private static String path = "ip-list.xml";
 
-	
 	public static String name;
 	public static String ipaddress;
 	public static String[] filename;
-	
-	XMLParser (String pName, String pIpaddress, String[] pFilename) {
-		
+
+	XMLParser(String pName, String pIpaddress, String[] pFilenames) {
+
 		name = pName;
 		ipaddress = pIpaddress;
-		filename = pFilename;
+		filename = pFilenames;
 	}
-	
-	
+
 	public static void main(String[] args) {
 	
-		
-		//kijkt of het bestand op de server al bestaat, indien niet wordt er een bestand aangemaakt
+		startup(name, ipaddress, filename);
+
+	}
+
+	public static void startup(String invoerNaam, String invoerIpaddress,
+			String[] invoerFilenames) {
+		// kijkt of het bestand op de server al bestaat, indien niet wordt er
+		// een bestand aangemaakt
 		File f = new File(path);
 		if (f.exists()) {
-			   for(int i=0; i<filename.length; i++){
-				   nodeToevoegen(name, ipaddress, filename[i]);
-		            System.out.println(filename[i]);
-		        }
-			
-			
+			for (int i = 0; i < filename.length; i++) {
+				nodeToevoegen(name, ipaddress, filename[i]);
+				System.out.println(filename[i]);
+			}
+
 			System.out.println("gelukt, bestand was aanwezig");
 		} else {
-			   for(int i=0; i<filename.length; i++){
-				   bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
-		            System.out.println(filename[i]);
-		        }
-			
+			for (int i = 0; i < filename.length; i++) {
+				bestandMakenEnNodeToevoegen(name, ipaddress, filename[i]);
+				System.out.println(filename[i]);
+			}
+
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}
-
 	}
 
-	
-	public static void nodeToevoegen(String invoerNaam, String invoerIpaddress, String invoerFilename) {
+	public static void nodeToevoegen(String invoerNaam, String invoerIpaddress,
+			String invoerFilename) {
 		try {
 			File xmlFile = new File(path);
 			// Create the documentBuilderFactory
@@ -88,18 +92,19 @@ public class XMLParser {
 			// Create a textNode element
 			Element ipaddress = document.createElement("ipaddress");
 			ipaddress.setTextContent(invoerIpaddress);
-			
+
 			Element name = document.createElement("name");
 			name.setTextContent(invoerNaam);
 
-			Element bestandsnaam = document.createElement("bestandsnaam");
-			
-			
-			Element valueFileName = document.createElement("value");
-			valueFileName.appendChild(document.createTextNode("joske.mp3"));
-			bestandsnaam.appendChild(valueFileName);
-	 
-			
+			Element bestandsnaam = document.createElement("filename");
+			for (int i = 0; i < filename.length; i++) {
+				Element valueFileName = document.createElement("value");
+				valueFileName.appendChild(document.createTextNode(filename[i]));
+				bestandsnaam.appendChild(valueFileName);
+			}
+
+
+
 			// Create a Node element
 			Element nodeElement = document.createElement("node");
 			Attr attr = document.createAttribute("id");
@@ -115,7 +120,7 @@ public class XMLParser {
 			nodeElement.appendChild(name);
 			nodeElement.appendChild(ipaddress);
 			nodeElement.appendChild(bestandsnaam);
-			
+
 			// append Node to rootNode element
 			documentElement.appendChild(nodeElement);
 			document.replaceChild(documentElement, documentElement);
@@ -146,7 +151,8 @@ public class XMLParser {
 
 	}
 
-	public static void bestandMakenEnNodeToevoegen(String invoerNaam, String invoerIpaddress, String invoerFilename) {
+	public static void bestandMakenEnNodeToevoegen(String invoerNaam,
+			String invoerIpaddress, String invoerFilename) {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory
 					.newInstance();
@@ -175,7 +181,7 @@ public class XMLParser {
 			Element ipaddress = doc.createElement("ipaddress");
 			ipaddress.appendChild(doc.createTextNode(invoerIpaddress));
 			node.appendChild(ipaddress);
-			
+
 			// bestandsnaam elements
 			Element filename = doc.createElement("filename");
 			filename.appendChild(doc.createTextNode(invoerFilename));
@@ -201,7 +207,5 @@ public class XMLParser {
 			tfe.printStackTrace();
 		}
 	}
-
-
 
 }
