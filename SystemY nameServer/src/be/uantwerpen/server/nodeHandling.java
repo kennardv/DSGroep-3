@@ -45,6 +45,7 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 	}
 	
 	public void giveFiles(String[] filenames){
+		String ipadress = '192.152.12.54';
 		XMLParser parserxml = new XMLParser();
 		parserxml.main();
 		
