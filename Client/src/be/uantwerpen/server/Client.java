@@ -11,7 +11,7 @@ public class Client{
       try {
          String name = "//localhost/nameServer";
          nodeHandlingInterface fi = (nodeHandlingInterface) Naming.lookup(name);
-         System.out.println(fi.connect(nameClient));
+
          String[] arrayInfo = fi.connect(nameClient);
          String[] arrayFiles = {"1.mp3", "xxx.jpg"};         
          fi.giveFiles(arrayInfo[0], arrayInfo[1], arrayFiles);
