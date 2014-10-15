@@ -29,18 +29,26 @@ public class XMLParser {
 	private static String path = "ip-list.xml";
 
 	
+	public static String name;
+	public static String ipaddress;
+	
+	XMLParser (String pName, String pIpaddress) {
+		
+		name = pName;
+		ipaddress = pIpaddress;
+	}
+	
+	
 	public static void main(String[] args) {
-		//test gegevens
-		String naam = "test"; 
-		String ipaddress = "192.168.1.1";
+	
 		
 		//kijkt of het bestand op de server al bestaat, indien niet wordt er een bestand aangemaakt
 		File f = new File(path);
 		if (f.exists()) {
-			nodeToevoegen(naam, ipaddress);
+			nodeToevoegen(name, ipaddress);
 			System.out.println("gelukt, bestand was aanwezig");
 		} else {
-			bestandMakenEnNodeToevoegen(naam, ipaddress);
+			bestandMakenEnNodeToevoegen(name, ipaddress);
 			System.out
 					.println("gelukt, bestand was niet aanwezig, er is een nieuw bestand aangemaakt");
 		}

@@ -26,8 +26,12 @@ public class nameServer {
 		fileImpl = nodeHandling;
 	}
 	
+	
+	
     public static void main(String[] argv) throws RemoteException {
     	setFileImpl(new nodeHandling());
+    	XMLParser parser = new XMLParser("joske", "192.168.1.1");
+    	parser.main(null);
        String bindLocation = "//localhost/nameServer";
        try { 
 			LocateRegistry.createRegistry(1099);
