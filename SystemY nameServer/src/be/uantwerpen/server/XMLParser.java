@@ -32,6 +32,11 @@ import org.xml.sax.SAXException;
 
 public class XMLParser {
 
+	private static File xmlFile = null;
+	private static DocumentBuilderFactory documentBuilderFactory = null;
+	private static DocumentBuilder documentBuilder = null;
+	private static Document document = null;
+	
 	private static String path = "ip-list.xml";
 
 	public static String name;
@@ -70,24 +75,21 @@ public class XMLParser {
 			}
 		}*/
 	}
-
-	public static void main(String[] args) {
-	}
 	
 	/** 
 	Add a new node with a name and ipaddress
 	*/
 	public static void addNode(int hashedName, String invoerIpaddress) {
 		try {
-			File xmlFile = new File(path);
+			xmlFile = new File(path);
 			// Create the documentBuilderFactory
-			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
 			// Create the documentBuilder
-			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
 			// Create the Document by parsing the file
-			Document document = documentBuilder.parse(xmlFile);
+			document = documentBuilder.parse(xmlFile);
 
 			// Get the root element of the xml Document;
 			Element documentElement = document.getDocumentElement();
@@ -99,15 +101,6 @@ public class XMLParser {
 
 			Element name = document.createElement("name");
 			name.setTextContent(hashedName + "");
-
-			/*Element bestandsnaam = document.createElement("filename");
-			for (int i = 0; i < filename.length; i++) {
-				Element valueFileName = document.createElement("value");
-				valueFileName.appendChild(document.createTextNode(filename[i]));
-				bestandsnaam.appendChild(valueFileName);
-			}*/
-
-
 
 			// Create a Node element
 			Element nodeElement = document.createElement("node");
@@ -159,14 +152,14 @@ public class XMLParser {
 	*/
 	public static void addFilesToNode(int hashedName, String ipaddress, String[] filenames) {
 		try {
-		File xmlFile = new File(path);
+		xmlFile = new File(path);
 		
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		Document doc = docBuilder.parse(xmlFile);
+		documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		document = documentBuilder.parse(xmlFile);
 
 		// Get the root element of the xml Document;
-		Element root = doc.getDocumentElement();
+		Element root = document.getDocumentElement();
 		
 		//get name and ip elements in the document
 	    NodeList names = root.getElementsByTagName("name");
@@ -198,18 +191,18 @@ public class XMLParser {
 	    	Element parent = (Element)nameEl.getParentNode();
 	    	Element files = (Element)parent.getLastChild();
 	    	if (files.getNodeName() != "files") {
-	    		files = doc.createElement("files");
+	    		files = document.createElement("files");
 	    		parent.appendChild(files);
 	    	}
 			for (int i = 0; i < filenames.length; i++) {
-				Element name = doc.createElement("name");
-				name.appendChild(doc.createTextNode(filenames[i]));
+				Element name = document.createElement("name");
+				name.appendChild(document.createTextNode(filenames[i]));
 				files.appendChild(name);
 			}
 			
 			// append Node to rootNode element
 	 		root.appendChild(parent);
-	 		doc.replaceChild(root, root);
+	 		document.replaceChild(root, root);
 	 		Transformer tFormer = TransformerFactory.newInstance()
 	 				.newTransformer();
 
@@ -217,7 +210,7 @@ public class XMLParser {
 	 		tFormer.setOutputProperty(OutputKeys.METHOD, "xml");
 
 	 		// Write the document back to the file
-	 		Source source = new DOMSource(doc);
+	 		Source source = new DOMSource(document);
 	 		Result result = new StreamResult(xmlFile);
 	 		tFormer.transform(source, result);
 	    }

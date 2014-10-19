@@ -7,7 +7,8 @@ import java.lang.Math;
 
 public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInterface {
 	private static final long serialVersionUID = 1L;
-	HashMap nodeMap = new HashMap();
+	HashMap<Integer, Client> nodeMap = new HashMap<Integer, Client>();
+	int id = 0;
 	
 	public nodeHandling() throws RemoteException{
 		super();
@@ -19,19 +20,50 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 		try {
 			hashedName = hashString(name);
 			clientIP = getClientHost();
+			addToHashMap(hashedName, clientIP, filenames);
+			removeFromHashMap(hashedName, clientIP, filenames);
 			
-			nodeMap.put(hashedName, clientIP);
 			
-			//Update XML file here
-			XMLParser xmlParser = new XMLParser();
-			xmlParser.addNode(hashedName, clientIP);
-			xmlParser.addFilesToNode(hashedName, clientIP, filenames);
-			
-		    //System.out.println("New client connected. Hashed name: " + hashedName + " IP: " + clientIP); // display message
 		} catch(Exception e) { clientIP = "none";}
 		String[] infoArray = {hashedName +"", clientIP};
 		return infoArray;
 	}
+	
+	public void addToHashMap(int hashedName, String ip, String[] filenames) {
+		Client node = new Client();
+		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(filenames);
+		if (!nodeMap.containsValue(node)) {
+			nodeMap.put(id, node);
+			id++;
+		}
+		System.out.println("nodeMap size: " + nodeMap.size());
+		
+		//use nodemap to update XML file
+		XMLParser xmlParser = new XMLParser();
+		xmlParser.addNode(hashedName, ip);
+		xmlParser.addFilesToNode(hashedName, ip, filenames);
+	}
+	
+	/**
+	 * not working
+	 * @param hashedName
+	 * @param ip
+	 * @param filenames
+	 */
+	public void removeFromHashMap(int hashedName, String ip, String[] filenames) {
+		Client node = new Client();
+		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(filenames);
+		while( nodeMap.values().remove(node) ) {
+			System.out.println("nodeMap size: " + nodeMap.size());
+		}
+		
+		//update xml
+	}
+	
+	public boolean checkForExistence(int hashedName, String ipaddress) {
+		return nodeMap.containsKey(hashedName);
+	}
+	
 	public void printMap() {
 		// Get a set of the entries
 	    Set set = nodeMap.entrySet();

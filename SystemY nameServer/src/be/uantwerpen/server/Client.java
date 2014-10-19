@@ -7,8 +7,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"id", "name", "ipaddress", "files"})
 
 public class Client {
+	//id geen property denk ik maar als atribute voor node
+	//anders werkt de check niet om duplicates in de hashmap te vermijden
 	private int id;
-	private String name;
+	private int name;
 	private String ipaddress;
 	private String[] files;
 
@@ -23,11 +25,11 @@ public class Client {
 		this.id = id;
 	}
 
-	public String getName() {
+	public int getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(int name) {
 		this.name = name;
 	}
 
