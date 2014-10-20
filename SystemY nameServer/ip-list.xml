@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <nodes>
     <id>0</id>
@@ -9,4 +7,4 @@
     <files>geluid.mp3</files>
     <files>worddoc.docx</files>
 </nodes>
->>>>>>> origin/master
+
