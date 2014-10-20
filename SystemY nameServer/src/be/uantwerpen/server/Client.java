@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlType;
 
 public class Client {
 	private int id;
-	private String name;
+	private int name;
 	private String ipaddress;
 	private String[] files;
 
@@ -23,11 +23,11 @@ public class Client {
 		this.id = id;
 	}
 
-	public String getName() {
+	public int getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(int name) {
 		this.name = name;
 	}
 
