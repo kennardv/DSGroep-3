@@ -40,8 +40,8 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 		
 		//use nodemap to update XML file
 		XMLParser xmlParser = new XMLParser();
-		xmlParser.addNode(hashedName, ip);
-		xmlParser.addFilesToNode(hashedName, ip, filenames);
+		//xmlParser.addNode(hashedName, ip);
+		//xmlParser.addFilesToNode(hashedName, ip, filenames);
 	}
 	
 	/**
