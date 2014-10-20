@@ -65,8 +65,8 @@ public class XMLParser {
 	        try {
 	            JAXBContext context = JAXBContext.newInstance(Client.class);
 	            Unmarshaller un = context.createUnmarshaller();
-	            Client emp = (Client) un.unmarshal(new File(PATH));
-	            return emp;
+	            Client client = (Client) un.unmarshal(new File(PATH));
+	            return client;
 	        } catch (JAXBException e) {
 	            e.printStackTrace();
 	        }
