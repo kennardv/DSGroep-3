@@ -82,7 +82,7 @@ public class XMLParser {
 	            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 	 
 	            // Write to System.out for debugging
-	            // m.marshal(emp, System.out);
+	            // m.marshal(client, System.out);
 	 
 	            // Write to File
 	            m.marshal(client, new File(PATH));
