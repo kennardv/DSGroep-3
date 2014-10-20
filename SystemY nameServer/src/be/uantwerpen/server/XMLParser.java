@@ -1,11 +1,20 @@
 package be.uantwerpen.server;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.soap.Node;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -16,67 +25,75 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
 import org.xml.sax.SAXException;
 
 public class XMLParser {
 
-	private static String path = "ip-list.xml";
+	private static String PATH = "ip-list.xml";
 
 	public static String name;
 	public static String ipaddress;
 	public static String[] filename;
 
 	XMLParser() {
-		//Needs review
-		/*File f = new File(path);
-		if (!f.exists()) {
-			try {
-				DocumentBuilderFactory docFactory = DocumentBuilderFactory
-						.newInstance();
-				DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-				// root elements
-				Document doc = docBuilder.newDocument();
-				Element rootElement = doc.createElement("ip-list");
-				doc.appendChild(rootElement);
-				doc.replaceChild(documentElement, documentElement);
-				Transformer tFormer = TransformerFactory.newInstance().newTransformer();
-
-				// Set output file to xml
-				tFormer.setOutputProperty(OutputKeys.METHOD, "xml");
-
-				// Write the document back to the file
-				Source source = new DOMSource(doc);
-				Result result = new StreamResult(f);
-				tFormer.transform(source, result);
-
-				System.out.println("File created!");
-			} catch (ParserConfigurationException pce) {
-				pce.printStackTrace();
-			} catch (TransformerException tfe) {
-				tfe.printStackTrace();
-			}
-		}*/
+		
 	}
 
 	public static void main(String[] args) {
+				try{
+					
+			
+			    JAXBContext context = JAXBContext.newInstance(Client.class);
+
+			    Marshaller m = context.createMarshaller();
+			    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			    String[] exampleStringArray = {"tekst.txt", "geluid.mp3", "worddoc.docx"};
+			    Client object = new Client();
+			    object.setId(0);
+			    object.setName(45646513);
+			    object.setIpaddress("192.168.1.2");
+			    object.setFiles(exampleStringArray);
+			    jaxbObjectToXML(object);
+			    m.marshal(object, System.out);
+			    
+				}catch(JAXBException e){
+					 System.err.println("Caught IOException: " + e.getMessage());
+				}
 	}
+	
+	  private static Client jaxbXMLToObject() {
+	        try {
+	            JAXBContext context = JAXBContext.newInstance(Client.class);
+	            Unmarshaller un = context.createUnmarshaller();
+	            Client emp = (Client) un.unmarshal(new File(PATH));
+	            return emp;
+	        } catch (JAXBException e) {
+	            e.printStackTrace();
+	        }
+	        return null;
+	    }
+	 
+	  private static void jaxbObjectToXML(Client client) {
+		  
+	        try {
+	            JAXBContext context = JAXBContext.newInstance(Client.class);
+	            Marshaller m = context.createMarshaller();
+	            //for pretty-print XML in JAXB
+	            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+	 
+	            // Write to System.out for debugging
+	            // m.marshal(emp, System.out);
+	 
+	            // Write to File
+	            m.marshal(client, new File(PATH));
+	        } catch (JAXBException e) {
+	            e.printStackTrace();
+	        }
+	    }
 	
 	/** 
 	Add a new node with a name and ipaddress
-	*/
+	
 	public static void addNode(int hashedName, String invoerIpaddress) {
 		try {
 			File xmlFile = new File(path);
@@ -105,7 +122,7 @@ public class XMLParser {
 				Element valueFileName = document.createElement("value");
 				valueFileName.appendChild(document.createTextNode(filename[i]));
 				bestandsnaam.appendChild(valueFileName);
-			}*/
+			}
 
 
 
@@ -154,9 +171,39 @@ public class XMLParser {
 		}
 	}
 	
-	/** 
+	
+	 Needs review
+		/*File f = new File(path);
+		if (!f.exists()) {
+			try {
+				DocumentBuilderFactory docFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+				// root elements
+				Document doc = docBuilder.newDocument();
+				Element rootElement = doc.createElement("ip-list");
+				doc.appendChild(rootElement);
+				doc.replaceChild(documentElement, documentElement);
+				Transformer tFormer = TransformerFactory.newInstance().newTransformer();
+
+				// Set output file to xml
+				tFormer.setOutputProperty(OutputKeys.METHOD, "xml");
+
+				// Write the document back to the file
+				Source source = new DOMSource(doc);
+				Result result = new StreamResult(f);
+				tFormer.transform(source, result);
+
+				System.out.println("File created!");
+			} catch (ParserConfigurationException pce) {
+				pce.printStackTrace();
+			} catch (TransformerException tfe) {
+				tfe.printStackTrace();
+			}
+		}
 	Add files to a specific node identified by name and ipaddress
-	*/
+	
 	public static void addFilesToNode(int hashedName, String ipaddress, String[] filenames) {
 		try {
 		File xmlFile = new File(path);
@@ -223,4 +270,5 @@ public class XMLParser {
 	    }
 		} catch (Exception e) {}
 	}
+	*/
 }
