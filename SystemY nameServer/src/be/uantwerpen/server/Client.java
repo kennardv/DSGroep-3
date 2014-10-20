@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"id", "name", "ipaddress", "files"})
 
 public class Client {
+	//id geen property denk ik maar als atribute voor node
+	//anders werkt de check niet om duplicates in de hashmap te vermijden
 	private int id;
 	private int name;
 	private String ipaddress;

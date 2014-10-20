@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <nodes>
     <id>0</id>
@@ -7,3 +8,6 @@
     <files>geluid.mp3</files>
     <files>worddoc.docx</files>
 </nodes>
+=======
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><nodes><node id="1"><name>25178</name><ipaddress>192.168.56.1</ipaddress><files><name>file1.jpg</name><name>file2.txt</name><name>file3.gif</name></files></node></nodes>
+>>>>>>> origin/master

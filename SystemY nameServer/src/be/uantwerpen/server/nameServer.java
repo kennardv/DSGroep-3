@@ -32,7 +32,6 @@ public class nameServer {
 	// main functie: aanroepen bij opstart van de server
     public static void main(String[] argv) throws RemoteException {
     	setFileImpl(new nodeHandling());
-    	String[] arrayFiles = {"1.mp3", "x.jpg"};
     	
     	// locatie van nameserver
     	String bindLocation = "//localhost/nameServer";
@@ -47,7 +46,7 @@ public class nameServer {
         }
     }
 
-    public static void ReadXML() {
+    /*public static void ReadXML() {
     	try {
     		 
     		File fXmlFile = new File("ip-list.xml");
@@ -79,5 +78,5 @@ public class nameServer {
     	    	e.printStackTrace();
     	    }
     	
-    }
+    }*/
 }	
