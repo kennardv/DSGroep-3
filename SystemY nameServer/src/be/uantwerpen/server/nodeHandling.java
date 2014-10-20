@@ -24,8 +24,7 @@ public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInt
 			
 			//Update XML file here
 			XMLParser xmlParser = new XMLParser();
-			xmlParser.addNode(hashedName, clientIP);
-			xmlParser.addFilesToNode(hashedName, clientIP, filenames);
+			
 			
 		    //System.out.println("New client connected. Hashed name: " + hashedName + " IP: " + clientIP); // display message
 		} catch(Exception e) { clientIP = "none";}
