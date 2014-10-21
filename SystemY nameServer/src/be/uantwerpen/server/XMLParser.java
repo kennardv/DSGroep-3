@@ -35,8 +35,8 @@ public class XMLParser {
 	public static String ipaddress;
 	public static String[] filename;
 
-	XMLParser() {
-		
+	public XMLParser() {
+		main(null);
 	}
 
 	public static void main(String[] args) {
@@ -47,11 +47,11 @@ public class XMLParser {
 
 			    Marshaller m = context.createMarshaller();
 			    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			    String[] exampleStringArray = {"tekst.txt", "geluid.mp3", "worddoc.docx"};
+			    String[] exampleStringArray = {"tekstrfr.txt", "geluid.rfrfmp3", "wordrfrdoc.docx"};
 			    Client object = new Client();
 			    object.setId(0);
 			    object.setName(45646513);
-			    object.setIpaddress("192.168.1.2");
+			    object.setIpaddress("192.168.rfrfrfrfrfrfr.2");
 			    object.setFiles(exampleStringArray);
 			    jaxbObjectToXML(object);
 			    m.marshal(object, System.out);
