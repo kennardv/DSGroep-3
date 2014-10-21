@@ -11,6 +11,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "clients")
 @XmlAccessorType (XmlAccessType.FIELD)
 public class Clients {
+	
+	public Clients() {
+		
+	}
 
 	@XmlElement(name = "client")
 	private List<Client> clients = null;

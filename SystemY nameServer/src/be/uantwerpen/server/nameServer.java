@@ -28,38 +28,16 @@ import org.w3c.dom.NodeList;
 public class nameServer {
 	static HashMap<Integer, Client> nodeMap = new HashMap<Integer, Client>();
 	static int id = 0;
-	static nodeHandling fileImpl;
 	public static int k = 0;
 	
-	/* GET/SET */
-	// instantie aanmaken
-	public static nodeHandling getFileImpl() {
-		return fileImpl;
-	}
-	public static void setFileImpl(nodeHandling nodeHandling) {
-		fileImpl = nodeHandling;
-	}
 	
 	// main functie: aanroepen bij opstart van de server
     public static void main(String[] argv) throws RemoteException, ClassNotFoundException {
     	NodeToNodeInterface ntnI = null;
     	String name = null;
-    	setFileImpl(new nodeHandling());
-
     	
     	// locatie van nameserver
        String bindLocation = "//localhost/nameServer";
-       /*
-       try { 
-			LocateRegistry.createRegistry(9001);
-			Naming.bind(bindLocation, getFileImpl());
-			//ReadXML();
-	        System.out.println("FileServer Server is ready at:" + bindLocation);
-            System.out.println("java RMI registry created.");
-        } catch (MalformedURLException | AlreadyBoundException e) {
-            System.out.println("java RMI registry already exists.");
-        }
-       */
        
        try { 
     	   byte[] inBuf = new byte[256];
@@ -141,9 +119,15 @@ public class nameServer {
 		}
 		System.out.println("nodeMap size: " + nodeMap.size());
 		
+		Clients clients = new Clients();
+		List<Client> clientList = new ArrayList<Client>();
+		for (Client client : nodeMap.values()) {
+			clientList.add(client);
+		}
+		clients.setClients(clientList);
+		
 		//use nodemap to update XML file
-		XMLParser xmlParser = new XMLParser();
-		//xmlParser.addNode(hashedName, ip);
-		//xmlParser.addFilesToNode(hashedName, ip, filenames);
+		XMLParser parser = new XMLParser();
+		parser.jaxbObjectToXML(clients);
 	}
 }	
