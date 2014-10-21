@@ -8,36 +8,66 @@ import java.net.*;
 
 public class nodeHandling extends UnicastRemoteObject implements nodeHandlingInterface {
 	private static final long serialVersionUID = 1L;
-	HashMap nodeMap = new HashMap();
+	HashMap<Integer, Client> nodeMap = new HashMap<Integer, Client>();
+	int id = 0;
 	
 	public nodeHandling() throws RemoteException{
 		super();
 	}
-	public String connect(String name)
+	public String[] connect(String name, String[] filenames)
 	{
 		int hashedName = -1;
 		String clientIP;
 		try {
 			hashedName = hashString(name);
 			clientIP = getClientHost();
-			nodeMap.put(hashedName, clientIP);
+			addToHashMap(hashedName, clientIP, filenames);
 			//Update XML file here
 			
 		    System.out.println("New client connected. Hashed name: " + hashedName + " IP: " + clientIP); // display message
 		} catch(Exception e) { clientIP = "none";}
-		return "Hashed name: " + hashedName + " IP: " + clientIP;
+		String[] infoArray = {hashedName +"", clientIP};
+		return infoArray;
 	}
-	public void printMap() {
-		// Get a set of the entries
-	    Set set = nodeMap.entrySet();
-	    // Get an iterator
-	    Iterator i = set.iterator();
-	    // Display elements
-	    while(i.hasNext()) {
-	    	Map.Entry me = (Map.Entry)i.next();
-	        System.out.print(me.getKey() + ": ");
-	        System.out.println(me.getValue());
-	    }
+	
+	public void addToHashMap(int hashedName, String ip, String[] filenames) {
+		Client node = new Client();
+		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); //node.setFiles(filenames);
+		if (!nodeMap.containsValue(node)) {
+			nodeMap.put(id, node);
+			id++;
+		}
+		System.out.println("nodeMap size: " + nodeMap.size());
+		
+		Clients clients = new Clients();
+		List<Client> clientList = new ArrayList<Client>();
+		for (Client client : nodeMap.values()) {
+			clientList.add(client);
+		}
+		clients.setClients(clientList);
+		
+		//use nodemap to update XML file
+		XMLParser parser = new XMLParser();
+		parser.jaxbObjectToXML(clients);
+		//XMLParser xmlParser = new XMLParser();
+		//xmlParser.addNode(hashedName, ip);
+		//xmlParser.addFilesToNode(hashedName, ip, filenames);
+	}
+	
+	/**
+	 * not working
+	 * @param hashedName
+	 * @param ip
+	 * @param filenames
+	 */
+	public void removeFromHashMap(int hashedName, String ip, String[] filenames) {
+		Client node = new Client();
+		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); //node.setFiles(filenames);
+		while( nodeMap.values().remove(node) ) {
+			System.out.println("nodeMap size: " + nodeMap.size());
+		}
+		
+		//update xml
 	}
 	
 	public int hashString(String name) {

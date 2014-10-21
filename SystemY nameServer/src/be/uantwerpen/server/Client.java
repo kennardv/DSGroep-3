@@ -1,5 +1,7 @@
 package be.uantwerpen.server;
 
+import java.util.ArrayList;
+
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -12,7 +14,8 @@ public class Client {
 	private int id;
 	private int name;
 	private String ipaddress;
-	private String[] files;
+	private Files files; 
+	//private String[] files;
 
 	public Client() {
 	}
@@ -41,11 +44,11 @@ public class Client {
 		this.ipaddress = ipaddress;
 	}
 
-	public String[] getFiles() {
+	public Files getFiles() {
 		return files;
 	}
 
-	public void setFiles(String[] files) {
+	public void setFiles(Files files) {
 		this.files = files;
 	}
 

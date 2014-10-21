@@ -115,40 +115,6 @@ public class nameServer {
        catch(IOException e){}
        
     }
-
-    public static void ReadXML() {
-    	try {
-    		 
-    		File fXmlFile = new File("ip-list.xml");
-    		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-    		Document doc = dBuilder.parse(fXmlFile);
-
-    		doc.getDocumentElement().normalize();
-    	 
-    	 
-    		NodeList nList = doc.getElementsByTagName("clients");
-    	 
-    	 
-    		for (int temp = 0; temp < nList.getLength(); temp++) {
-    	 
-    			Node nNode = nList.item(temp);
-    	 
-    			//System.out.println("\nCurrent Element :" + nNode.getNodeName());
-    			
-    			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-    	 
-    				Element eElement = (Element) nNode;
-    				
-    				fileImpl.nodeMap.put(eElement.getElementsByTagName("hashedName").item(0).getTextContent(), eElement.getElementsByTagName("IP").item(0).getTextContent());
-    			}
-    		}
-    		fileImpl.printMap();
-    	    } catch (Exception e) {
-    	    	e.printStackTrace();
-    	    }
-    	
-    }
     
 	/**
 	 * not working
@@ -158,7 +124,7 @@ public class nameServer {
 	 */
 	public void removeFromHashMap(int hashedName, String ip, String[] filenames) {
 		Client node = new Client();
-		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(filenames);
+		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); //node.setFiles(filenames);
 		while( nodeMap.values().remove(node) ) {
 			System.out.println("nodeMap size: " + nodeMap.size());
 		}
@@ -168,7 +134,8 @@ public class nameServer {
     
     public static void addToHashMap(int hashedName, String ip, String[] filenames) {
 		Client node = new Client();
-		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(filenames);
+		Files files = new Files(); files.setFile(filenames);
+		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(files);
 		if (!nodeMap.containsValue(node)) {
 			nodeMap.put(id, node);
 			id++;
