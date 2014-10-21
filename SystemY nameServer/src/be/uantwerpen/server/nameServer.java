@@ -134,8 +134,7 @@ public class nameServer {
     
     public static void addToHashMap(int hashedName, String ip, String[] filenames) {
 		Client node = new Client();
-		Files files = new Files(); files.setFile(filenames);
-		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(files);
+		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(filenames);
 		if (!nodeMap.containsValue(node)) {
 			nodeMap.put(id, node);
 			id++;

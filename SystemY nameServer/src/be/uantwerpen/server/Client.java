@@ -14,7 +14,7 @@ public class Client {
 	private int id;
 	private int name;
 	private String ipaddress;
-	private Files files; 
+	private Files filesObj;
 	//private String[] files;
 
 	public Client() {
@@ -44,12 +44,34 @@ public class Client {
 		this.ipaddress = ipaddress;
 	}
 
-	public Files getFiles() {
+	public String[] getFiles() {
+		return this.filesObj.getFiles();
+	}
+
+	public void setFiles(String[] files) {
+		this.filesObj = new Files();
+		filesObj.setFiles(files);
+	}
+}
+
+class Files {
+
+	private String[] files;
+
+	public Files() {
+	}
+
+	public Files(String[] file) {
+		super();
+		this.setFiles(file);
+	}
+
+	public String[] getFiles() {
 		return files;
 	}
 
-	public void setFiles(Files files) {
-		this.files = files;
+	public void setFiles(String[] file) {
+		this.files = file;
 	}
-
+	
 }
