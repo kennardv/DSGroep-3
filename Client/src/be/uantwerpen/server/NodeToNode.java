@@ -2,9 +2,7 @@ package be.uantwerpen.server;
 
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
-import java.lang.Math;
-import java.net.*;
+
 
 public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterface {
 	public int nextHash = -1;
