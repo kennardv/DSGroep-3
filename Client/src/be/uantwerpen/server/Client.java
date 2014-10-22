@@ -32,7 +32,8 @@ public class Client {
 	  String nameClient = "Client1"; //naam van de client
 	  String[] filenames = {"file1.jpg", "file2.txt", "file3.gif"}; //lijst van files op de clientpc
       String[] clientStats = new String[2];
-      clientStats[0] = hashString(nameClient) + "";
+      Client.huidige =  hashString(nameClient);
+      clientStats[0] = Client.huidige + "";
       clientStats[1] = Inet4Address.getLocalHost().getHostAddress();
       message.add(clientStats);
       message.add(filenames);
@@ -45,9 +46,6 @@ public class Client {
       byte[] b = byteArr.toByteArray();
 	  DatagramPacket dgram;
 	  dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
-	  System.err.println("Sending " + b.length + " bytes to " +
-	  dgram.getAddress() + ':' + dgram.getPort());
-	  System.err.print("send");
 	  String bindLocation = "//localhost/ntn";
 	  try { 
 	    registry = LocateRegistry.createRegistry(1099);		
@@ -56,23 +54,33 @@ public class Client {
 	    Naming.bind(bindLocation, ntn);			
 	  } catch (Exception e) {}
 	  socket.send(dgram);
-	    
-	  while(ntn.nextHash == 0 || ntn.numberOfNodes == -1) //gaat uit while indien server zegt dat hij eerste node is of 
-	  {  												  //indien een client zijn hashes terug geeft
+	  System.out.println("multicast is send");
+
+	  while(ntn.nextHash == -1 || ntn.numberOfNodes == -1) //gaat uit while indien server zegt dat hij eerste node is of 
+	  {  
+		     System.out.println(ntn.nextHash);
+
+		  
+		  if(ntn.numberOfNodes == 0)
+		  {
+			  ntn.nextHash = Client.huidige;
+			  ntn.prevHash = Client.huidige;
+		  }
 	    	try {
-	    	    Thread.sleep(1000);   
-	    	    System.err.println("aangekregen next: " + ntn.nextHash);
+	    	    Thread.sleep(100);   
 	    	} catch(InterruptedException ex) {
 	    	    Thread.currentThread().interrupt();
 	    	}
 	  }
+	  
 	  try { 
 	    Naming.unbind(bindLocation);	//unbind van name zodat andere client henm terug kan gebruiken    
       } catch (NotBoundException e) {  
     	 System.err.println("Not bound");
       } 
-	     System.err.println("aangekregen next: " + ntn.nextHash);
-	     System.err.println("aantal nodes: " + ntn.numberOfNodes);
+	     System.out.println("Client number: " + (ntn.numberOfNodes + 1));
+	     System.out.println("previoushash: " + ntn.prevHash + "; my hash: " + Client.huidige + "; nexthash: " + ntn.nextHash);
+
 	     Client.volgende  = ntn.nextHash();
 	     Client.vorige  = ntn.prevHash();
 	     
@@ -105,27 +113,40 @@ public class Client {
 			        int foo = Integer.parseInt(clientStats[0]); //de hash uit de multicast message halen
 			        
 			        
-			        if(Client.volgende == 40000 &&Client.vorige == -1)
-			        {
-
-
-			        }
-			        else if(foo > Client.vorige && foo < Client.volgende)
+			        if(Client.vorige == Client.volgende && foo < Client.huidige)
 			        {
 			        	try {
 			                String name = "//localhost/ntn";
 			                NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-			                ntnI.answerDiscovery( Client.vorige, Client.volgende);
-			                System.err.println("Verzonden" + Client.vorige);
-
-			                System.err.println("Verzonden");
+			                ntnI.answerDiscovery( Client.vorige, Client.huidige);
+			                Client.vorige = foo;
+			                System.out.println("NEW: previoushash: " + Client.vorige + "; my hash: " + Client.huidige + "; nexthash: " + Client.volgende);
 
 			             } catch(Exception e) {
 			                System.err.println("FileServer exception: "+ e.getMessage());
 			                e.printStackTrace();
-			             }
+			             } 
 
-			        	
+			        }
+			        else if(foo < Client.huidige && foo > Client.vorige)
+			        {
+		                Client.vorige = foo;
+		                System.out.println("NEW: previoushash: " + Client.vorige + "; my hash: " + Client.huidige + "; nexthash: " + Client.volgende);	
+			        }
+			        
+			        else if(foo < Client.volgende && foo > Client.huidige)
+			        {
+			        	try {
+			                String name = "//localhost/ntn";
+			                NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+			                ntnI.answerDiscovery( Client.huidige, Client.volgende);
+			                Client.volgende = foo;
+			                System.out.println("NEW: previoushash: " + Client.vorige + "; my hash: " + Client.huidige + "; nexthash: " + Client.volgende);
+
+			             } catch(Exception e) {
+			                System.err.println("FileServer exception: "+ e.getMessage());
+			                e.printStackTrace();
+			             } 
 			        }
 			      } finally {
 			        try {

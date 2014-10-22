@@ -7,7 +7,7 @@ import java.lang.Math;
 import java.net.*;
 
 public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterface {
-	public int nextHash = 40000;
+	public int nextHash = -1;
 	public int prevHash = -1;
 	public int numberOfNodes = -1;
 	
@@ -17,8 +17,8 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	}
 	public void answerDiscovery(int prev, int next)
 	{
-		nextHash = 15;
-		prevHash = 20;
+		nextHash = next;
+		prevHash = prev;
 		
 	}
 	
