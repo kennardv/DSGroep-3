@@ -1,7 +1,5 @@
 package be.uantwerpen.server;
 
-import java.util.ArrayList;
-
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
