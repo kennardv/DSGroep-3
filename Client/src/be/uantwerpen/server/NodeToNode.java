@@ -38,10 +38,4 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	{
 		return prevHash;
 	}
-	
-
-	
-
-
-
 }
