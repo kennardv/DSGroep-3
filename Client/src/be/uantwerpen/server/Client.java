@@ -17,27 +17,39 @@ public class Client {
 		super();
 	}
 
-	public static int previous, current, next; //declaratie van de type hashes
+	public static int previousHash, ownHash, nextHash; //declaratie van de type hashes
 	public static NodeToNode ntn; //declaratie van remote object
 
 	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
-		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
-
 		ntn = new NodeToNode();
 		Registry registry = null;
-		Client.previous = 8000;
-		Client.current = 9000;
-		Client.next = 15000;
-		String nameClient = "Client1"; // naam van de client
-		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" }; //lijst van files op de clientpc
+		
+		Client.previousHash = 8000; Client.ownHash = 9000; Client.nextHash = 15000;
+		
+		/* enter client name in console and enter */
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        System.out.print("Please enter client name: ");
+        String nameClient = null;
+        try {
+        	nameClient = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /* end console input */
+        
+		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" };
+		
 		String[] clientStats = new String[2];
-		Client.current = hashString(nameClient);
-		clientStats[0] = Client.current + "";
-		clientStats[1] = Inet4Address.getLocalHost().getHostAddress();
+		Client.ownHash = hashString(nameClient); //set current to hash of own name
+		clientStats[0] = Client.ownHash + ""; //hashed own name
+		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
+		
+		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
 		message.add(clientStats);
 		message.add(filenames);
 
-		Object obj = message;
+		//create message and multicast it
+		Object obj = message; 
 		DatagramSocket socket = new DatagramSocket();
 		ByteArrayOutputStream byteArr = new ByteArrayOutputStream();
 		ObjectOutput objOut = new ObjectOutputStream(byteArr);
@@ -55,17 +67,19 @@ public class Client {
 		} catch (Exception e) {
 		}
 		socket.send(dgram);
-		System.out.println("multicast is send");
-
-		while (ntn.nextHash == -1 || ntn.numberOfNodes == -1) //keep looping as long as nextHash isn't filled in or number of nodes isn't filled in
+		System.out.println("Multicast sent");
+		
+		
+		while (ntn.nextHash == -1 || ntn.numberOfNodes == -1) //keep looping as long as nextHash isn't changed or number of nodes isn't changed
 		{
-			System.out.println(ntn.nextHash);
+			System.out.println("Waiting, next hash: "+ntn.nextHash + " # of nodes: " + ntn.numberOfNodes);
 			
 			if (ntn.numberOfNodes == 0) //if there are no neighbor nodes 
 			{
+				System.out.println("No neighbours! All hashes set to own");
 				//set next and previous hash equal to own hash
-				ntn.nextHash = Client.current;
-				ntn.prevHash = Client.current;
+				ntn.nextHash = Client.ownHash;
+				ntn.prevHash = Client.ownHash;
 			}
 			try {
 				Thread.sleep(100);
@@ -79,14 +93,14 @@ public class Client {
 		} catch (NotBoundException e) {
 			System.err.println("Not bound");
 		}
-		System.out.println("Client number: " + (ntn.numberOfNodes + 1));
-		System.out.println("previoushash: " + ntn.prevHash + "; my hash: " + Client.current + "; nexthash: " + ntn.nextHash);
+		System.out.println("Total connected clients: " + (ntn.numberOfNodes + 1)); //waarom +1?
 		
 		//set client's hash fields
-		Client.next = ntn.nextHash();
-		Client.previous = ntn.prevHash();
-
-		waitforclients();
+		Client.nextHash = ntn.nextHash();
+		Client.previousHash = ntn.prevHash();
+		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
+		
+		waitForClients();
 
 	}
 
@@ -94,15 +108,17 @@ public class Client {
 		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
 	}
 
-	static void waitforclients() throws ClassNotFoundException {
+	static void waitForClients() throws ClassNotFoundException {
 		try {
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
 			MulticastSocket socket = new MulticastSocket(4545);
 			socket.joinGroup(InetAddress.getByName("226.100.100.125"));
+			
+			//do this forever
 			while (true) {
 
-				socket.receive(dgram); // blokkeerd tot hij een package ontvangt
+				socket.receive(dgram); //blocks untill package is received
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
 				try {
@@ -110,21 +126,34 @@ public class Client {
 					Object o = in.readObject();
 					List message = (List) o;
 					String[] clientStats = (String[]) message.get(0);
-					int receivedHash = Integer.parseInt(clientStats[0]); //de hash uit de multicast message halen
+					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
 					
 					try {
-						if (Client.current > Client.next) {
-							if ((receivedHash > Client.current) && (receivedHash < Client.next)) {
-								Client.next = receivedHash;
+						//I am the first node
+						if (Client.previousHash == Client.nextHash) {
+							Client.previousHash = receivedHash;
+							Client.nextHash = receivedHash;
+							String name = "//localhost/ntn";
+							NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+							ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
+						}
+						//I am the previous node
+						if (Client.ownHash > Client.nextHash) {
+							if ((receivedHash > Client.ownHash) || (receivedHash < Client.nextHash)) {
+								Client.nextHash = receivedHash;
 							}
-						} else {
-							if ((receivedHash < Client.current) && (receivedHash > Client.previous)) {
-								Client.previous = receivedHash;
+							String name = "//localhost/ntn";
+							NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+							ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
+						} else { 
+							if((receivedHash > Client.ownHash) && (receivedHash < Client.nextHash)) {
+								Client.nextHash = receivedHash;
+							} else {
+								Client.previousHash = receivedHash;
 							}
 						}
-						String name = "//localhost/ntn";
-						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						ntnI.answerDiscovery(Client.previous, Client.current);
+						
+						System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
 						
 					} catch(Exception e) {
 						System.err.println("Fileserver exception: " + e.getMessage());

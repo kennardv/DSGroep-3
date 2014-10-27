@@ -2,7 +2,7 @@
 <clients>
     <client>
         <id>1</id>
-        <name>25178</name>
+        <name>49</name>
         <ipaddress>192.168.56.1</ipaddress>
         <files>file1.jpg</files>
         <files>file2.txt</files>
@@ -10,7 +10,15 @@
     </client>
     <client>
         <id>1</id>
-        <name>25178</name>
+        <name>50</name>
+        <ipaddress>192.168.56.1</ipaddress>
+        <files>file1.jpg</files>
+        <files>file2.txt</files>
+        <files>file3.gif</files>
+    </client>
+    <client>
+        <id>1</id>
+        <name>51</name>
         <ipaddress>192.168.56.1</ipaddress>
         <files>file1.jpg</files>
         <files>file2.txt</files>
