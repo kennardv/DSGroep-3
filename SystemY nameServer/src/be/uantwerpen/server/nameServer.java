@@ -1,12 +1,10 @@
 package be.uantwerpen.server;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
@@ -119,6 +117,6 @@ public class nameServer {
 		
 		//use nodemap to update XML file
 		XMLParser parser = new XMLParser();
-		parser.jaxbObjectToXML(clients);
+		²;
 	}
 }	
