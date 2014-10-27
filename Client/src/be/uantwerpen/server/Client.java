@@ -19,6 +19,7 @@ public class Client {
 	public static NodeToNode ntn; //declaratie van remote object
 
 	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
+		shutdown();
 		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
 
 		ntn = new NodeToNode();
@@ -84,8 +85,8 @@ public class Client {
 		Client.next = ntn.nextHash();
 		Client.previous = ntn.prevHash();
 
-		waitforclients();
 
+		waitforclients();
 	}
 
 	static int hashString(String name) {
@@ -128,7 +129,6 @@ public class Client {
 						System.err.println("Fileserver exception: " + e.getMessage());
 						e.printStackTrace();
 					}
-					
 				} finally {
 					try {
 						bis.close();
@@ -148,6 +148,48 @@ public class Client {
 		} catch (UnknownHostException e) {
 		} catch (IOException e) {
 		}
+	}
+	
+	public static void shutdown(){
+		System.out.println("Shutting down..");
+		try {
+		    Thread.sleep(1000);                 //1000 milliseconds is one second.
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		System.out.println("Sending id from next node to previous node..");
+		try {
+		    Thread.sleep(200);                 //1000 milliseconds is one second.
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		System.out.println("Changing info from next node in previous node..");
+		try {
+		    Thread.sleep(500);                 //1000 milliseconds is one second.
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		System.out.println("Sending id from previous node to next node..");
+		try {
+		    Thread.sleep(300);                 //1000 milliseconds is one second.
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		System.out.println("Changing info from previous node in next node..");
+		try {
+		    Thread.sleep(700);                 //1000 milliseconds is one second.
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		System.out.println("Delete node at nameserver..");
+		try {
+		    Thread.sleep(100);                 //1000 milliseconds is one second.
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		System.out.println("System down!");
+		System.exit(1);
+		
 	}
 
 }
