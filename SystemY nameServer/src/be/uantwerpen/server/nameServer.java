@@ -117,6 +117,5 @@ public class nameServer {
 		
 		//use nodemap to update XML file
 		XMLParser parser = new XMLParser();
-		²;
 	}
 }	
