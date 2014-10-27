@@ -98,6 +98,7 @@ public class nameServer {
 		
 		//update xml
 	}
+
     
     public static void addToHashMap(int hashedName, String ip, String[] filenames) {
 		Client node = new Client();

@@ -19,11 +19,16 @@ public class Client {
 	public static NodeToNode ntn; //declaratie van remote object
 
 	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
+<<<<<<< .merge_file_a08068
+		shutdown();
+		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
 
+=======
+>>>>>>> .merge_file_a07788
 		ntn = new NodeToNode();
 		Registry registry = null;
 		
-		//Client.previousHash = 8000; Client.ownHash = 9000; Client.nextHash = 15000;
+		Client.previousHash = 8000; Client.ownHash = 9000; Client.nextHash = 15000;
 		
 		/* enter client name in console and enter */
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -95,12 +100,19 @@ public class Client {
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes + 1)); //waarom +1?
 		
 		//set client's hash fields
+<<<<<<< .merge_file_a08068
+		Client.next = ntn.nextHash();
+		Client.previous = ntn.prevHash();
+
+=======
 		Client.nextHash = ntn.nextHash();
 		Client.previousHash = ntn.prevHash();
 		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
 		
 		waitForClients();
+>>>>>>> .merge_file_a07788
 
+		waitforclients();
 	}
 
 	static int hashString(String name) {
