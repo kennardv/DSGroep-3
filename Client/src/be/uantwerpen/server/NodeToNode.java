@@ -17,7 +17,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	{
 		nextHash = next;
 		prevHash = prev;
-		System.out.println("Setting neighbour hashes in NodeToNode. nextHash: " + nextHash + " prevHash: " + prevHash);
+		//System.out.println("Setting neighbour hashes in NodeToNode. nextHash: " + nextHash + " prevHash: " + prevHash);
 	}
 	
 	public void serverAnswer(int nodes)

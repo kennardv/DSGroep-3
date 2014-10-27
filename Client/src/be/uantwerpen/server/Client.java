@@ -127,31 +127,48 @@ public class Client {
 					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
 					
 					try {
-						//I am the first node
-						if (Client.previousHash == Client.nextHash) {
-							Client.previousHash = receivedHash;
-							Client.nextHash = receivedHash;
-							String name = "//localhost/ntn";
-							NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-							ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
-						}
+						String name = "//localhost/ntn";
+						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
 						//I am the previous node
 						if (Client.ownHash > Client.nextHash) {
-							if ((receivedHash > Client.ownHash) || (receivedHash < Client.nextHash)) {
-								Client.nextHash = receivedHash;
-							}
-							String name = "//localhost/ntn";
-							NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-							ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
-						} else { 
-							if((receivedHash > Client.ownHash) && (receivedHash < Client.nextHash)) {
-								Client.nextHash = receivedHash;
-							} else {
+							if ((Client.previousHash < receivedHash) && (Client.ownHash > receivedHash)) {
+								ntnI.answerDiscovery(Client.previousHash, Client.ownHash); //send my hashes to neighbours via RMI
 								Client.previousHash = receivedHash;
+								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+							} 
+							else {
+								ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
+								Client.nextHash = receivedHash;
+								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+							}
+						} 
+						else if(Client.ownHash == Client.nextHash) {
+							ntnI.answerDiscovery(Client.ownHash, Client.ownHash); //send my hashes to neighbours via RMI
+							Client.previousHash = receivedHash;
+							Client.nextHash = receivedHash;
+							System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+							//doorsturen via RMI
+							
+						}
+						else { 
+							if ((Client.previousHash < receivedHash) && (Client.ownHash > receivedHash)) {
+								ntnI.answerDiscovery(Client.previousHash, Client.ownHash); //send my hashes to neighbours via RMI
+								Client.previousHash = receivedHash;
+								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+								//RMI
+							} else if ((Client.ownHash < receivedHash) && (Client.nextHash > receivedHash)) {
+								ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
+								Client.nextHash = receivedHash;
+								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+							}
+							else if((Client.previousHash == Client.nextHash) || (Client.previousHash > Client.ownHash)) {
+								ntnI.answerDiscovery(Client.previousHash, Client.ownHash); //send my hashes to neighbours via RMI
+								Client.previousHash = receivedHash;
+								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
 							}
 						}
 						
-						System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
+						//System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
 						
 					} catch(Exception e) {
 						System.err.println("Fileserver exception: " + e.getMessage());

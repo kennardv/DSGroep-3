@@ -24,4 +24,12 @@
         <files>file2.txt</files>
         <files>file3.gif</files>
     </client>
+    <client>
+        <id>1</id>
+        <name>52</name>
+        <ipaddress>192.168.56.1</ipaddress>
+        <files>file1.jpg</files>
+        <files>file2.txt</files>
+        <files>file3.gif</files>
+    </client>
 </clients>
