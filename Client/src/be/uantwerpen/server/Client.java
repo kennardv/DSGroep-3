@@ -22,7 +22,7 @@ public class Client {
 		ntn = new NodeToNode();
 		Registry registry = null;
 		
-		Client.previousHash = 8000; Client.ownHash = 9000; Client.nextHash = 15000;
+		//Client.previousHash = 8000; Client.ownHash = 9000; Client.nextHash = 15000;
 		
 		/* enter client name in console and enter */
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
