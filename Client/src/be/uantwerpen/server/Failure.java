@@ -1,5 +1,14 @@
 package be.uantwerpen.server;
 
-public class Failure {
+import com.sun.corba.se.impl.naming.pcosnaming.NameServer;
 
+public class Failure {
+	
+	public Failure() {
+	
+	}
+	public static void checkFailedNode(){
+		
+
+	}
 }
