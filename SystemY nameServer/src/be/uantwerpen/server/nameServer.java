@@ -10,15 +10,23 @@ import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 
 public class nameServer {
+	static ClientMap clientMap = new ClientMap();
 	static HashMap<Integer, Client> nodeMap = new HashMap<Integer, Client>();
+	
+	static XMLMarshaller marshaller = new XMLMarshaller();
+	
 	static int id = 0;
 	public static int k = 0;
 	
+	public nameServer() {
+		
+	}
 	
 	// main functie: aanroepen bij opstart van de server
     public static void main(String[] argv) throws RemoteException, ClassNotFoundException {
@@ -43,10 +51,15 @@ public class nameServer {
 		        //String[] stringValues = (String[])o;
 		        List message = (List)o;
 		        String[] clientStats = (String[]) message.get(0);
-		        String[] filenames = (String[]) message.get(1);
-				addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+		        String[] filenamesArr = (String[])message.get(1);
+		        List<String> filenames = new ArrayList<String>();
+		        for (int i = 0; i < filenamesArr.length; i++) {
+					filenames.add(filenamesArr[i]);
+				}
+				//addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+		        //removeFromHashMap(Integer.parseInt(clientStats[0]));
 
-			      System.err.println("hash: " + clientStats[0]);
+			    System.err.println("hash: " + clientStats[0]);
 			     
 		      } finally {
 		        try {
@@ -85,38 +98,36 @@ public class nameServer {
     
 	/**
 	 * not working
-	 * @param hashedName
-	 * @param ip
-	 * @param filenames
+	 * @param key
+	 * This is the hashed name for this particular map.
 	 */
-	public void removeFromHashMap(int hashedName, String ip, String[] filenames) {
-		Client node = new Client();
-		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); //node.setFiles(filenames);
-		while( nodeMap.values().remove(node) ) {
-			System.out.println("nodeMap size: " + nodeMap.size());
+	public static void removeFromHashMap(int key) {
+		try {
+			clientMap.removeKeyValuePair(key);
+		} catch (Exception e) {
+			System.out.println(e);
 		}
 		
 		//update xml
+		marshaller.jaxbObjectToXML(clientMap);
 	}
 
-    
-    public static void addToHashMap(int hashedName, String ip, String[] filenames) {
-		Client node = new Client();
+    public static void addToHashMap(int hashedName, String ip, List<String> filenames) {
+    	try {
+    	Client node = new Client();
 		node.setId(1); node.setName(hashedName); node.setIpaddress(ip); node.setFiles(filenames);
-		if (!nodeMap.containsValue(node)) {
-			nodeMap.put(id, node);
-			id++;
-		}
-		System.out.println("nodeMap size: " + nodeMap.size());
+    	nodeMap.put(hashedName, node);
 		
-		Clients clients = new Clients();
-		List<Client> clientList = new ArrayList<Client>();
-		for (Client client : nodeMap.values()) {
-			clientList.add(client);
-		}
-		clients.setClients(clientList);
+    	clientMap.setClientMap(nodeMap);
 		
 		//use nodemap to update XML file
-		XMLParser parser = new XMLParser();
+		marshaller.jaxbObjectToXML(clientMap);
+    	} catch(Exception e) {
+    		
+    	}
 	}
+    
+    public void initHashMapFromXML() {
+    	clientMap = marshaller.jaxbXMLToObject();
+    }
 }	
