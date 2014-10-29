@@ -1,9 +1,23 @@
 package be.uantwerpen.server;
 
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.net.UnknownHostException;
-import java.io.*;
-import java.rmi.*;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -116,17 +130,18 @@ public class Client {
 			
 			//do this forever
 			while (true) {
-
+							
 				socket.receive(dgram); //blocks untill package is received
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
+				
 				try {
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
 					List message = (List) o;
 					String[] clientStats = (String[]) message.get(0);
 					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
-					
+				
 					try {
 						String name = "//localhost/ntn";
 						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
