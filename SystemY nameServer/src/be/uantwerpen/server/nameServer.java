@@ -13,27 +13,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 public class nameServer {
 	static HashMap<Integer, Client> nodeMap = new HashMap<Integer, Client>();
 	static int id = 0;
 	public static int k = 0;
-	
+	 
 	
 	// main functie: aanroepen bij opstart van de server
     public static void main(String[] argv) throws RemoteException, ClassNotFoundException {
     	NodeToNodeInterface ntnI = null;
     	String name = null;
-    	
+
     	// locatie van nameserver
        String bindLocation = "//localhost/nameServer";
        
-       try { 
+       try {            
     	   byte[] inBuf = new byte[256];
     	   DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
     	   MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
     	   socket.joinGroup(InetAddress.getByName("226.100.100.125"));
-		    while(true) {
+		    while(true) {                
 		      socket.receive(dgram); // blocks until a datagram is received
 		      ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 		      ObjectInput in = null;
@@ -44,8 +43,14 @@ public class nameServer {
 		        List message = (List)o;
 		        String[] clientStats = (String[]) message.get(0);
 		        String[] filenames = (String[]) message.get(1);
-				addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+		        //Boolean shutdown = (Boolean) message.get(2);
+		        //if(shutdown == true){
+				  //    System.err.println("shutdown");
+		       // }else{
+					addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+				//}
 
+                
 			      System.err.println("hash: " + clientStats[0]);
 			     
 		      } finally {

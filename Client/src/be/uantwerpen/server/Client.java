@@ -19,7 +19,8 @@ public class Client {
 	public static NodeToNode ntn; //declaratie van remote object
 
 	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
-
+		//consolereader cr = new consolereader();
+		//cr.start();
 		ntn = new NodeToNode();
 		Registry registry = null;
 		
@@ -37,7 +38,7 @@ public class Client {
         /* end console input */
         
 		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" };
-		
+		//Boolean shutdown = false;
 		String[] clientStats = new String[2];
 		Client.ownHash = hashString(nameClient); //set current to hash of own name
 		clientStats[0] = Client.ownHash + ""; //hashed own name
@@ -46,6 +47,7 @@ public class Client {
 		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
 		message.add(clientStats);
 		message.add(filenames);
+		//message.add(shutdown);
 
 		//create message and multicast it
 		Object obj = message; 
@@ -99,8 +101,22 @@ public class Client {
 		Client.previousHash = ntn.prevHash();
 		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
 		
+		if(ntn.numberOfNodes == 2){
+			//shutdown(ntn.prevHash, ntn.nextHash, clientStats, filenames, message);
+		}
+		
+		
 		waitForClients();
 
+	}
+	
+	public void run() {
+		try {
+			main(null);
+		} catch (ClassNotFoundException | InterruptedException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	static int hashString(String name) {
@@ -196,50 +212,71 @@ public class Client {
 		}
 	}
 	
-	public static void shutdown(){
+	public static void shutdown(int previoushashnode, int nexthashnode, String[] cs, String[] fn, List<Object> message) throws IOException {
 		System.out.println("Shutting down..");
-		try {
-		    Thread.sleep(1000);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Sending id from next node to previous node..");
-		try {
-		    Thread.sleep(200);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Changing info from next node in previous node..");
-		try {
-		    Thread.sleep(500);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Sending id from previous node to next node..");
-		try {
-		    Thread.sleep(300);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Changing info from previous node in next node..");
-		try {
-		    Thread.sleep(700);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Delete node at nameserver..");
-		try {
-		    Thread.sleep(100);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("System down!");
-		System.exit(1);
 		
+		System.out.println("Sending id from next node to previous node..");
+			Client.previousHash = nexthashnode;
+		System.out.println("Changing info from next node in previous node..");
+			System.out.printf("the next client's previous hash is changed to %d \n", Client.previousHash);
+		
+		System.out.println("Sending id from previous node to next node..");
+			Client.nextHash = previoushashnode;
+		
+		System.out.println("Changing info from previous node in next node..");
+			System.out.printf("the previous client's next hash is changed to %d \n", Client.nextHash);
+		
+		System.out.println("Delete node at nameserver..");
+			System.out.printf("Client %d down!", Client.ownHash);
+			ntn.numberOfNodes--;
+			Boolean shutdown;
+			//create message and multicast it
+			Object obj = message; 
+			//message.set(shutdown, true);
+			DatagramSocket socket = new DatagramSocket();
+			ByteArrayOutputStream byteArr = new ByteArrayOutputStream();
+			ObjectOutput objOut = new ObjectOutputStream(byteArr);
+			objOut.writeObject(obj);
+			byte[] b = byteArr.toByteArray();
+			DatagramPacket dgram;
+			dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
+			String bindLocation = "//localhost/ntn";
+			try {
+				Registry registry = LocateRegistry.createRegistry(1099);
+			} catch (Exception e) {
+			}
+			try {
+				Naming.bind(bindLocation, ntn);
+			} catch (Exception e) {
+			}
+			socket.send(dgram);
+			System.out.println("Multicast sent");
+			
+		System.exit(1);
 	}
 
 }
 
 class IntObj {
 	public int value;
+}
+
+
+// Onderstaande class wordt gebruikt om een thread aan te maken waarbij deze constant zal wachten op commando om shutdown te activeren.
+class consolereader extends Thread{
+	public void run(){
+		readconsole();
+	}
+	public void readconsole(){
+		try{
+		    BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+		    String s = bufferRead.readLine();
+	 
+		    System.out.println(s);
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		} 
+	}
 }
