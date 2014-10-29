@@ -7,8 +7,8 @@ public class Failure {
 	public Failure() {
 	
 	}
-	public static void SchrijfIets(){
-		System.out.println("test schrijven");
+	public static void checkFailedNode(){
+		
 
 	}
 }

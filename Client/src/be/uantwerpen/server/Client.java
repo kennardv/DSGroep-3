@@ -16,8 +16,7 @@ public class Client {
 	public NodeToNode ntn; //declaratie van remote object
 
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
-		//super();
-		
+
 		ntn = new NodeToNode();
 		Registry registry = null;
 		
@@ -33,7 +32,7 @@ public class Client {
         /* end console input */
         
 		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" };
-		
+		//Boolean shutdown = false;
 		String[] clientStats = new String[2];
 		ownHash = hashString(nameClient); //set current to hash of own name
 		clientStats[0] = ownHash + ""; //hashed own name
@@ -42,6 +41,7 @@ public class Client {
 		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
 		message.add(clientStats);
 		message.add(filenames);
+		//message.add(shutdown);
 
 		//create message and multicast it
 		Object obj = message; 
@@ -91,12 +91,26 @@ public class Client {
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes + 1)); //waarom +1?
 		
 		//set client's hash fields
-		nextHash = ntn.nextHash();
-		previousHash = ntn.prevHash();
-		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
+		Client.nextHash = ntn.nextHash();
+		Client.previousHash = ntn.prevHash();
+		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
+		
+		if(ntn.numberOfNodes == 2){
+			//shutdown(ntn.prevHash, ntn.nextHash, clientStats, filenames, message);
+		}
+		
 		
 		waitForClients();
 
+	}
+	
+	public void run() {
+		try {
+			main(null);
+		} catch (ClassNotFoundException | InterruptedException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 
@@ -115,17 +129,18 @@ public class Client {
 			
 			//do this forever
 			while (true) {
-
+							
 				socket.receive(dgram); //blocks untill package is received
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
+				
 				try {
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
 					List message = (List) o;
 					String[] clientStats = (String[]) message.get(0);
 					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
-					
+				
 					try {
 						String name = "//localhost/ntn";
 						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);

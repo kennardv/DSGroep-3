@@ -26,13 +26,14 @@ public class NameServer {
 	}
 
 	public void ListenForPacket() {
-		try {
+    	
+       try { 
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
 			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
 			socket.joinGroup(InetAddress.getByName("226.100.100.125"));
 			// loop receive
-			while (true) {
+		    while(true) {
 				socket.receive(dgram); // blocks until a datagram is received
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
@@ -42,14 +43,21 @@ public class NameServer {
 					// String[] stringValues = (String[])o;
 					List message = (List) o;
 					String[] clientStats = (String[]) message.get(0);
-					String[] filenamesArr = (String[]) message.get(1);
-					List<String> filenames = new ArrayList<String>();
-					for (int i = 0; i < filenamesArr.length; i++) {
+		        String[] filenamesArr = (String[])message.get(1);
+		        List<String> filenames = new ArrayList<String>();
+		        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
+		        //Boolean shutdown = (Boolean) message.get(2);
+		        //if(shutdown == true){
+				  //    System.err.println("shutdown");
+		       // }else{
 					 addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+				//}
+		        //removeFromHashMap(Integer.parseInt(clientStats[0]));
+                
+			    System.err.println("hash: " + clientStats[0]);
 
-					System.err.println("hash: " + clientStats[0]);
 
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
