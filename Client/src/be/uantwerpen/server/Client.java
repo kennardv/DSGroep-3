@@ -143,11 +143,17 @@ public class Client {
 				
 					try {
 						String name = "//localhost/ntn";
-						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						//I am the previous node
-						if (ownHash > nextHash) {
+					
+							NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+
+						if (ownHash > nextHash) { //laatste hash 
 							if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
-								ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+								try{
+									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+								}catch(RemoteException e){
+									System.out.println("geen antwoord van vorige hash");
+								}
+								
 								previousHash = receivedHash;
 								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							} 

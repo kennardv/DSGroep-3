@@ -139,5 +139,6 @@ public class NameServer {
 	public static void main(String[] argv) throws RemoteException,
 			ClassNotFoundException {
 		NameServer nameServer = new NameServer();
+		
 	}
 }
