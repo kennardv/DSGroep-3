@@ -48,12 +48,13 @@ public class NameServer {
 		        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
-		        //Boolean shutdown = (Boolean) message.get(2);
-		        //if(shutdown == true){
-				  //    System.err.println("shutdown");
-		       // }else{
+		        
+		        // Boolean shutdown = (Boolean) message.get(2);
+		        // if(shutdown == true){
+		        //System.err.println("shutdown");
+				   //}else{
 					 addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
-				//}
+					 //}
 		        //removeFromHashMap(Integer.parseInt(clientStats[0]));
                 
 			    System.err.println("hash: " + clientStats[0]);
