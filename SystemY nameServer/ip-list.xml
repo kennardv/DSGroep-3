@@ -2,11 +2,37 @@
 <clients>
     <clientMap>
         <entry>
-            <key>49</key>
+            <key>97</key>
             <value>
                 <id>1</id>
-                <name>49</name>
-                <ipaddress>192.168.56.1</ipaddress>
+                <name>97</name>
+                <ipaddress>25.55.252.245</ipaddress>
+                <filenames>
+                    <filename>file1.jpg</filename>
+                    <filename>file2.txt</filename>
+                    <filename>file3.gif</filename>
+                </filenames>
+            </value>
+        </entry>
+        <entry>
+            <key>99</key>
+            <value>
+                <id>1</id>
+                <name>99</name>
+                <ipaddress>25.55.252.245</ipaddress>
+                <filenames>
+                    <filename>file1.jpg</filename>
+                    <filename>file2.txt</filename>
+                    <filename>file3.gif</filename>
+                </filenames>
+            </value>
+        </entry>
+        <entry>
+            <key>122</key>
+            <value>
+                <id>1</id>
+                <name>122</name>
+                <ipaddress>25.55.252.245</ipaddress>
                 <filenames>
                     <filename>file1.jpg</filename>
                     <filename>file2.txt</filename>

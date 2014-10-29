@@ -32,7 +32,7 @@ public class Client {
         /* end console input */
         
 		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" };
-		//Boolean shutdown = false;
+		Boolean shutdown = false;
 		String[] clientStats = new String[2];
 		ownHash = hashString(nameClient); //set current to hash of own name
 		clientStats[0] = ownHash + ""; //hashed own name
@@ -41,7 +41,7 @@ public class Client {
 		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
 		message.add(clientStats);
 		message.add(filenames);
-		//message.add(shutdown);
+		message.add(shutdown);
 
 		//create message and multicast it
 		Object obj = message; 
@@ -91,12 +91,12 @@ public class Client {
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes + 1)); //waarom +1?
 		
 		//set client's hash fields
-		Client.nextHash = ntn.nextHash();
-		Client.previousHash = ntn.prevHash();
-		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
+		nextHash = ntn.nextHash();
+		previousHash = ntn.prevHash();
+		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 		
 		if(ntn.numberOfNodes == 2){
-			//shutdown(ntn.prevHash, ntn.nextHash, clientStats, filenames, message);
+			//shutdown(previousHash, nextHash, clientStats, filenames, message);
 		}
 		
 		
@@ -143,11 +143,17 @@ public class Client {
 				
 					try {
 						String name = "//localhost/ntn";
-						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						//I am the previous node
-						if (ownHash > nextHash) {
+					
+							NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+
+						if (ownHash > nextHash) { //laatste hash 
 							if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
-								ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+								try{
+									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+								}catch(RemoteException e){
+									System.out.println("geen antwoord van vorige hash");
+								}
+								
 								previousHash = receivedHash;
 								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							} 
@@ -210,46 +216,51 @@ public class Client {
 		}
 	}
 	
-	public void shutdown(){
-		System.out.println("Shutting down..");
-		try {
-		    Thread.sleep(1000);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Sending id from next node to previous node..");
-		try {
-		    Thread.sleep(200);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Changing info from next node in previous node..");
-		try {
-		    Thread.sleep(500);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Sending id from previous node to next node..");
-		try {
-		    Thread.sleep(300);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Changing info from previous node in next node..");
-		try {
-		    Thread.sleep(700);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("Delete node at nameserver..");
-		try {
-		    Thread.sleep(100);                 //1000 milliseconds is one second.
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		System.out.println("System down!");
-		System.exit(1);
-		
+    public void shutdown(int previoushashnode, int nexthashnode, String[] cs, String[] fn, List<Object> message) throws IOException {
+        System.out.println("Shutting down..");
+
+    	previousHash = nexthashnode;
+
+        System.out.println("Sending id from next node to previous node..");
+
+    	System.out.printf("Client %d down!", ownHash);
+    	
+        previousHash = nexthashnode;
+        System.out.println("Changing info from next node in previous node..");
+
+        System.out.printf("the next client's previous hash is changed to %d \n", previousHash);
+        System.out.println("Sending id from previous node to next node..");
+        System.out.printf("the previous client's next hash is changed to %d \n", nextHash);
+        System.out.println("Delete node at nameserver..");
+
+        nextHash = previoushashnode;
+
+        ntn.numberOfNodes--;
+        Boolean shutdown = true;
+        //create message and multicast it
+        Object obj = message; 
+        message.remove(shutdown);
+        message.add(shutdown);
+        DatagramSocket socket = new DatagramSocket();
+        ByteArrayOutputStream byteArr = new ByteArrayOutputStream();
+        ObjectOutput objOut = new ObjectOutputStream(byteArr);
+        objOut.writeObject(obj);
+        byte[] b = byteArr.toByteArray();
+        DatagramPacket dgram;
+        dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
+        String bindLocation = "//localhost/ntn";
+        try {
+            Registry registry = LocateRegistry.createRegistry(1099);
+        } catch (Exception e) {
+        }
+        try {
+            Naming.bind(bindLocation, ntn);
+        } catch (Exception e) {
+        }
+        socket.send(dgram);
+        System.out.println("Multicast sent");
+        System.exit(1);
+
 	}
 	
 	

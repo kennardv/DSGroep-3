@@ -54,16 +54,17 @@ public class NameServer {
 			        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
-		        //Boolean shutdown = (Boolean) message.get(2);
-		        //if(shutdown == true){
-				  //    System.err.println("shutdown");
-		       // }else{
+		        
+		        // Boolean shutdown = (Boolean) message.get(2);
+		        // if(shutdown == true){
+		        //System.err.println("shutdown");
+				   //}else{
 			        //add new values to map
 					addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
-				//}
+					 //}
 		        //removeFromHashMap(Integer.parseInt(clientStats[0]));
                 
-					System.err.println("hash: " + clientStats[0]);
+					System.out.println("hash: " + clientStats[0]);
 
 
 				} catch (ClassNotFoundException e) {
@@ -157,5 +158,6 @@ public class NameServer {
 
 	public static void main(String[] argv) throws RemoteException, ClassNotFoundException {
 		NameServer nameServer = new NameServer();
+		
 	}
 }
