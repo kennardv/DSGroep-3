@@ -8,13 +8,13 @@ import javax.xml.bind.Unmarshaller;
 
 public class XMLMarshaller {
 
-	private static String PATH = "ip-list.xml";
+	private String PATH = "ip-list.xml";
 
 
 	public XMLMarshaller() {
 	}
 
-	public static ClientMap jaxbXMLToObject() {
+	public ClientMap jaxbXMLToObject() {
 		try {
 			JAXBContext context = JAXBContext.newInstance(ClientMap.class);
 			Unmarshaller un = context.createUnmarshaller();
@@ -30,7 +30,7 @@ public class XMLMarshaller {
 		return null;
 	}
 
-	public static void jaxbObjectToXML(ClientMap clientMap) {
+	public void jaxbObjectToXML(ClientMap clientMap) {
 
 		try {
 			JAXBContext context = JAXBContext.newInstance(ClientMap.class);

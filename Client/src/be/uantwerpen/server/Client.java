@@ -10,20 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Client {
+	
+	//Client client;
+	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
+	public NodeToNode ntn; //declaratie van remote object
 
-	public Client() throws RemoteException {
-		super();
-	}
-
-	public static int previousHash, ownHash, nextHash; //declaratie van de type hashes
-	public static NodeToNode ntn; //declaratie van remote object
-
-	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
-
+	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
+		//super();
+		
 		ntn = new NodeToNode();
 		Registry registry = null;
-		
-		//Client.previousHash = 8000; Client.ownHash = 9000; Client.nextHash = 15000;
 		
 		/* enter client name in console and enter */
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -39,8 +35,8 @@ public class Client {
 		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" };
 		
 		String[] clientStats = new String[2];
-		Client.ownHash = hashString(nameClient); //set current to hash of own name
-		clientStats[0] = Client.ownHash + ""; //hashed own name
+		ownHash = hashString(nameClient); //set current to hash of own name
+		clientStats[0] = ownHash + ""; //hashed own name
 		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
 		
 		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
@@ -77,8 +73,8 @@ public class Client {
 			{
 				System.out.println("No neighbours! All hashes set to own");
 				//set next and previous hash equal to own hash
-				ntn.nextHash = Client.ownHash;
-				ntn.prevHash = Client.ownHash;
+				ntn.nextHash = ownHash;
+				ntn.prevHash = ownHash;
 			}
 			try {
 				Thread.sleep(100);
@@ -95,19 +91,22 @@ public class Client {
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes + 1)); //waarom +1?
 		
 		//set client's hash fields
-		Client.nextHash = ntn.nextHash();
-		Client.previousHash = ntn.prevHash();
-		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
+		nextHash = ntn.nextHash();
+		previousHash = ntn.prevHash();
+		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 		
 		waitForClients();
 
 	}
 
-	static int hashString(String name) {
+
+	
+
+	int hashString(String name) {
 		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
 	}
 
-	static void waitForClients() throws ClassNotFoundException {
+	void waitForClients() throws ClassNotFoundException {
 		try {
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
@@ -131,45 +130,45 @@ public class Client {
 						String name = "//localhost/ntn";
 						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
 						//I am the previous node
-						if (Client.ownHash > Client.nextHash) {
-							if ((Client.previousHash < receivedHash) && (Client.ownHash > receivedHash)) {
-								ntnI.answerDiscovery(Client.previousHash, Client.ownHash); //send my hashes to neighbours via RMI
-								Client.previousHash = receivedHash;
-								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+						if (ownHash > nextHash) {
+							if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
+								ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+								previousHash = receivedHash;
+								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							} 
 							else {
-								ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
-								Client.nextHash = receivedHash;
-								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+								ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+								nextHash = receivedHash;
+								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							}
 						} 
-						else if(Client.ownHash == Client.nextHash) {
-							ntnI.answerDiscovery(Client.ownHash, Client.ownHash); //send my hashes to neighbours via RMI
-							Client.previousHash = receivedHash;
-							Client.nextHash = receivedHash;
-							System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+						else if(ownHash == nextHash) {
+							ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
+							previousHash = receivedHash;
+							nextHash = receivedHash;
+							System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							//doorsturen via RMI
 							
 						}
 						else { 
-							if ((Client.previousHash < receivedHash) && (Client.ownHash > receivedHash)) {
-								ntnI.answerDiscovery(Client.previousHash, Client.ownHash); //send my hashes to neighbours via RMI
-								Client.previousHash = receivedHash;
-								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+							if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
+								ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+								previousHash = receivedHash;
+								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								//RMI
-							} else if ((Client.ownHash < receivedHash) && (Client.nextHash > receivedHash)) {
-								ntnI.answerDiscovery(Client.ownHash, Client.nextHash); //send my hashes to neighbours via RMI
-								Client.nextHash = receivedHash;
-								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+							} else if ((ownHash < receivedHash) && (nextHash > receivedHash)) {
+								ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+								nextHash = receivedHash;
+								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							}
-							else if((Client.previousHash == Client.nextHash) || (Client.previousHash > Client.ownHash)) {
-								ntnI.answerDiscovery(Client.previousHash, Client.ownHash); //send my hashes to neighbours via RMI
-								Client.previousHash = receivedHash;
-								System.out.println(Client.previousHash + " "  + Client.ownHash + " " + Client.nextHash);
+							else if((previousHash == nextHash) || (previousHash > ownHash)) {
+								ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+								previousHash = receivedHash;
+								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							}
 						}
 						
-						//System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
+						//System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 						
 					} catch(Exception e) {
 						System.err.println("Fileserver exception: " + e.getMessage());
@@ -196,7 +195,7 @@ public class Client {
 		}
 	}
 	
-	public static void shutdown(){
+	public void shutdown(){
 		System.out.println("Shutting down..");
 		try {
 		    Thread.sleep(1000);                 //1000 milliseconds is one second.
@@ -237,9 +236,10 @@ public class Client {
 		System.exit(1);
 		
 	}
-
-}
-
-class IntObj {
-	public int value;
+	
+	
+	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
+		Client client = new Client();
+		
+	}
 }

@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <clients>
-    <clientMap/>
+    <clientMap>
+        <entry>
+            <key>49</key>
+            <value>
+                <id>1</id>
+                <name>49</name>
+                <ipaddress>192.168.56.1</ipaddress>
+                <filenames>
+                    <filename>file1.jpg</filename>
+                    <filename>file2.txt</filename>
+                    <filename>file3.gif</filename>
+                </filenames>
+            </value>
+        </entry>
+    </clientMap>
 </clients>
