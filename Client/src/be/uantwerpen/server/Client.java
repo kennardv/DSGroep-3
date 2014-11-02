@@ -37,6 +37,7 @@ public class Client {
 		ownHash = hashString(nameClient); //set current to hash of own name
 		clientStats[0] = ownHash + ""; //hashed own name
 		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
+		clientStats[2] = "online"; //status van client 
 		
 		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
 		message.add(clientStats);
@@ -119,7 +120,14 @@ public class Client {
 	int hashString(String name) {
 		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
 	}
-
+	
+	void failure(){
+		NodeToNode ntn = new NodeToNode();
+		int next = ntn.nextHash;
+		int prev = ntn.prevHash;
+		if ()
+	}
+	
 	void waitForClients() throws ClassNotFoundException {
 		try {
 			byte[] inBuf = new byte[256];

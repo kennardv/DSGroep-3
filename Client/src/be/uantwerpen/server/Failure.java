@@ -7,8 +7,8 @@ public class Failure {
 	public Failure() {
 	
 	}
-	public static void checkFailedNode(){
-		
+	public void updatePrevNext(int failedHash){
+		//if (failedHash )
 
 	}
 }
