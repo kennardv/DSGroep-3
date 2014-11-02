@@ -122,10 +122,10 @@ public class Client {
 	}
 	
 	void failure(){
-		NodeToNode ntn = new NodeToNode();
+		//NodeToNode ntn = new NodeToNode();
 		int next = ntn.nextHash;
 		int prev = ntn.prevHash;
-		if ()
+		//if ()
 	}
 	
 	void waitForClients() throws ClassNotFoundException {
