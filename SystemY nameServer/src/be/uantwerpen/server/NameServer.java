@@ -24,39 +24,47 @@ public class NameServer {
 
 		ListenForPacket();
 	}
-
+	
 	public void ListenForPacket() {
-    	
-       try { 
+		try {
+			//create socket, buffer and join socket group
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
 			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
 			socket.joinGroup(InetAddress.getByName("226.100.100.125"));
-			// loop receive
+			
+			//loop forever
+			//check if a packet was received
 		    while(true) {
-				socket.receive(dgram); // blocks until a datagram is received
+		    	// blocks until a datagram is received
+				socket.receive(dgram); 
+				
+				//process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
 				try {
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
-					// String[] stringValues = (String[])o;
+					
+					//pull values from message and store
 					List message = (List) o;
 					String[] clientStats = (String[]) message.get(0);
-		        String[] filenamesArr = (String[])message.get(1);
-		        List<String> filenames = new ArrayList<String>();
-		        for (int i = 0; i < filenamesArr.length; i++) {
+					String[] filenamesArr = (String[])message.get(1);
+					List<String> filenames = new ArrayList<String>();
+			        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
-		        //Boolean shutdown = (Boolean) message.get(2);
-		        //if(shutdown == true){
-				  //    System.err.println("shutdown");
-		       // }else{
-					 addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
-				//}
+		        
+		        // Boolean shutdown = (Boolean) message.get(2);
+		        // if(shutdown == true){
+		        //System.err.println("shutdown");
+				   //}else{
+			        //add new values to map
+					addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+					 //}
 		        //removeFromHashMap(Integer.parseInt(clientStats[0]));
                 
-			    System.err.println("hash: " + clientStats[0]);
+					System.out.println("hash: " + clientStats[0]);
 
 
 				} catch (ClassNotFoundException e) {
@@ -76,21 +84,21 @@ public class NameServer {
 						// ignore close exception
 					}
 				}
-				dgram.setLength(inBuf.length); // must reset length field!
-				System.err.println("nummer van clients: " + k);
+				//reset length field
+				dgram.setLength(inBuf.length);
 				try {
+					//notify client about amount of nodes
 					name = "//localhost/ntn";
 					ntnI = null;
 					ntnI = (NodeToNodeInterface) Naming.lookup(name);
 					ntnI.serverAnswer(k);
 					k++;
-					System.err.println("nummer van clients: " + k);
+					System.err.println("Amount of clients: " + k);
 				} catch (Exception e) {
 					System.err.println("FileServer exception: "
 							+ e.getMessage());
 					e.printStackTrace();
 				}
-				System.err.println("nummer van clients: " + k);
 			}
 		} catch (UnknownHostException e) {
 		} catch (IOException e) {
@@ -98,6 +106,7 @@ public class NameServer {
 	}
 
 	/**
+	 * Remove a key/value pair with specified key
 	 * @param key
 	 * This is the hashed name for this particular map.
 	 */
@@ -111,32 +120,44 @@ public class NameServer {
 		// update xml
 		marshaller.jaxbObjectToXML(clientMap);
 	}
-
+	
+	/**
+	 * Add a key/value pair with passed data. Value is of type Client
+	 * @param hashedName
+	 * @param ip
+	 * @param filenames
+	 */
 	public void addToHashMap(int hashedName, String ip, List<String> filenames) {
 		try {
+			//Instantiate new Client object
 			Client node = new Client();
 			node.setId(1);
 			node.setName(hashedName);
 			node.setIpaddress(ip);
 			node.setFiles(filenames);
+			
+			//add to map
 			nodeMap.put(hashedName, node);
-
+			
+			//Save nodeMap to parent map
 			clientMap.setClientMap(nodeMap);
 
-			// use nodemap to update XML file
+			// use parent clientMap to update XML file
 			marshaller.jaxbObjectToXML(clientMap);
 		} catch (Exception e) {
 
 		}
 	}
-
+	
+	/**
+	 * Fill the hashmap with data from the XML file
+	 */
 	public void initHashMapFromXML() {
 		clientMap = marshaller.jaxbXMLToObject();
 	}
 
-	// main functie: aanroepen bij opstart van de server
-	public static void main(String[] argv) throws RemoteException,
-			ClassNotFoundException {
+	public static void main(String[] argv) throws RemoteException, ClassNotFoundException {
 		NameServer nameServer = new NameServer();
+		
 	}
 }

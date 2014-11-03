@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <clients>
     <clientMap>
-        <entry>
-            <key>49</key>
-            <value>
-                <id>1</id>
-                <name>49</name>
-                <ipaddress>169.254.204.18</ipaddress>
-                <filenames>
-                    <filename>a.txt</filename>
-                    <filename>b.txt</filename>
-                    <filename>desktop.ini</filename>
-                </filenames>
-            </value>
-        </entry>
+        
     </clientMap>
 </clients>
