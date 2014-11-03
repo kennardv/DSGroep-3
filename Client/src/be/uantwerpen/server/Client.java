@@ -31,7 +31,34 @@ public class Client {
         }
         /* end console input */
         
-		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" };
+        
+        
+        
+        
+        
+        
+
+
+        File[] files = new File("c:\\Users").listFiles();
+		String[] filenames = new String[files.length];
+
+        //If this pathname does not denote a directory, then listFiles() returns null. 
+        int index = 0;
+        for (File file : files) {
+            if (file.isFile()) {
+                filenames[index] = file.getName();
+                index++;
+            }
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
 		//Boolean shutdown = false;
 		String[] clientStats = new String[2];
 		ownHash = hashString(nameClient); //set current to hash of own name
@@ -91,9 +118,9 @@ public class Client {
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes + 1)); //waarom +1?
 		
 		//set client's hash fields
-		Client.nextHash = ntn.nextHash();
-		Client.previousHash = ntn.prevHash();
-		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + Client.ownHash + ". Next: " + ntn.nextHash);
+		nextHash = ntn.nextHash();
+		previousHash = ntn.prevHash();
+		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 		
 		if(ntn.numberOfNodes == 2){
 			//shutdown(ntn.prevHash, ntn.nextHash, clientStats, filenames, message);

@@ -6,11 +6,11 @@
             <value>
                 <id>1</id>
                 <name>49</name>
-                <ipaddress>192.168.56.1</ipaddress>
+                <ipaddress>169.254.204.18</ipaddress>
                 <filenames>
-                    <filename>file1.jpg</filename>
-                    <filename>file2.txt</filename>
-                    <filename>file3.gif</filename>
+                    <filename>a.txt</filename>
+                    <filename>b.txt</filename>
+                    <filename>desktop.ini</filename>
                 </filenames>
             </value>
         </entry>
