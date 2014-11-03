@@ -2,7 +2,6 @@ package be.uantwerpen.server;
 
 import java.net.*;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -34,8 +33,10 @@ public class Client {
         /* end console input */
         /******************************************/
         
-        //get all filenames
+        //get all file paths
 		String[] filenames = listFilesInDir("C:/Users/Kennard/Projects/Eclipse-JEE-Luna-SR1/Workspace/DSGroep-3/Client/src/be/uantwerpen/server/files/");
+		
+		//send TCP and receive TCP test
 		//sendFilesOverTCP(filenames, 20000);
 		//receiveFilesOverTCP("127.0.0.1", 20000);
 		Boolean shutdown = false;
@@ -47,7 +48,7 @@ public class Client {
 		String[] clientStats = new String[2];
 		clientStats[0] = ownHash + ""; //hashed own name
 		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
-		clientStats[2] = "online"; //status van client 
+		//clientStats[2] = "online"; //status van client 
 		
 		//list with clientstats arr and filenames arr
 		List message = new ArrayList();
