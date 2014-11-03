@@ -1,7 +1,6 @@
 package be.uantwerpen.server;
 
 import java.util.*;
-
 import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name = "nodes")
@@ -13,13 +12,11 @@ public class Client {
 	private int id;
 	private int name;
 	private String ipaddress;
-	//private Files filesObj;
+	
 	@XmlElementWrapper(name="filenames")
     @XmlElement
 	private List<String> filename;
 
-	public Client() {
-	}
 
 	public int getId() {
 		return id;

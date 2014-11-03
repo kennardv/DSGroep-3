@@ -10,10 +10,10 @@ public class XMLMarshaller {
 
 	private String PATH = "ip-list.xml";
 
-
-	public XMLMarshaller() {
-	}
-
+	/**
+	 * Return data in the XML file
+	 * @return All map of all clients
+	 */
 	public ClientMap jaxbXMLToObject() {
 		try {
 			JAXBContext context = JAXBContext.newInstance(ClientMap.class);
@@ -29,7 +29,12 @@ public class XMLMarshaller {
 		}
 		return null;
 	}
-
+	
+	/**
+	 * Convert ClientMap object to XML
+	 * @param clientMap
+	 * map to be converted
+	 */
 	public void jaxbObjectToXML(ClientMap clientMap) {
 
 		try {

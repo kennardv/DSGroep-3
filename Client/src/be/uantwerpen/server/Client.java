@@ -2,6 +2,7 @@ package be.uantwerpen.server;
 
 import java.net.*;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -20,6 +21,7 @@ public class Client {
 		ntn = new NodeToNode();
 		Registry registry = null;
 		
+		/******************************************/
 		/* enter client name in console and enter */
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         System.out.print("Please enter client name: ");
@@ -30,16 +32,25 @@ public class Client {
             e.printStackTrace();
         }
         /* end console input */
+        /******************************************/
         
-		String[] filenames = { "file1.jpg", "file2.txt", "file3.gif" };
+        //get all filenames
+		String[] filenames = listFilesInDir("C:/Users/Kennard/Projects/Eclipse-JEE-Luna-SR1/Workspace/DSGroep-3/Client/src/be/uantwerpen/server/files/");
+		//sendFilesOverTCP(filenames, 20000);
+		//receiveFilesOverTCP("127.0.0.1", 20000);
 		Boolean shutdown = false;
+		
+		//set own to hashed own name
+		ownHash = hashString(nameClient);
+		
+		//fill array with data
 		String[] clientStats = new String[2];
-		ownHash = hashString(nameClient); //set current to hash of own name
 		clientStats[0] = ownHash + ""; //hashed own name
 		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
 		clientStats[2] = "online"; //status van client 
 		
-		List message = new ArrayList(); //arraylist met positie 0 = clients ip en hash, positie 1 = files array
+		//list with clientstats arr and filenames arr
+		List message = new ArrayList();
 		message.add(clientStats);
 		message.add(filenames);
 		message.add(shutdown);
@@ -65,12 +76,13 @@ public class Client {
 		socket.send(dgram);
 		System.out.println("Multicast sent");
 		
-		
-		while (ntn.nextHash == -1 || ntn.numberOfNodes == -1) //keep looping as long as nextHash isn't changed or number of nodes isn't changed
+		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
+		while (ntn.nextHash == -1 || ntn.numberOfNodes == -1)
 		{
 			System.out.println("Waiting, next hash: "+ntn.nextHash + " # of nodes: " + ntn.numberOfNodes);
 			
-			if (ntn.numberOfNodes == 0) //if there are no neighbor nodes 
+			//if there are no neighbor nodes 
+			if (ntn.numberOfNodes == 0)
 			{
 				System.out.println("No neighbours! All hashes set to own");
 				//set next and previous hash equal to own hash
@@ -78,6 +90,7 @@ public class Client {
 				ntn.prevHash = ownHash;
 			}
 			try {
+				//wait 100 ms
 				Thread.sleep(100);
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
@@ -112,13 +125,6 @@ public class Client {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-
-	
-
-	int hashString(String name) {
-		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
 	}
 	
 	void failure(){
@@ -271,6 +277,134 @@ public class Client {
 
 	}
 	
+    /**
+     * Send multiple files over a socket via TCP
+     * @param filenames
+     * a string array containing all the filenames 
+     * @param port
+     * what port to send the files over
+     * @throws IOException
+     */
+    void sendFilesOverTCP(String[] filenames, int port) throws IOException  {
+    	ServerSocket ssocket = new ServerSocket(port);
+        File[] files = new File[filenames.length];
+        for (int i = 0; i < files.length; i++) {
+			files[i] = new File(filenames[i]);
+		}
+        while (true) {
+          Socket socket = ssocket.accept();
+          System.out.println("Socket created");
+          for (File file : files) {
+        	  DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+        	  byte[] nameInBytes = file.getName().getBytes("UTF-8");
+        	  byte[] contentsInBytes = fileToByteArr(file.getName());
+        	  dos.writeInt(nameInBytes.length);
+        	  dos.write(nameInBytes);
+        	  dos.writeInt(contentsInBytes.length);
+        	  dos.write(contentsInBytes);
+        	  dos.flush();
+        	  System.out.println("Sent file: " + file.getName());
+          }
+          socket.close();
+        }
+    }
+    
+    /**
+     * Receive multiple files over a socket via TCP
+     * @param ip
+     * What host to receive on, passing null is equal to loopback 
+     * @param port
+     * @throws UnknownHostException
+     * @throws IOException
+     */
+    void receiveFilesOverTCP(String ip, int port) throws UnknownHostException, IOException {
+    	boolean filesRcvd = false;
+    	while (!filesRcvd) {
+    		System.out.println("Polling for files");
+    		Socket socket = new Socket(ip, port);
+        	DataInputStream dis = new DataInputStream(socket.getInputStream());
+        	FileOutputStream fos;
+        	
+    		int size = dis.readInt();  
+	    	byte[] nameInBytes = new byte[size];  
+	    	dis.readFully(nameInBytes);  
+	    	String name = new String(nameInBytes, "UTF-8");
+	    	if (!new File(name).isFile()) {
+	    		fos = new FileOutputStream(name);
+	    		
+	    		size = dis.readInt();  
+		    	byte[] contents = new byte[size];  
+		    	dis.readFully(contents);
+		    	
+		    	fos.write(contents);
+		    	fos.close();
+			}
+	    	
+	    	socket.close();
+    	}
+    	System.out.println("All files received and saved");
+    }
+    
+    /***
+     * Helper function to convert the contents of a file to a byte array
+     * @param path
+     * path to the file
+     * @return bFile
+     * byte array of the contents of the file
+     */
+    byte[] fileToByteArr(String path) {
+    	FileInputStream fileInputStream=null;
+    	 
+        File file = new File(path);
+ 
+        byte[] bFile = new byte[(int) file.length()];
+ 
+        try {
+            //convert file into array of bytes
+		    fileInputStream = new FileInputStream(file);
+		    fileInputStream.read(bFile);
+		    fileInputStream.close();
+ 
+		    for (int i = 0; i < bFile.length; i++) {
+		    	System.out.print((char)bFile[i]);
+            }
+ 
+		    System.out.println("Done");
+        }catch(Exception e){
+        	e.printStackTrace();
+        }
+        
+        return bFile;
+    }
+    
+    /**
+     * List all the files under a directory
+     * @param directoryName to be listed
+     */
+    public String[] listFilesInDir(String directoryName){
+ 
+        File directory = new File(directoryName);
+ 
+        //get all the files from a directory
+        File[] fList = directory.listFiles();
+        String[] names = new String[fList.length];
+        for (int i = 0; i < names.length; i++){
+            if (fList[i].isFile()){
+                names[i] = directoryName + fList[i].getName();
+            }
+        }
+        return names;
+    }
+    
+    /**
+     * Helper method to convert a string to a hash. Range goes from 0 to 32768.
+     * @param name
+     * String to be hashed
+     * @return Returns the hashed inputted string.
+     */
+    int hashString(String name) {
+		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
+	}
 	
 	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
 		Client client = new Client();

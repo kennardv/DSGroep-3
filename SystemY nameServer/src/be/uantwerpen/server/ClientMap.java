@@ -13,7 +13,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType (XmlAccessType.FIELD)
 public class ClientMap {
 	
-
 	private Map<Integer, Client> clientMap = new HashMap<Integer, Client>();
 
 	public Map<Integer, Client> getClientMap() {
