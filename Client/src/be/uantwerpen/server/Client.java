@@ -20,25 +20,25 @@ public class Client {
 		ntn = new NodeToNode();
 		Registry registry = null;
 		
-		/******************************************/
-		/* enter client name in console and enter */
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("Please enter client name: ");
-        String nameClient = null;
-        try {
-        	nameClient = reader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        /* end console input */
-        /******************************************/
+		//Read from console input
+        String nameClient = readFromConsole("Please enter client name: ");
         
         //get all file paths
-		String[] filenames = listFilesInDir("C:/Users/Kennard/Projects/Eclipse-JEE-Luna-SR1/Workspace/DSGroep-3/Client/src/be/uantwerpen/server/files/");
-		
+		String[] filenames = { "file1.txt", "file2.txt", "file3.txt" };
 		//send TCP and receive TCP test
-		//sendFilesOverTCP(filenames, 20000);
-		//receiveFilesOverTCP("127.0.0.1", 20000);
+		String option = readFromConsole("Send, receive or just continue? (S/R/C)");
+		if (option.equals("S")) {
+			List<File> files = listFilesInDir("C:\\Users\\Kennard\\Test");
+			TCPUtil tcpSender = new TCPUtil("127.0.0.1", 20000, true, files.get(0));
+			Thread t = new Thread(tcpSender);
+			t.start();
+		} else if(option.equals("R")) {
+			TCPUtil tcpReceiver = new TCPUtil("127.0.0.1", 20000, false, null);
+			Thread t = new Thread(tcpReceiver);
+			t.start();
+		} else if(option.equals("C")) {
+			
+		}
 		Boolean shutdown = false;
 		
 		//set own to hashed own name
@@ -117,15 +117,6 @@ public class Client {
 		
 		waitForClients();
 
-	}
-	
-	public void run() {
-		try {
-			main(null);
-		} catch (ClassNotFoundException | InterruptedException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	void failure(){
@@ -277,74 +268,7 @@ public class Client {
         System.exit(1);
 
 	}
-	
-    /**
-     * Send multiple files over a socket via TCP
-     * @param filenames
-     * a string array containing all the filenames 
-     * @param port
-     * what port to send the files over
-     * @throws IOException
-     */
-    void sendFilesOverTCP(String[] filenames, int port) throws IOException  {
-    	ServerSocket ssocket = new ServerSocket(port);
-        File[] files = new File[filenames.length];
-        for (int i = 0; i < files.length; i++) {
-			files[i] = new File(filenames[i]);
-		}
-        while (true) {
-          Socket socket = ssocket.accept();
-          System.out.println("Socket created");
-          for (File file : files) {
-        	  DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-        	  byte[] nameInBytes = file.getName().getBytes("UTF-8");
-        	  byte[] contentsInBytes = fileToByteArr(file.getName());
-        	  dos.writeInt(nameInBytes.length);
-        	  dos.write(nameInBytes);
-        	  dos.writeInt(contentsInBytes.length);
-        	  dos.write(contentsInBytes);
-        	  dos.flush();
-        	  System.out.println("Sent file: " + file.getName());
-          }
-          socket.close();
-        }
-    }
-    
-    /**
-     * Receive multiple files over a socket via TCP
-     * @param ip
-     * What host to receive on, passing null is equal to loopback 
-     * @param port
-     * @throws UnknownHostException
-     * @throws IOException
-     */
-    void receiveFilesOverTCP(String ip, int port) throws UnknownHostException, IOException {
-    	boolean filesRcvd = false;
-    	while (!filesRcvd) {
-    		System.out.println("Polling for files");
-    		Socket socket = new Socket(ip, port);
-        	DataInputStream dis = new DataInputStream(socket.getInputStream());
-        	FileOutputStream fos;
-        	
-    		int size = dis.readInt();  
-	    	byte[] nameInBytes = new byte[size];  
-	    	dis.readFully(nameInBytes);  
-	    	String name = new String(nameInBytes, "UTF-8");
-	    	if (!new File(name).isFile()) {
-	    		fos = new FileOutputStream(name);
-	    		
-	    		size = dis.readInt();  
-		    	byte[] contents = new byte[size];  
-		    	dis.readFully(contents);
-		    	
-		    	fos.write(contents);
-		    	fos.close();
-			}
-	    	
-	    	socket.close();
-    	}
-    	System.out.println("All files received and saved");
-    }
+
     
     /***
      * Helper function to convert the contents of a file to a byte array
@@ -353,19 +277,20 @@ public class Client {
      * @return bFile
      * byte array of the contents of the file
      */
-    byte[] fileToByteArr(String path) {
-    	FileInputStream fileInputStream=null;
+    byte[] fileToByteArr(File f) {
+    	FileInputStream fis = null;
     	 
-        File file = new File(path);
+        File file = f;
  
         byte[] bFile = new byte[(int) file.length()];
  
         try {
             //convert file into array of bytes
-		    fileInputStream = new FileInputStream(file);
-		    fileInputStream.read(bFile);
-		    fileInputStream.close();
- 
+		    fis = new FileInputStream(file);
+		    fis.read(bFile);
+		    fis.close();
+		    
+		    System.out.println("Contents of byte array.");
 		    for (int i = 0; i < bFile.length; i++) {
 		    	System.out.print((char)bFile[i]);
             }
@@ -382,19 +307,16 @@ public class Client {
      * List all the files under a directory
      * @param directoryName to be listed
      */
-    public String[] listFilesInDir(String directoryName){
+    public List<File> listFilesInDir(String directoryName){
  
-        File directory = new File(directoryName);
- 
-        //get all the files from a directory
-        File[] fList = directory.listFiles();
-        String[] names = new String[fList.length];
-        for (int i = 0; i < names.length; i++){
-            if (fList[i].isFile()){
-                names[i] = directoryName + fList[i].getName();
-            }
-        }
-        return names;
+    	 File[] f = new File(directoryName).listFiles();
+    	 List<File> files = new ArrayList<File>();
+    	 for (int i = 0; i < f.length; i++) {
+    		 if (f[i].isFile()) {
+				files.add(f[i]);
+			}
+    	 }
+         return files;
     }
     
     /**
@@ -407,6 +329,27 @@ public class Client {
 		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
 	}
 	
+    /***
+     * This method blocks untill console receives input
+     */
+    String readFromConsole(String message) {
+    	/******************************************/
+		/* enter client name in console and enter */
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        System.out.print(message);
+        String str = null;
+        try {
+        	
+        	str = reader.readLine().toUpperCase();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /* end console input */
+        /******************************************/
+        
+        return str;
+    }
+    
 	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
 		Client client = new Client();
 		
