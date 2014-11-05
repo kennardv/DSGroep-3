@@ -7,7 +7,10 @@ import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import com.sun.xml.internal.ws.api.ResourceLoader;
 
 public class Client {
 	
@@ -15,8 +18,13 @@ public class Client {
 	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
 	public NodeToNode ntn; //declaratie van remote object
 	
+	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
+	
+	String myFilesFolderName = "myfiles";
+	List<File> myFiles = null;
+	
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
-		List<File> files = listFilesInDir("C:\\Users");
+		myFiles = listFilesInDir("C:\\Users");
 		
 		ntn = new NodeToNode();
 		Registry registry = null;
@@ -24,14 +32,14 @@ public class Client {
         String nameClient = readFromConsole("Please enter client name: ");
         
         //get all file paths
-		String[] filenames = new String[files.size()];
-		for (int i = 0; i< files.size(); i++) {
-			filenames[i] = files.get(i).getName();
+		String[] filenames = new String[myFiles.size()];
+		for (int i = 0; i< myFiles.size(); i++) {
+			filenames[i] = myFiles.get(i).getName();
 		}
 		//send TCP and receive TCP test
 		String option = readFromConsole("Send, receive or just continue? (S/R/C)");
 		if (option.equals("S")) {
-			TCPUtil tcpSender = new TCPUtil(null, 20000, true, files.get(0));
+			TCPUtil tcpSender = new TCPUtil(null, 20000, true, myFiles.get(0));
 			Thread t = new Thread(tcpSender);
 			t.start();
 		} else if(option.equals("R")) {
