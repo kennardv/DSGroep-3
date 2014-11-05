@@ -2,41 +2,35 @@
 <clients>
     <clientMap>
         <entry>
-            <key>80</key>
+            <key>2001</key>
             <value>
                 <id>1</id>
-                <name>80</name>
+                <name>2001</name>
                 <ipaddress>25.55.252.245</ipaddress>
                 <filenames>
-                    <filename>file1.txt</filename>
-                    <filename>file2.txt</filename>
-                    <filename>file3.txt</filename>
+                    <filename>desktop.ini</filename>
                 </filenames>
             </value>
         </entry>
         <entry>
-            <key>86</key>
+            <key>16371</key>
             <value>
                 <id>1</id>
-                <name>86</name>
+                <name>16371</name>
                 <ipaddress>25.55.252.245</ipaddress>
                 <filenames>
-                    <filename>file1.txt</filename>
-                    <filename>file2.txt</filename>
-                    <filename>file3.txt</filename>
+                    <filename>desktop.ini</filename>
                 </filenames>
             </value>
         </entry>
         <entry>
-            <key>90</key>
+            <key>29533</key>
             <value>
                 <id>1</id>
-                <name>90</name>
+                <name>29533</name>
                 <ipaddress>25.55.252.245</ipaddress>
                 <filenames>
-                    <filename>file1.txt</filename>
-                    <filename>file2.txt</filename>
-                    <filename>file3.txt</filename>
+                    <filename>desktop.ini</filename>
                 </filenames>
             </value>
         </entry>

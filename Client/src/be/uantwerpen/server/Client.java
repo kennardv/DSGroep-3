@@ -8,8 +8,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Client {
 	
@@ -20,6 +18,7 @@ public class Client {
 
 
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
+		ntn = new NodeToNode();
 		List<File> files = listFilesInDir("C:\\Users");
 		
 		//Read from console input
@@ -52,7 +51,7 @@ public class Client {
 		String[] clientStats = new String[3];
 		clientStats[0] = ownHash + ""; //hashed own name
 		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
-		clientStats[2] = "online"; //status van client 
+		// clientStats[2] = "online"; //status van client 
 		
 		//list with clientstats arr and filenames arr
 		List message = new ArrayList();
@@ -87,7 +86,7 @@ public class Client {
 			System.out.println("Waiting, next hash: "+ntn.nextHash + " # of nodes: " + ntn.numberOfNodes);
 			
 			//if there are no neighbor nodes 
-			if (ntn.numberOfNodes == 0)
+			if (ntn.numberOfNodes == 1)
 			{
 				System.out.println("No neighbours! All hashes set to own");
 				//set next and previous hash equal to own hash
@@ -107,14 +106,14 @@ public class Client {
 		} catch (NotBoundException e) {
 			System.err.println("Not bound");
 		}
-		System.out.println("Total connected clients: " + (ntn.numberOfNodes + 1)); //waarom +1?
+		System.out.println("Total connected clients: " + (ntn.numberOfNodes)); //waarom +1?
 		
 		//set client's hash fields
 		nextHash = ntn.nextHash();
 		previousHash = ntn.prevHash();
 		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 		
-		if(ntn.numberOfNodes == 2){
+		if(ntn.numberOfNodes == 4){
 			shutdown(clientStats, filenames, message);
 		}
 		
@@ -164,9 +163,11 @@ public class Client {
 						
 						if(neighbours != null){
 							if(nextHash == Integer.parseInt(clientStats[0])){
+						        System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
 								nextHash = neighbours[0];
 							}
 							else if(previousHash == Integer.parseInt(clientStats[0])){
+								System.out.println("Changing next node from " + previousHash + " to " + neighbours[1]);
 								previousHash = neighbours[1];
 							}
 							System.out.println(previousHash + " "  + ownHash + " " + nextHash);
@@ -250,22 +251,11 @@ public class Client {
     public void shutdown(String[] cs, String[] fn, List<Object> message) throws IOException {
         System.out.println("Shutting down..");
 
-
-        System.out.println("Sending id from next node to previous node..");
-
-    	
-        System.out.println("Changing info from next node in previous node..");
-
-        System.out.printf("the next client's previous hash is changed to %d \n", previousHash);
-        System.out.println("Sending id from previous node to next node..");
-        System.out.printf("the previous client's next hash is changed to %d \n", nextHash);
-        System.out.println("Delete node at nameserver..");
-
-
-
         ntn.numberOfNodes--;
         Boolean shutdown = true;
         int[] neighbours = {nextHash, previousHash};
+        
+        System.out.println("Sending Multicast");
         //create message and multicast it
         Object obj = message; 
         message.remove(2);
@@ -282,19 +272,16 @@ public class Client {
         String bindLocation = "//localhost/ntn";
         System.out.println("Location bind");
         try {
-            registry = LocateRegistry.createRegistry(1099);
-            System.out.println("Create registry");
-        } catch (Exception e) {
-        }
-        try {
             Naming.bind(bindLocation, ntn);
             System.out.println("bind Location");
         } catch (Exception e) {
         }
         socket.send(dgram);
-        System.out.println("Multicast sent");
+        System.out.println("send");
+        
+        System.out.println("Closing client");
         System.exit(1);
-
+        
 	}
     
 

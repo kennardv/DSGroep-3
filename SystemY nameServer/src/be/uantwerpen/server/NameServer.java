@@ -14,7 +14,7 @@ public class NameServer {
 
 	int id = 0;
 	public int k = 0;
-
+	
 	NodeToNodeInterface ntnI;
 	String name;
 
@@ -54,15 +54,17 @@ public class NameServer {
 			        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
-		        
-		        // Boolean shutdown = (Boolean) message.get(2);
-		        // if(shutdown == true){
-		        //System.err.println("shutdown");
-				   //}else{
-			        //add new values to map
-					addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
-					 //}
-		        //removeFromHashMap(Integer.parseInt(clientStats[0]));
+			        Boolean shutdown = (Boolean) message.get(2);
+			        
+			        if(shutdown == true){
+			        	System.err.println("shutdown client: " + clientStats[0]);
+			        	removeFromHashMap(Integer.parseInt(clientStats[0]));
+			        	k--;
+			        }else{
+			        	//add new values to map
+			        	addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+						k++;
+			        }
                 
 					System.out.println("hash: " + clientStats[0]);
 
@@ -88,15 +90,15 @@ public class NameServer {
 				dgram.setLength(inBuf.length);
 				try {
 					//notify client about amount of nodes
+					System.out.println("k = " + k);
 					name = "//localhost/ntn";
 					ntnI = null;
 					ntnI = (NodeToNodeInterface) Naming.lookup(name);
+					System.out.println("lookup done = " + name);
 					ntnI.serverAnswer(k);
-					k++;
 					System.err.println("Amount of clients: " + k);
 				} catch (Exception e) {
-					System.err.println("FileServer exception: "
-							+ e.getMessage());
+					System.err.println("FileServer exception: " + e.getMessage());
 					e.printStackTrace();
 				}
 			}
@@ -112,6 +114,7 @@ public class NameServer {
 	 */
 	public void removeFromHashMap(int key) {
 		try {
+	        System.out.println("Delete node with key : " + key);
 			clientMap.removeKeyValuePair(key);
 		} catch (Exception e) {
 			System.out.println(e);
