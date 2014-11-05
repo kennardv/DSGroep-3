@@ -24,6 +24,6 @@ public class ClientMap {
 	}
 	
 	public void removeKeyValuePair(int key) {
-		clientMap.remove(key);
+		this.clientMap.remove(key);
 	}
 }
