@@ -10,14 +10,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.sun.xml.internal.ws.api.ResourceLoader;
+
 
 public class Client {
 	
 	//Client client;
 	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
 	public NodeToNode ntn; //declaratie van remote object
-	
+	public Registry registry = null;
+
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
 	
 	String myFilesFolderName = "myfiles";
@@ -26,8 +27,6 @@ public class Client {
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
 		myFiles = listFilesInDir("C:\\Users");
 		
-		ntn = new NodeToNode();
-		Registry registry = null;
 		//Read from console input
         String nameClient = readFromConsole("Please enter client name: ");
         
@@ -121,9 +120,8 @@ public class Client {
 		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 		
 		if(ntn.numberOfNodes == 2){
-			//shutdown(previousHash, nextHash, clientStats, filenames, message);
+			shutdown(clientStats, filenames, message);
 		}
-		
 		
 		waitForClients();
 
@@ -145,7 +143,6 @@ public class Client {
 			
 			//do this forever
 			while (true) {
-							
 				socket.receive(dgram); //blocks untill package is received
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
@@ -155,56 +152,77 @@ public class Client {
 					Object o = in.readObject();
 					List message = (List) o;
 					String[] clientStats = (String[]) message.get(0);
+					Boolean shutdown = (Boolean) message.get(2);
+					System.out.println(shutdown);
+					int[] neighbours = null;
+					if(shutdown == true){
+						neighbours = (int[]) message.get(3);
+						System.out.println("next = " + neighbours[0]);
+						System.out.println("previous = " + neighbours[1]);
+					}
 					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
+					System.out.println(receivedHash);
 				
 					try {
 						String name = "//localhost/ntn";
-					
-							NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-
-						if (ownHash > nextHash) { //laatste hash 
-							if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
-								try{
-									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
-								}catch(RemoteException e){
-									System.out.println("geen antwoord van vorige hash");
+						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+						
+						if(neighbours != null){
+							if(nextHash == Integer.parseInt(clientStats[0])){
+								nextHash = neighbours[0];
+							}
+							else if(previousHash == Integer.parseInt(clientStats[0])){
+								previousHash = neighbours[1];
+							}
+							System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+						}else{
+							
+							if (ownHash > nextHash) { //laatste hash 
+								if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
+									try{
+										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+									}catch(RemoteException e){
+										System.out.println("geen antwoord van vorige hash");
+									}
+									
+									previousHash = receivedHash;
+									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+								} 
+								else {
+									ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+									nextHash = receivedHash;
+									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								}
-								
-								previousHash = receivedHash;
-								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 							} 
-							else {
-								ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+							else if(ownHash == nextHash) {
+								ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
+								previousHash = receivedHash;
 								nextHash = receivedHash;
 								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+								//doorsturen via RMI
+								
 							}
-						} 
-						else if(ownHash == nextHash) {
-							ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
-							previousHash = receivedHash;
-							nextHash = receivedHash;
-							System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-							//doorsturen via RMI
+							else { 
+								if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
+									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+									previousHash = receivedHash;
+									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+									//RMI
+								} else if ((ownHash < receivedHash) && (nextHash > receivedHash)) {
+									ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+									nextHash = receivedHash;
+									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+								}
+								else if((previousHash == nextHash) || (previousHash > ownHash)) {
+									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+									previousHash = receivedHash;
+									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+								}
+							}
 							
 						}
-						else { 
-							if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
-								ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
-								previousHash = receivedHash;
-								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-								//RMI
-							} else if ((ownHash < receivedHash) && (nextHash > receivedHash)) {
-								ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
-								nextHash = receivedHash;
-								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-							}
-							else if((previousHash == nextHash) || (previousHash > ownHash)) {
-								ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
-								previousHash = receivedHash;
-								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-							}
-						}
-						
+
+
 						//System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 						
 					} catch(Exception e) {
@@ -232,16 +250,15 @@ public class Client {
 		}
 	}
 	
-    public void shutdown(int previoushashnode, int nexthashnode, String[] cs, String[] fn, List<Object> message) throws IOException {
+
+	
+    public void shutdown(String[] cs, String[] fn, List<Object> message) throws IOException {
         System.out.println("Shutting down..");
 
-    	previousHash = nexthashnode;
 
         System.out.println("Sending id from next node to previous node..");
 
-    	System.out.printf("Client %d down!", ownHash);
     	
-        previousHash = nexthashnode;
         System.out.println("Changing info from next node in previous node..");
 
         System.out.printf("the next client's previous hash is changed to %d \n", previousHash);
@@ -249,28 +266,34 @@ public class Client {
         System.out.printf("the previous client's next hash is changed to %d \n", nextHash);
         System.out.println("Delete node at nameserver..");
 
-        nextHash = previoushashnode;
+
 
         ntn.numberOfNodes--;
         Boolean shutdown = true;
+        int[] neighbours = {nextHash, previousHash};
         //create message and multicast it
         Object obj = message; 
-        message.remove(shutdown);
-        message.add(shutdown);
+        message.remove(2);
+        message.add(2, shutdown);
+        message.add(3, neighbours);
         DatagramSocket socket = new DatagramSocket();
         ByteArrayOutputStream byteArr = new ByteArrayOutputStream();
         ObjectOutput objOut = new ObjectOutputStream(byteArr);
         objOut.writeObject(obj);
+        System.out.println("Object written");
         byte[] b = byteArr.toByteArray();
         DatagramPacket dgram;
         dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
         String bindLocation = "//localhost/ntn";
+        System.out.println("Location bind");
         try {
-            Registry registry = LocateRegistry.createRegistry(1099);
+            registry = LocateRegistry.createRegistry(1099);
+            System.out.println("Create registry");
         } catch (Exception e) {
         }
         try {
             Naming.bind(bindLocation, ntn);
+            System.out.println("bind Location");
         } catch (Exception e) {
         }
         socket.send(dgram);
@@ -278,6 +301,7 @@ public class Client {
         System.exit(1);
 
 	}
+    
 
     
     /***
