@@ -14,22 +14,24 @@ public class Client {
 	//Client client;
 	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
 	public NodeToNode ntn; //declaratie van remote object
-
+	
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
-
+		List<File> files = listFilesInDir("C:\\Users");
+		
 		ntn = new NodeToNode();
 		Registry registry = null;
-		
 		//Read from console input
         String nameClient = readFromConsole("Please enter client name: ");
         
         //get all file paths
-		String[] filenames = { "file1.txt", "file2.txt", "file3.txt" };
+		String[] filenames = new String[files.size()];
+		for (int i = 0; i< files.size(); i++) {
+			filenames[i] = files.get(i).getName();
+		}
 		//send TCP and receive TCP test
 		String option = readFromConsole("Send, receive or just continue? (S/R/C)");
 		if (option.equals("S")) {
-			List<File> files = listFilesInDir("C:\\Users\\Kennard\\Test");
-			TCPUtil tcpSender = new TCPUtil("127.0.0.1", 20000, true, files.get(0));
+			TCPUtil tcpSender = new TCPUtil(null, 20000, true, files.get(0));
 			Thread t = new Thread(tcpSender);
 			t.start();
 		} else if(option.equals("R")) {
@@ -45,10 +47,10 @@ public class Client {
 		ownHash = hashString(nameClient);
 		
 		//fill array with data
-		String[] clientStats = new String[2];
+		String[] clientStats = new String[3];
 		clientStats[0] = ownHash + ""; //hashed own name
 		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
-		//clientStats[2] = "online"; //status van client 
+		clientStats[2] = "online"; //status van client 
 		
 		//list with clientstats arr and filenames arr
 		List message = new ArrayList();
