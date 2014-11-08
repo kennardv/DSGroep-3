@@ -25,6 +25,14 @@ public class Client {
 	List<File> myFiles = null;
 	
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
+		//START OF SYSTEM
+		//CREATE FileListAgent
+		//EXECTUTE startFileListAgent METHOD IN NodeToNode
+		
+		//FAIL DETECTED
+		//CREATE FileRecoveryAgent
+		//EXECTUTE startFileRecoveryAgent METHOD IN NodeToNode
+		
 		ntn = new NodeToNode();
 		myFiles = listFilesInDir("C:\\Users");
 		

@@ -15,7 +15,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		super();
 	}
 	
-	public void startAgent(Agent agent) {
+	public void startFileListAgent(FileListAgent agent) {
 		//make new thread with argument: agent
 		Thread t = new Thread(agent);
 		
@@ -38,7 +38,38 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 			e.printStackTrace();
 		}
 		try {
-			ntnI.startAgent(agent);
+			ntnI.startFileListAgent(agent);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void startFileRecoveryAgent(FileRecoveryAgent agent) {
+		//make new thread with argument: agent
+		Thread t = new Thread(agent);
+		
+		//start thread and wait for it to die
+		t.start(); 
+		try {
+			t.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//call same method on next node
+		String name = "//localhost/ntn";
+		NodeToNodeInterface ntnI = null;
+		try {
+			ntnI = (NodeToNodeInterface) Naming.lookup(name);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			ntnI.startFileRecoveryAgent(agent);
+			/** UNLESS agent must stop **/
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
