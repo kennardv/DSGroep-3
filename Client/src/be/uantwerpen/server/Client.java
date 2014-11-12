@@ -14,6 +14,16 @@ import java.util.List;
 
 public class Client {
 	
+	/************* Set this for lonely testing ******************/
+	/************************************************************/
+	/************************************************************/
+	boolean useLocalHost = true;
+	/************************************************************/
+	/************************************************************/
+	/************************************************************/
+	
+	String serverIp = "226.100.100.125";
+	
 	//Client client;
 	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
 	public NodeToNode ntn; //declaratie van remote object
@@ -26,9 +36,16 @@ public class Client {
 	List<File> myFiles = null;
 
 	
-	String ipaddress = Inet4Address.getLocalHost().getHostAddress();
+	String ipaddress = null;
 	
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
+		if (!useLocalHost) {
+			ipaddress = Inet4Address.getLocalHost().getHostAddress();
+		} else {
+			ipaddress = "localhost";
+		}
+		
+		
 		//START OF SYSTEM
 		//CREATE FileListAgent
 		//EXECTUTE startFileListAgent METHOD IN NodeToNode
@@ -86,7 +103,7 @@ public class Client {
 		objOut.writeObject(obj);
 		byte[] b = byteArr.toByteArray();
 		DatagramPacket dgram;
-		dgram = new DatagramPacket(b, b.length, InetAddress.getByName("192.168.1.255"), 4545);
+		dgram = new DatagramPacket(b, b.length, InetAddress.getByName(serverIp), 4545);
 		String bindLocation = "//" + this.ipaddress + "/ntn";
 		try {
 			registry = LocateRegistry.createRegistry(1099);
@@ -150,7 +167,7 @@ public class Client {
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
 			MulticastSocket socket = new MulticastSocket(4545);
-			socket.joinGroup(InetAddress.getByName("226.100.100.125"));
+			socket.joinGroup(InetAddress.getByName(serverIp));
 			
 			//do this forever
 			while (true) {
@@ -178,23 +195,23 @@ public class Client {
 						String name = "//" + clientStats[1] + "/ntn";
 						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
 						
-						if ((this.ownHash < receivedHash) && (receivedHash < this.nextHash)) {
+						/*if ((this.ownHash < receivedHash) && (receivedHash < this.nextHash)) {
 							this.nextHash = receivedHash;
 							ntnI.answerDiscovery(ownHash, nextHash);
 						} else if ((this.previousHash < receivedHash) && (receivedHash < this.ownHash)) {
 							this.previousHash = receivedHash;
-						}
+						}*/
 						
-						/*if(neighbours != null){
+						if(neighbours != null){
 							if(nextHash == Integer.parseInt(clientStats[0])){
-						        System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
+						        //System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
 								nextHash = neighbours[0];
 							}
 							else if(previousHash == Integer.parseInt(clientStats[0])){
-								System.out.println("Changing next node from " + previousHash + " to " + neighbours[1]);
+								//System.out.println("Changing next node from " + previousHash + " to " + neighbours[1]);
 								previousHash = neighbours[1];
 							}
-							System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+							//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 						}else{
 							
 							if (ownHash > nextHash) { //laatste hash 
@@ -202,23 +219,23 @@ public class Client {
 									try{
 										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
 									}catch(RemoteException e){
-										System.out.println("geen antwoord van vorige hash");
+										//System.out.println("geen antwoord van vorige hash");
 									}
 									
 									previousHash = receivedHash;
-									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								} 
 								else {
 									ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
 									nextHash = receivedHash;
-									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								}
 							} 
 							else if(ownHash == nextHash) {
 								ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
 								previousHash = receivedHash;
 								nextHash = receivedHash;
-								System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+								//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								//doorsturen via RMI
 								
 							}
@@ -226,21 +243,21 @@ public class Client {
 								if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
 									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
 									previousHash = receivedHash;
-									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 									//RMI
 								} else if ((ownHash < receivedHash) && (nextHash > receivedHash)) {
 									ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
 									nextHash = receivedHash;
-									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								}
 								else if((previousHash == nextHash) || (previousHash > ownHash)) {
 									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
 									previousHash = receivedHash;
-									System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								}
 							}
 							
-						}*/
+						}
 						//System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 						
 					} catch(Exception e) {
@@ -268,8 +285,6 @@ public class Client {
 		}
 	}
 	
-
-	
     public void shutdown(List<Object> message) throws IOException {
         System.out.println("Shutting down..");
 
@@ -290,7 +305,7 @@ public class Client {
         System.out.println("Object written");
         byte[] b = byteArr.toByteArray();
         DatagramPacket dgram;
-        dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
+        dgram = new DatagramPacket(b, b.length, InetAddress.getByName(serverIp), 4545);
 
         socket.send(dgram);
         System.out.println("send");
@@ -299,8 +314,6 @@ public class Client {
         System.exit(1);
         
 	}
-    
-
     
     /***
      * Helper function to convert the contents of a file to a byte array
@@ -350,6 +363,8 @@ public class Client {
     	 }
          return files;
     }
+    
+    
     
     /**
      * Helper method to convert a string to a hash. Range goes from 0 to 32768.
