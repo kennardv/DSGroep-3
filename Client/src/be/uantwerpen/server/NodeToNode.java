@@ -8,6 +8,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	public int nextHash = -1;
 	public int prevHash = -1;
 	public int numberOfNodes = -1;
+	public String[][] replicationAnswer;
 	
 	
 	public NodeToNode() throws RemoteException{
@@ -20,9 +21,10 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		//System.out.println("Setting neighbour hashes in NodeToNode. nextHash: " + nextHash + " prevHash: " + prevHash);
 	}
 	
-	public void serverAnswer(int nodes)
+	public void serverAnswer(int nodes, String[][] fileReplicationList)
 	{
 		numberOfNodes = nodes;
+		replicationAnswer = fileReplicationList;
 		
 	}
 	int nextHash()

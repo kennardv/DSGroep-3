@@ -2,15 +2,15 @@
 <clients>
     <clientMap>
         <entry>
-            <key>49</key>
+            <key>18903</key>
             <value>
                 <id>1</id>
-                <name>49</name>
-                <ipaddress>192.168.56.1</ipaddress>
+                <name>18903</name>
+                <ipaddress>169.254.204.18</ipaddress>
                 <filenames>
-                    <filename>file1.txt</filename>
-                    <filename>file2.txt</filename>
-                    <filename>file3.txt</filename>
+                    <filename>a.txt</filename>
+                    <filename>b.txt</filename>
+                    <filename>desktop.ini</filename>
                 </filenames>
             </value>
         </entry>

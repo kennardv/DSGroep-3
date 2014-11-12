@@ -15,7 +15,7 @@ public class Client {
 	
 	@XmlElementWrapper(name="filenames")
     @XmlElement
-	private List<String> filename;
+	private List<Integer> filename;
 
 
 	public int getId() {
@@ -42,11 +42,11 @@ public class Client {
 		this.ipaddress = ipaddress;
 	}
 	
-	public List<String> getFiles() {
+	public List<Integer> getFiles() {
 		return this.filename;
 	}
 	
-	public void setFiles(List<String> files) {
+	public void setFiles(List<Integer> files) {
 		//this.filesObj = new Files();
 		this.filename = files;
 	}

@@ -11,29 +11,41 @@ public class TCPUtil extends Thread {
 	ServerSocket ssocket = null;
 	Socket socket = null;
 	
-	String ipaddress = null;
+	String[] ipaddress = null;
 	int port = 0;
 	boolean send = false;
-	File file = null;
+	File[] file = null;
 	
-	public TCPUtil(String ipaddress, int port, boolean send, File file) throws IOException {
+	public TCPUtil(String[] ipaddress, int port, boolean send, List<File> files ) throws IOException {
 		this.ipaddress = ipaddress;
 		this.port = port;
 		this.send = send;
 		this.file = file;
 	}
-	
+	public TCPUtil(int port, boolean send) throws IOException {
+		this.port = port;
+		this.send = send;
+	}
 	public void run() {
 		if (send) {
 			try {
-				sendFilesOverTCP(this.file, this.port);
+				int i = 0;
+				boolean done = false;
+				for(i=0;i< file.length; i++)
+				{
+				 sendFilesOverTCP(file[i], this.port);
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {
 			try {
-				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Kennard\\test2.txt");
+				for(int i=0;i< file.length; i++)
+				{
+					receiveFilesOverTCP(ipaddress[i], this.port, "C:\\Users\\Kennard\\test2.txt");
+				}
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -49,7 +61,7 @@ public class TCPUtil extends Thread {
      * what port to send the files over
      * @throws IOException
      */
-    void sendFilesOverTCP(File file, int port) throws IOException  {
+    boolean sendFilesOverTCP(File file, int port) throws IOException  {
     	this.ssocket = new ServerSocket(this.port);
     	this.socket = this.ssocket.accept();
     	
@@ -82,6 +94,7 @@ public class TCPUtil extends Thread {
 		 } catch(IOException e) {}
 		 
 		 System.out.println("File transfer complete");
+		 return true;
     }
     
     /**
@@ -130,7 +143,8 @@ public class TCPUtil extends Thread {
     
     /***
      * Helper function to convert the contents of a file to a byte array
-     * @param path
+     * @
+     * param path
      * path to the file
      * @return bFile
      * byte array of the contents of the file
