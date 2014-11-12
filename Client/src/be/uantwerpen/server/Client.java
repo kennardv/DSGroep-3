@@ -34,7 +34,7 @@ public class Client {
 		//FAIL DETECTED
 		//CREATE FileRecoveryAgent
 		//EXECTUTE startFileRecoveryAgent METHOD IN NodeToNode
-		
+		System.out.println(ipaddress);
 		ntn = new NodeToNode();
 		myFiles = listFilesInDir("C:\\Users");
 		
