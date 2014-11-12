@@ -67,7 +67,7 @@ public class Client {
 		//fill array with data
 		String[] clientStats = new String[3];
 		clientStats[0] = ownHash + ""; //hashed own name
-		clientStats[1] = Inet4Address.getLocalHost().getHostAddress(); //own ip address
+		clientStats[1] = this.ipaddress; //own ip address
 		// clientStats[2] = "online"; //status van client 
 		
 		//list with clientstats arr and filenames arr
@@ -84,7 +84,7 @@ public class Client {
 		objOut.writeObject(obj);
 		byte[] b = byteArr.toByteArray();
 		DatagramPacket dgram;
-		dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
+		dgram = new DatagramPacket(b, b.length, InetAddress.getByName("192.168.1.255"), 4545);
 		String bindLocation = "//" + this.ipaddress + "/ntn";
 		try {
 			registry = LocateRegistry.createRegistry(1099);

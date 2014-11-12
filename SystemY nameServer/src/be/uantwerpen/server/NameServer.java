@@ -51,6 +51,9 @@ public class NameServer {
 					//pull values from message and store
 					List message = (List) o;
 					clientStats = (String[]) message.get(0);
+					
+					System.out.println("Received dgram from " + clientStats[1]);
+					
 					String[] filenamesArr = (String[])message.get(1);
 					List<String> filenames = new ArrayList<String>();
 			        for (int i = 0; i < filenamesArr.length; i++) {
