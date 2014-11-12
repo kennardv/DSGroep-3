@@ -17,6 +17,8 @@ public class NameServer {
 	
 	NodeToNodeInterface ntnI;
 	String name;
+	
+	String serverIp = "226.100.100.125";
 
 	public NameServer() {
 		ntnI = null;
@@ -31,7 +33,7 @@ public class NameServer {
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
 			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
-			socket.joinGroup(InetAddress.getByName("226.100.100.125"));
+			socket.joinGroup(InetAddress.getByName(serverIp));
 			
 			
 			//String[] clientStats = null;
