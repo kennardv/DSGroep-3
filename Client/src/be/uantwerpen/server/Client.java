@@ -150,6 +150,12 @@ public class Client {
 		
 		//Consolelistener shd = new Consolelistener("Shutdown signaal", this.client, message);
 		//shd.start();
+		try {
+			Naming.unbind(bindLocation);
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    
 		
 	    waitForClients();
@@ -220,19 +226,28 @@ public class Client {
 										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
 									}catch(RemoteException e){
 										//System.out.println("geen antwoord van vorige hash");
+										failure();
 									}
 									
 									previousHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								} 
 								else {
-									ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+									try {
+										ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+									} catch (RemoteException e) {
+										failure();
+									}
 									nextHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								}
 							} 
 							else if(ownHash == nextHash) {
-								ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
+								try {
+									ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
+								} catch (RemoteException e) {
+									failure();
+								}
 								previousHash = receivedHash;
 								nextHash = receivedHash;
 								//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
@@ -241,17 +256,29 @@ public class Client {
 							}
 							else { 
 								if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
-									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+									try {
+										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+									} catch (RemoteException e) {
+										failure();
+									}
 									previousHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 									//RMI
 								} else if ((ownHash < receivedHash) && (nextHash > receivedHash)) {
-									ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+									try {
+										ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
+									} catch (RemoteException e) {
+										failure();
+									}
 									nextHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								}
 								else if((previousHash == nextHash) || (previousHash > ownHash)) {
-									ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+									try {
+										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
+									} catch (RemoteException e) {
+										failure();
+									}
 									previousHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
 								}
