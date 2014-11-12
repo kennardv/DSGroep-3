@@ -34,7 +34,7 @@ public class Client {
 		//FAIL DETECTED
 		//CREATE FileRecoveryAgent
 		//EXECTUTE startFileRecoveryAgent METHOD IN NodeToNode
-		
+		System.out.println(ipaddress);
 		ntn = new NodeToNode();
 		myFiles = listFilesInDir("C:\\Users");
 		
@@ -84,7 +84,7 @@ public class Client {
 		objOut.writeObject(obj);
 		byte[] b = byteArr.toByteArray();
 		DatagramPacket dgram;
-		dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
+		dgram = new DatagramPacket(b, b.length, InetAddress.getByName("192.168.1.255"), 4545);
 		String bindLocation = "//" + this.ipaddress + "/ntn";
 		try {
 			registry = LocateRegistry.createRegistry(1099);
