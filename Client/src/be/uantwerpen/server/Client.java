@@ -177,15 +177,14 @@ public class Client {
 					try {
 						String name = "//" + clientStats[1] + "/ntn";
 						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						/*
+
 						if ((this.ownHash < receivedHash) && (receivedHash < this.nextHash)) {
 							this.nextHash = receivedHash;
 							ntnI.answerDiscovery(ownHash, nextHash);
 						} else if ((this.previousHash < receivedHash) && (receivedHash < this.ownHash)) {
 							this.previousHash = receivedHash;
 						}
-						*/
-						
+						/*						
 						if(neighbours != null){
 							if(nextHash == Integer.parseInt(clientStats[0])){
 						        System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
@@ -243,7 +242,7 @@ public class Client {
 							
 						}
 
-
+						*/
 						//System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 						
 					} catch(Exception e) {
