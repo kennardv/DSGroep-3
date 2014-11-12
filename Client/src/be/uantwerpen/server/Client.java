@@ -18,11 +18,13 @@ public class Client {
 	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
 	public NodeToNode ntn; //declaratie van remote object
 	public Registry registry = null;
-
+	public Client client;
+	
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
 	
 	String myFilesFolderName = "myfiles";
 	List<File> myFiles = null;
+
 	
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
 		//START OF SYSTEM
@@ -69,7 +71,7 @@ public class Client {
 		// clientStats[2] = "online"; //status van client 
 		
 		//list with clientstats arr and filenames arr
-		List message = new ArrayList();
+		List<Object> message = new ArrayList<Object>();
 		message.add(clientStats);
 		message.add(filenames);
 		message.add(shutdown);
@@ -94,6 +96,7 @@ public class Client {
 		}
 		socket.send(dgram);
 		System.out.println("Multicast sent");
+		socket.close();
 		
 		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
 		while (ntn.nextHash == -1 || ntn.numberOfNodes == -1)
@@ -110,7 +113,7 @@ public class Client {
 			}
 			try {
 				//wait 100 ms
-				Thread.sleep(100);
+				Thread.sleep(100);	
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
@@ -128,12 +131,15 @@ public class Client {
 		previousHash = ntn.prevHash();
 		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
 		
-		if(ntn.numberOfNodes == 4){
-			shutdown(clientStats, filenames, message);
-		}
+		//if(ntn.numberOfNodes == 4){
+			//shutdown(message);
+		//}
 		
-		waitForClients();
-
+		//Consolelistener shd = new Consolelistener("Shutdown signaal", this.client, message);
+		//shd.start();
+	    
+		
+	    waitForClients();
 	}
 	
 	void failure(){
@@ -263,7 +269,7 @@ public class Client {
 	
 
 	
-    public void shutdown(String[] cs, String[] fn, List<Object> message) throws IOException {
+    public void shutdown(List<Object> message) throws IOException {
         System.out.println("Shutting down..");
 
         ntn.numberOfNodes--;
