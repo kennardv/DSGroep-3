@@ -27,6 +27,8 @@ public class Client {
 	//Client client;
 	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
 	public NodeToNode ntn; //declaratie van remote object
+	NodeToNodeInterface ntnI = null;
+	ServerToNodeInterface stvI = null;
 	public Registry registry = null;
 	public Client client;
 	
@@ -161,11 +163,19 @@ public class Client {
 	    waitForClients();
 	}
 	
-	void failure(){
-		//NodeToNode ntn = new NodeToNode();
-		int next = ntn.nextHash;
-		int prev = ntn.prevHash;
-		//if ()
+	void failure(int hash){
+		try {
+			String name = "//" + serverIp + "/ntn";
+			stvI = (ServerToNodeInterface) Naming.lookup(name);
+		} catch (MalformedURLException | RemoteException
+				| AlreadyBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		int[] hashes = stvI.askPrevAndNextNode(hash);
+		int next = hashes[0];
+		int prev = hashes[1];
 	}
 	
 	void waitForClients() throws ClassNotFoundException {
@@ -199,14 +209,7 @@ public class Client {
 				
 					try {
 						String name = "//" + clientStats[1] + "/ntn";
-						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						
-						/*if ((this.ownHash < receivedHash) && (receivedHash < this.nextHash)) {
-							this.nextHash = receivedHash;
-							ntnI.answerDiscovery(ownHash, nextHash);
-						} else if ((this.previousHash < receivedHash) && (receivedHash < this.ownHash)) {
-							this.previousHash = receivedHash;
-						}*/
+						ntnI = (NodeToNodeInterface) Naming.lookup(name);
 						
 						if(neighbours != null){
 							if(nextHash == Integer.parseInt(clientStats[0])){
@@ -226,7 +229,7 @@ public class Client {
 										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
 									}catch(RemoteException e){
 										//System.out.println("geen antwoord van vorige hash");
-										failure();
+										failure(receivedHash);
 									}
 									
 									previousHash = receivedHash;
@@ -236,7 +239,7 @@ public class Client {
 									try {
 										ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
 									} catch (RemoteException e) {
-										failure();
+										failure(receivedHash);
 									}
 									nextHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
@@ -246,7 +249,7 @@ public class Client {
 								try {
 									ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
 								} catch (RemoteException e) {
-									failure();
+									failure(receivedHash);
 								}
 								previousHash = receivedHash;
 								nextHash = receivedHash;
@@ -259,7 +262,7 @@ public class Client {
 									try {
 										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
 									} catch (RemoteException e) {
-										failure();
+										failure(receivedHash);
 									}
 									previousHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
@@ -268,7 +271,7 @@ public class Client {
 									try {
 										ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
 									} catch (RemoteException e) {
-										failure();
+										failure(receivedHash);
 									}
 									nextHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
@@ -277,7 +280,7 @@ public class Client {
 									try {
 										ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
 									} catch (RemoteException e) {
-										failure();
+										failure(receivedHash);
 									}
 									previousHash = receivedHash;
 									//System.out.println(previousHash + " "  + ownHash + " " + nextHash);

@@ -16,11 +16,15 @@ public class NameServer {
 	public int k = 0;
 	
 	NodeToNodeInterface ntnI;
+	ServerToNodeInterface stvI;
 	String name;
 	
 	String serverIp = "226.100.100.125";
 
 	public NameServer() {
+		//bind rmi object
+		//Naming.bind("localhost", stvI);
+		
 		ntnI = null;
 		name = null;
 
