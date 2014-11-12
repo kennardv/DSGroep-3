@@ -14,7 +14,7 @@ public class NameServer {
 
 	int id = 0;
 	public int k = 0;
-
+	
 	NodeToNodeInterface ntnI;
 	String name;
 
@@ -33,6 +33,8 @@ public class NameServer {
 			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
 			socket.joinGroup(InetAddress.getByName("226.100.100.125"));
 			
+			
+			//String[] clientStats = null;
 			//loop forever
 			//check if a packet was received
 		    while(true) {
@@ -49,6 +51,8 @@ public class NameServer {
 					//pull values from message and store
 					List message = (List) o;
 					String[] clientStats = (String[]) message.get(0);
+					System.out.println("Received dgram from " + clientStats[1]);
+
 					int[] filenamesArr = (int[])message.get(1);
 					int l = filenamesArr.length;
 					fileReplicateLocation = new String[l][2];
@@ -57,8 +61,22 @@ public class NameServer {
 						filenames.add(filenamesArr[i]);
 					}
 		        
-					addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
 
+
+					
+					
+
+			        Boolean shutdown = (Boolean) message.get(2);
+			        
+			        if(shutdown == true){
+			        	System.err.println("shutdown client: " + clientStats[0]);
+			        	removeFromHashMap(Integer.parseInt(clientStats[0]));
+			        	k--;
+			        }else{
+			        	//add new values to map
+			        	addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+						k++;
+			        }
                 
 					if(k> 0)
 					{
@@ -121,8 +139,7 @@ public class NameServer {
 						// ignore close exception
 					}
 				}
-				//reset length field
-				
+
 			}
 		} catch (UnknownHostException e) {
 		} catch (IOException e) {
@@ -136,6 +153,7 @@ public class NameServer {
 	 */
 	public void removeFromHashMap(int key) {
 		try {
+	        System.out.println("Delete node with key : " + key);
 			clientMap.removeKeyValuePair(key);
 		} catch (Exception e) {
 			System.out.println(e);
