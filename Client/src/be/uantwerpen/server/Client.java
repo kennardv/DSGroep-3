@@ -29,6 +29,7 @@ public class Client {
 	public NodeToNode ntn; //declaratie van remote object
 	public Registry registry = null;
 	public Client client;
+	public String[][] fileReplicateList = null;
 	
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
 	
