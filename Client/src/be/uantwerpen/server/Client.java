@@ -24,6 +24,8 @@ public class Client {
 	String myFilesFolderName = "myfiles";
 	List<File> myFiles = null;
 	
+	String ipaddress = Inet4Address.getLocalHost().getHostAddress();
+	
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
 		//START OF SYSTEM
 		//CREATE FileListAgent
@@ -83,7 +85,7 @@ public class Client {
 		byte[] b = byteArr.toByteArray();
 		DatagramPacket dgram;
 		dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
-		String bindLocation = "//localhost/ntn";
+		String bindLocation = "//" + this.ipaddress + "/ntn";
 		try {
 			registry = LocateRegistry.createRegistry(1099);
 		} catch (Exception e) {
@@ -114,12 +116,6 @@ public class Client {
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
-		}
-
-		try {
-			Naming.unbind(bindLocation); //unbind to free for other nodes
-		} catch (NotBoundException e) {
-			System.err.println("Not bound");
 		}
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes)); //waarom +1?
 		
@@ -173,8 +169,16 @@ public class Client {
 					System.out.println(receivedHash);
 				
 					try {
-						String name = "//localhost/ntn";
+						String name = "//" + clientStats[1] + "/ntn";
 						NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+						/*
+						if ((this.ownHash < receivedHash) && (receivedHash < this.nextHash)) {
+							this.nextHash = receivedHash;
+							ntnI.answerDiscovery(ownHash, nextHash);
+						} else if ((this.previousHash < receivedHash) && (receivedHash < this.ownHash)) {
+							this.previousHash = receivedHash;
+						}
+						*/
 						
 						if(neighbours != null){
 							if(nextHash == Integer.parseInt(clientStats[0])){
@@ -284,13 +288,7 @@ public class Client {
         byte[] b = byteArr.toByteArray();
         DatagramPacket dgram;
         dgram = new DatagramPacket(b, b.length, InetAddress.getByName("226.100.100.125"), 4545);
-        String bindLocation = "//localhost/ntn";
-        System.out.println("Location bind");
-        try {
-            Naming.bind(bindLocation, ntn);
-            System.out.println("bind Location");
-        } catch (Exception e) {
-        }
+
         socket.send(dgram);
         System.out.println("send");
         

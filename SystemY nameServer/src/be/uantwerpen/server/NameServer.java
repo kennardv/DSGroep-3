@@ -33,6 +33,8 @@ public class NameServer {
 			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
 			socket.joinGroup(InetAddress.getByName("226.100.100.125"));
 			
+			
+			String[] clientStats = null;
 			//loop forever
 			//check if a packet was received
 		    while(true) {
@@ -48,7 +50,7 @@ public class NameServer {
 					
 					//pull values from message and store
 					List message = (List) o;
-					String[] clientStats = (String[]) message.get(0);
+					clientStats = (String[]) message.get(0);
 					String[] filenamesArr = (String[])message.get(1);
 					List<String> filenames = new ArrayList<String>();
 			        for (int i = 0; i < filenamesArr.length; i++) {
@@ -91,7 +93,7 @@ public class NameServer {
 				try {
 					//notify client about amount of nodes
 					System.out.println("k = " + k);
-					name = "//localhost/ntn";
+					name = "//" + clientStats[1] + "/ntn";
 					ntnI = null;
 					ntnI = (NodeToNodeInterface) Naming.lookup(name);
 					System.out.println("lookup done = " + name);
