@@ -31,6 +31,7 @@ public class NameServer {
 		ListenForPacket();
 	}
 	
+	
 	public void ListenForPacket() {
 		try {
 			//create socket, buffer and join socket group

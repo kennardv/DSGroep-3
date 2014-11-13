@@ -15,6 +15,8 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 	@Override
 	public int[] askPrevAndNextNode(int hash) throws RemoteException {
 		//this.ns.look for hash
+		
+		return null;
 	}
 
 }
