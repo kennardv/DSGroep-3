@@ -22,15 +22,26 @@ public class Client {
 	/************************************************************/
 	/************************************************************/
 	
+	//my hashes
+	private int previousHash, currentHash, nextHash;
+	
+	//RMI vars
+	private Registry registry = null;
+	private NodeToNode ntn = null;
+	private NodeToNodeInterface ntnI = null;
+	private ServerToNodeInterface stvI = null;
+	private String rmiBindLocation = null;
+	
+	//TCP vars
+	private String multicastAddress = null;
+	private int socketPort = 4545;
+	
 	String serverIp = "226.100.100.125";
-	int port = 4545; 
+	//int port = 4545; 
 	
 	//Client client;
-	public int previousHash, ownHash, nextHash; //declaratie van de type hashes
-	public NodeToNode ntn; //declaratie van remote object
-	NodeToNodeInterface ntnI = null;
-	ServerToNodeInterface stvI = null;
-	public Registry registry = null;
+	
+	
 	public Client client;
 	
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
@@ -41,6 +52,7 @@ public class Client {
 	
 	String ipaddress = null;
 	
+	//ctor
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
 		if (!useLocalHost) {
 			ipaddress = Inet4Address.getLocalHost().getHostAddress();
@@ -63,7 +75,7 @@ public class Client {
 		///////////////////////////////////////////////
 		
 		//Give client a name from console input
-        String nameClient = readFromConsole("Please enter client name: ");
+        String nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
         
         //get all file paths
 		String[] filenames = new String[myFiles.size()];
@@ -71,7 +83,7 @@ public class Client {
 			filenames[i] = myFiles.get(i).getName();
 		}
 		//send TCP and receive TCP test
-		String option = readFromConsole("Send, receive or just continue? (S/R/C)");
+		/*String option = readFromConsole("Send, receive or just continue? (S/R/C)");
 		if (option.equals("S")) {
 			TCPUtil tcpSender = new TCPUtil(null, 20000, true, myFiles.get(0));
 			Thread t = new Thread(tcpSender);
@@ -82,25 +94,51 @@ public class Client {
 			t.start();
 		} else if(option.equals("C")) {
 			
-		}
+		}*/
 		
 		//set own to hashed own name
-		ownHash = hashString(nameClient);
+		currentHash = hashString(nameClient);
 		
 		//fill array with info
-		String[] clientInfo = { String.valueOf(ownHash), this.ipaddress };
+		String[] clientInfo = { String.valueOf(currentHash), this.ipaddress };
 		Boolean shutdown = false;
 		
 		//list with clientstats arr and filenames arr
 		List<Object> message = createDiscoveryMessage(clientInfo, filenames, shutdown);
-
+		
+		//bind remote object
+		bootstrap(this.ipaddress);
+		//multicast and process answers
+		discover(message, InetAddress.getByName(serverIp), socketPort);
+	    
+	    listenForDiscoveryMessage();
+	}
+	
+	/**
+	 * Bind a remote object
+	 * @param ip
+	 * @return remote object's bind location
+	 */
+	void bootstrap(String ip) {
 		//bind remote object at location
-		String bindLocation = createBindLocation(this.ipaddress);
-		bindRemoteObject(bindLocation, ntn);
-		
+		this.rmiBindLocation = createBindLocation(ip);
+		bindRemoteObject(this.rmiBindLocation, this.ntn);
+	}
+	
+	/**
+	 * Send a discovery message to the nameserver and all nodes
+	 * @param message
+	 * Contains my info
+	 * @param ip
+	 * Multicast address?
+	 * @param port
+	 * Port to send on
+	 */
+	void discover(Object message, InetAddress ip, int port) {
 		//create message and multicast it
-		multicastDatagramPacket(message, InetAddress.getByName(serverIp), 4545);
+		multicastDatagramPacket(message, ip, port);
 		
+		//NS or other nodes answering on remote object
 		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
 		while (ntn.nextHash == -1 || ntn.numberOfNodes == -1)
 		{
@@ -111,8 +149,12 @@ public class Client {
 			{
 				System.out.println("No neighbours! All hashes set to own");
 				//set next and previous hash equal to own hash
-				ntn.nextHash = ownHash;
-				ntn.prevHash = ownHash;
+				ntn.nextHash = this.currentHash;
+				ntn.prevHash = this.currentHash;
+			} else if (ntn.numberOfNodes > 1) {
+				System.out.println(ntn.numberOfNodes + " neighbours. Setting hashes to hashes from previous node.");
+				this.nextHash = ntn.nextHash;
+				this.previousHash = ntn.prevHash;
 			}
 			try {
 				//wait 100 ms
@@ -121,17 +163,15 @@ public class Client {
 				Thread.currentThread().interrupt();
 			}
 		}
-		System.out.println("Total connected clients: " + (ntn.numberOfNodes)); //waarom +1?
+		System.out.println("Total connected clients: " + (ntn.numberOfNodes));
 		
 		//set client's hash fields
-		nextHash = ntn.nextHash();
-		previousHash = ntn.prevHash();
-		System.out.println("Hashes: Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
+		this.nextHash = ntn.nextHash();
+		this.previousHash = ntn.prevHash();
+		System.out.println("Hashes: Previous: " + this.previousHash + ". Own: " + this.currentHash + ". Next: " + this.nextHash);
 		
 		//unbind object from location
-		unbindRemoteObject(bindLocation);
-	    
-	    waitForClients();
+		unbindRemoteObject(this.rmiBindLocation);
 	}
 	
 	void failure(int hash){
@@ -152,138 +192,6 @@ public class Client {
 		}
 		int next = hashes[0];
 		int prev = hashes[1];
-	}
-
-	/**
-	 * MUUG VEEL IF'EN, HERSCHRIJVEN NAAR IETS NORMAAL AUB :(
-	 * @param receivedHash
-	 * @param receivedIPAddress
-	 * @param neighbours
-	 */
-	void changeHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
-		try {
-			String name = createBindLocation(receivedIPAddress);
-			ntnI = (NodeToNodeInterface) Naming.lookup(name);
-			
-			if(neighbours != null){
-				if(nextHash == receivedHash){
-			        //System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
-					nextHash = neighbours[0];
-				}
-				else if(previousHash == receivedHash){
-					//System.out.println("Changing next node from " + previousHash + " to " + neighbours[1]);
-					previousHash = neighbours[1];
-				}
-				//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-			}else{
-				
-				if (ownHash > nextHash) { //laatste hash 
-					if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
-						try{
-							ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
-						}catch(RemoteException e){
-							//System.out.println("geen antwoord van vorige hash");
-							failure(receivedHash);
-						}
-						
-						previousHash = receivedHash;
-						//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-					} 
-					else {
-						try {
-							ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
-						} catch (RemoteException e) {
-							failure(receivedHash);
-						}
-						nextHash = receivedHash;
-						//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-					}
-				} 
-				else if(ownHash == nextHash) {
-					try {
-						ntnI.answerDiscovery(ownHash, ownHash); //send my hashes to neighbours via RMI
-					} catch (RemoteException e) {
-						failure(receivedHash);
-					}
-					previousHash = receivedHash;
-					nextHash = receivedHash;
-					//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-					//doorsturen via RMI
-					
-				}
-				else { 
-					if ((previousHash < receivedHash) && (ownHash > receivedHash)) {
-						try {
-							ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
-						} catch (RemoteException e) {
-							failure(receivedHash);
-						}
-						previousHash = receivedHash;
-						//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-						//RMI
-					} else if ((ownHash < receivedHash) && (nextHash > receivedHash)) {
-						try {
-							ntnI.answerDiscovery(ownHash, nextHash); //send my hashes to neighbours via RMI
-						} catch (RemoteException e) {
-							failure(receivedHash);
-						}
-						nextHash = receivedHash;
-						//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-					}
-					else if((previousHash == nextHash) || (previousHash > ownHash)) {
-						try {
-							ntnI.answerDiscovery(previousHash, ownHash); //send my hashes to neighbours via RMI
-						} catch (RemoteException e) {
-							failure(receivedHash);
-						}
-						previousHash = receivedHash;
-						//System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-					}
-				}
-				
-			}
-			//System.out.println("waitForClients hashes set : Previous: " + ntn.prevHash + ". Own: " + ownHash + ". Next: " + ntn.nextHash);
-			
-		} catch(Exception e) {
-			System.err.println("Fileserver exception: " + e.getMessage());
-			e.printStackTrace();
-		}
-	}
-	
-	void waitForClients() throws ClassNotFoundException {
-		try {
-			byte[] inBuf = new byte[256];
-			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
-			MulticastSocket socket = new MulticastSocket(4545);
-			socket.joinGroup(InetAddress.getByName(serverIp));
-			
-			//do this forever
-			while (true) {
-				socket.receive(dgram); //blocks untill package is received
-				
-				try {
-					List<Object> message = unpackDiscoveryMessage(dgram);
-					String[] clientStats = (String[]) message.get(0);
-					Boolean shutdown = (Boolean) message.get(2);
-					System.out.println(shutdown);
-					int[] neighbours = null;
-					if(shutdown == true){
-						neighbours = (int[]) message.get(3);
-						System.out.println("next = " + neighbours[0]);
-						System.out.println("previous = " + neighbours[1]);
-					}
-					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
-					System.out.println(receivedHash);
-					
-					changeHashes(receivedHash, clientStats[1], neighbours);
-					
-				} finally {
-
-				}
-			}
-		} catch (IOException e) {
-			
-		}
 	}
 	
     public void shutdown(List<Object> message) throws IOException {
@@ -306,7 +214,7 @@ public class Client {
         System.out.println("Object written");
         byte[] b = byteArr.toByteArray();
         DatagramPacket dgram;
-        dgram = new DatagramPacket(b, b.length, InetAddress.getByName(serverIp), 4545);
+        dgram = new DatagramPacket(b, b.length, InetAddress.getByName(serverIp), socketPort);
 
         socket.send(dgram);
         System.out.println("send");
@@ -316,6 +224,113 @@ public class Client {
         
 	}
 
+    /**
+     * Poll continuously for a discovery message from a new node 
+     */
+    void listenForDiscoveryMessage() {
+		try {
+			byte[] inBuf = new byte[256];
+			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
+			MulticastSocket socket = new MulticastSocket(socketPort);
+			socket.joinGroup(InetAddress.getByName(serverIp));
+			
+			//do this forever
+			while (true) {
+				socket.receive(dgram); //blocks untill package is received
+				
+				try {
+					List<Object> message = unpackDiscoveryMessage(dgram);
+					String[] clientStats = (String[]) message.get(0);
+					Boolean shutdown = (Boolean) message.get(2);
+					//System.out.println(shutdown);
+					int[] neighbours = null;
+					if(shutdown == true){
+						neighbours = (int[]) message.get(3);
+						System.out.println("next = " + neighbours[0]);
+						System.out.println("previous = " + neighbours[1]);
+					}
+					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
+					//System.out.println(receivedHash);
+					
+					updateHashes(receivedHash, clientStats[1], neighbours);
+					
+				} finally {
+
+				}
+			}
+		} catch (IOException e) {
+			
+		}
+	}
+    
+    /**
+	 * Algorithm to decide about my hashes, and inform discovery sender
+	 * @param receivedHash
+	 * Discovery sender's hashed name
+	 * @param receivedIPAddress
+	 * used to create bind location for remote object
+	 * @param neighbours
+	 */
+	void updateHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
+		try {
+			String name = createBindLocation(receivedIPAddress);
+			ntnI = (NodeToNodeInterface) Naming.lookup(name);
+			
+			
+			//I am the only node -- SPECIAL CASE FOR FIRST NODE
+			if (this.previousHash == this.currentHash && this.nextHash == this.currentHash) {
+				//set all hashes to my own because i'm the only node
+				this.nextHash = receivedHash;
+				this.previousHash = receivedHash;
+				ntnI.answerDiscovery(this.currentHash, this.currentHash);
+			}
+			//I am the previous node
+			if (receivedHash > this.currentHash) {
+				//I am the largest node
+				if (receivedHash < this.nextHash || ((receivedHash > this.currentHash) && (this.currentHash > this.nextHash))) {
+					//after this I'm not the largest anymore, I sit in between, the new node becomes the largest
+					int tmp = this.nextHash;
+					this.nextHash = receivedHash;
+					ntnI.answerDiscovery(this.currentHash, tmp);
+				}
+				//I am the lowest node
+				else if((receivedHash > this.previousHash) && (this.previousHash >= this.nextHash)) {
+					//set my previous to the largest -> smallest connects to largest
+					this.previousHash = receivedHash;
+				}
+			}
+			//I am the next node
+			else if ((receivedHash > this.previousHash) && (receivedHash < this.currentHash)) {
+				//something bigger than my previous hash but smaller than me came in
+				this.previousHash = receivedHash;
+			}
+			
+			System.out.println("waitForClients hashes set : Previous: " + this.previousHash + ". Current: " + this.currentHash + ". Next: " + this.nextHash);
+			
+			
+			//////////////////////////////////////////////////////////////////////////
+			//////////////////////////// LEFTOVER OLD CODE ///////////////////////////
+			//////////////////////////////////////////////////////////////////////////
+			/*if(neighbours != null){
+				if(nextHash == receivedHash){
+			        //System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
+					nextHash = neighbours[0];
+				}
+				else if(previousHash == receivedHash){
+					//System.out.println("Changing next node from " + previousHash + " to " + neighbours[1]);
+					previousHash = neighbours[1];
+				}
+				System.out.println(previousHash + " "  + ownHash + " " + nextHash);
+			}*/
+			//////////////////////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////
+			
+		} catch(Exception e) {
+			System.err.println("Fileserver exception: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+    
     /**
     * Send a datagramPacket
     * @param message
@@ -348,6 +363,7 @@ public class Client {
 			e1.printStackTrace();
 		}
 		//fill in datagram packet
+		//IP ADDRESS NODIG? IS TOCH EEN MULTICAST???
 		dgram = new DatagramPacket(b, b.length, ipaddress, port);
 		
 		//try to send the packet
@@ -368,13 +384,13 @@ public class Client {
 
     /**
      * Bind the specified object to a location
-     * @param bindLocation
+     * @param path
      * @param ntn
      * Remote object to bind
      */
-    void bindRemoteObject(String bindLocation, NodeToNode ntn) {
+    void bindRemoteObject(String path, NodeToNode ntn) {
     	try {
-			Naming.bind(bindLocation, ntn);
+			Naming.bind(path, ntn);
 		} catch (MalformedURLException | RemoteException
 				| AlreadyBoundException e) {
 			// TODO Auto-generated catch block
@@ -384,11 +400,11 @@ public class Client {
     
     /**
      * Unbind remote object at specified location
-     * @param bindLocation
+     * @param path
      */
-    void unbindRemoteObject(String bindLocation) {
+    void unbindRemoteObject(String path) {
     	try {
-			Naming.unbind(bindLocation);
+			Naming.unbind(path);
 		} catch (RemoteException | MalformedURLException | NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

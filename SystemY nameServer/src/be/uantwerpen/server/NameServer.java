@@ -13,7 +13,6 @@ public class NameServer {
 	XMLMarshaller marshaller = new XMLMarshaller();
 
 	int id = 0;
-	public int k = 0;
 	
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
@@ -71,11 +70,9 @@ public class NameServer {
 			        if(shutdown == true){
 			        	System.err.println("shutdown client: " + clientStats[0]);
 			        	removeFromHashMap(Integer.parseInt(clientStats[0]));
-			        	k--;
 			        }else{
 			        	//add new values to map
 			        	addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
-						k++;
 			        }
                 
 					System.out.println("hash: " + clientStats[0]);
@@ -102,13 +99,12 @@ public class NameServer {
 				dgram.setLength(inBuf.length);
 				try {
 					//notify client about amount of nodes
-					System.out.println("k = " + k);
 					name = "//" + clientStats[1] + "/ntn";
 					ntnI = null;
 					ntnI = (NodeToNodeInterface) Naming.lookup(name);
 					System.out.println("lookup done = " + name);
-					ntnI.serverAnswer(k);
-					System.err.println("Amount of clients: " + k);
+					ntnI.serverAnswer(nodeMap.size());
+					System.err.println("Amount of clients: " + nodeMap.size());
 				} catch (Exception e) {
 					System.err.println("FileServer exception: " + e.getMessage());
 					e.printStackTrace();
