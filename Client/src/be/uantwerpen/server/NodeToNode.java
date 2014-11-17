@@ -100,4 +100,10 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	{
 		return numberOfNodes;
 	}
+
+	@Override
+	public void updateHashes(int previous, int next) throws RemoteException {
+		this.prevHash = previous;
+		this.nextHash = next;
+	}
 }

@@ -10,4 +10,5 @@ public interface NodeToNodeInterface extends Remote {
    public void serverAnswer(int nodes) throws RemoteException;
    public void startFileListAgent(FileListAgent agent) throws RemoteException;
    public void startFileRecoveryAgent(FileRecoveryAgent agent) throws RemoteException;
+   public void updateHashes(int previous, int next) throws RemoteException;
 }

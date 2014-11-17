@@ -3,5 +3,7 @@ package be.uantwerpen.server;
 import java.rmi.RemoteException;
 
 public interface ServerToNodeInterface {
-	public int[] askPrevAndNextNode(int hash) throws RemoteException;
+	public int[] getPreviousAndNextNodeHash(int hash) throws RemoteException;
+	public void removeNode(int nodeHash) throws RemoteException;
+	public String getNodeIPAddress(int nodeHash) throws RemoteException;
 }

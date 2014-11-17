@@ -1,7 +1,6 @@
 package be.uantwerpen.server;
 
 import java.net.*;
-import java.net.UnknownHostException;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -36,8 +35,20 @@ public class Client {
 	private String multicastAddress = null;
 	private int socketPort = 4545;
 	
+	String myIPAddress = null;
 	String serverIp = "226.100.100.125";
-	//int port = 4545; 
+	
+	/**
+	 * String array because enum serialization causes trouble
+	 * 0 = discovery
+	 * 1 = shutdown
+	 * 2 = failure
+	 */
+	private String[] subject = {
+		"discovery",
+		"shutdown",
+		"failure"
+	};
 	
 	//Client client;
 	
@@ -50,14 +61,14 @@ public class Client {
 	List<File> myFiles = null;
 
 	
-	String ipaddress = null;
+	
 	
 	//ctor
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
 		if (!useLocalHost) {
-			ipaddress = Inet4Address.getLocalHost().getHostAddress();
+			myIPAddress = Inet4Address.getLocalHost().getHostAddress();
 		} else {
-			ipaddress = "localhost";
+			myIPAddress = "localhost";
 		}
 		
 		///////////// INIT VARIABLES HERE /////////////
@@ -100,14 +111,14 @@ public class Client {
 		currentHash = hashString(nameClient);
 		
 		//fill array with info
-		String[] clientInfo = { String.valueOf(currentHash), this.ipaddress };
+		String[] clientInfo = { String.valueOf(currentHash), this.myIPAddress };
 		Boolean shutdown = false;
 		
 		//list with clientstats arr and filenames arr
-		List<Object> message = createDiscoveryMessage(clientInfo, filenames, shutdown);
+		List<Object> message = createDiscoveryMessage(subject[0], clientInfo, filenames, shutdown);
 		
 		//bind remote object
-		bootstrap(this.ipaddress);
+		bootstrap(this.myIPAddress);
 		//multicast and process answers
 		discover(message, InetAddress.getByName(serverIp), socketPort);
 	    
@@ -171,10 +182,54 @@ public class Client {
 		System.out.println("Hashes: Previous: " + this.previousHash + ". Own: " + this.currentHash + ". Next: " + this.nextHash);
 		
 		//unbind object from location
-		unbindRemoteObject(this.rmiBindLocation);
+		if (useLocalHost) {
+			unbindRemoteObject(this.rmiBindLocation);
+		}
 	}
 	
 	void failure(int hash){
+		//get previous and next node of failing node
+		int[] hashes = null;
+		try {
+			hashes = stvI.getPreviousAndNextNodeHash(hash);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//compute paths for nodes to update
+		String previousPath = null;
+		try {
+			previousPath = createBindLocation(stvI.getNodeIPAddress(hashes[0]));
+		} catch (RemoteException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		String nextPath = null;
+		try {
+			nextPath = createBindLocation(stvI.getNodeIPAddress(hashes[1]));
+		} catch (RemoteException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
+		//update hashes at prev and next
+		try {
+			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
+			ntnI.updateHashes(-1, hashes[1]);
+		} catch (MalformedURLException | RemoteException | NotBoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			ntnI = (NodeToNodeInterface) Naming.lookup(nextPath);
+			ntnI.updateHashes(hashes[0], -1);
+		} catch (MalformedURLException | RemoteException | NotBoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		//remove node from server
 		try {
 			String name = "//" + serverIp + "/ntn";
 			stvI = (ServerToNodeInterface) Naming.lookup(name);
@@ -182,16 +237,12 @@ public class Client {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		int[] hashes = null;
 		try {
-			hashes = stvI.askPrevAndNextNode(hash);
+			stvI.removeNode(hash);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		int next = hashes[0];
-		int prev = hashes[1];
 	}
 	
     public void shutdown(List<Object> message) throws IOException {
@@ -240,12 +291,12 @@ public class Client {
 				
 				try {
 					List<Object> message = unpackDiscoveryMessage(dgram);
-					String[] clientStats = (String[]) message.get(0);
-					Boolean shutdown = (Boolean) message.get(2);
+					String[] clientStats = (String[]) message.get(1);
+					Boolean shutdown = (Boolean) message.get(3);
 					//System.out.println(shutdown);
 					int[] neighbours = null;
 					if(shutdown == true){
-						neighbours = (int[]) message.get(3);
+						neighbours = (int[]) message.get(4);
 						System.out.println("next = " + neighbours[0]);
 						System.out.println("previous = " + neighbours[1]);
 					}
@@ -275,7 +326,6 @@ public class Client {
 		try {
 			String name = createBindLocation(receivedIPAddress);
 			ntnI = (NodeToNodeInterface) Naming.lookup(name);
-			
 			
 			//I am the only node -- SPECIAL CASE FOR FIRST NODE
 			if (this.previousHash == this.currentHash && this.nextHash == this.currentHash) {
@@ -325,8 +375,8 @@ public class Client {
 			//////////////////////////////////////////////////////////////////////////
 			//////////////////////////////////////////////////////////////////////////
 			
-		} catch(Exception e) {
-			System.err.println("Fileserver exception: " + e.getMessage());
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			failure(receivedHash);
 			e.printStackTrace();
 		}
 	}
@@ -422,8 +472,9 @@ public class Client {
      * @param shutdown
      * @return 
      */
-    List<Object> createDiscoveryMessage(String[] clientInfo, String[] filenames, Boolean shutdown) {
+    List<Object> createDiscoveryMessage(String subject, String[] clientInfo, String[] filenames, Boolean shutdown) {
      	List<Object> message = new ArrayList<Object>();
+     	message.add(subject);
      	message.add(clientInfo);
      	message.add(filenames);
      	message.add(shutdown);

@@ -8,7 +8,7 @@ import java.util.*;
 
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
-	HashMap<Integer, Client> nodeMap = new HashMap<Integer, Client>();
+	TreeMap<Integer, Client> nodeMap = new TreeMap<Integer, Client>();
 
 	XMLMarshaller marshaller = new XMLMarshaller();
 
@@ -19,11 +19,21 @@ public class NameServer {
 	String name;
 	
 	String serverIp = "226.100.100.125";
+	
+	/**
+	 * 0 = discovery
+	 * 1 = shutdown
+	 * 2 = failure
+	 */
+	private String[] subject = {
+		"discovery",
+		"shutdown",
+		"failure"
+	};
 
 	public NameServer() {
 		//bind rmi object
 		//Naming.bind("localhost", stvI);
-		
 		ntnI = null;
 		name = null;
 
@@ -46,33 +56,32 @@ public class NameServer {
 		    while(true) {
 		    	// blocks until a datagram is received
 				socket.receive(dgram); 
-				
 				//process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
 				try {
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
-					
+					System.out.println("b");
 					//pull values from message and store
 					List message = (List) o;
-					clientStats = (String[]) message.get(0);
+					clientStats = (String[]) message.get(1);
 					
 					System.out.println("Received dgram from " + clientStats[1]);
 					
-					String[] filenamesArr = (String[])message.get(1);
+					String[] filenamesArr = (String[])message.get(2);
 					List<String> filenames = new ArrayList<String>();
 			        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
-			        Boolean shutdown = (Boolean) message.get(2);
+			        Boolean shutdown = (Boolean) message.get(3);
 			        
 			        if(shutdown == true){
 			        	System.err.println("shutdown client: " + clientStats[0]);
-			        	removeFromHashMap(Integer.parseInt(clientStats[0]));
+			        	removeFromMap(Integer.parseInt(clientStats[0]));
 			        }else{
 			        	//add new values to map
-			        	addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+			        	addToMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
 			        }
                 
 					System.out.println("hash: " + clientStats[0]);
@@ -120,7 +129,7 @@ public class NameServer {
 	 * @param key
 	 * This is the hashed name for this particular map.
 	 */
-	public void removeFromHashMap(int key) {
+	public void removeFromMap(int key) {
 		try {
 	        System.out.println("Delete node with key : " + key);
 			clientMap.removeKeyValuePair(key);
@@ -138,7 +147,7 @@ public class NameServer {
 	 * @param ip
 	 * @param filenames
 	 */
-	public void addToHashMap(int hashedName, String ip, List<String> filenames) {
+	public void addToMap(int hashedName, String ip, List<String> filenames) {
 		try {
 			//Instantiate new Client object
 			Client node = new Client();
