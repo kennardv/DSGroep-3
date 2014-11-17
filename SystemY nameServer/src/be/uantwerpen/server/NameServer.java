@@ -12,7 +12,7 @@ public class NameServer {
 
 	XMLMarshaller marshaller = new XMLMarshaller();
 
-	int id = 0;
+	int k = 0;
 	
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
@@ -56,24 +56,25 @@ public class NameServer {
 		    while(true) {
 		    	// blocks until a datagram is received
 				socket.receive(dgram); 
+				String[] fileReplicateLocation = null;
 				//process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
 				try {
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
-					System.out.println("b");
 					//pull values from message and store
 					List message = (List) o;
 					clientStats = (String[]) message.get(1);
 					
 					System.out.println("Received dgram from " + clientStats[1]);
 					
-					String[] filenamesArr = (String[])message.get(2);
-					List<String> filenames = new ArrayList<String>();
+					int[] filenamesArr = (int[])message.get(2);
+					List<Integer> filenames = new ArrayList<Integer>();
 			        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
+			        
 			        Boolean shutdown = (Boolean) message.get(3);
 			        
 			        if(shutdown == true){
@@ -83,8 +84,55 @@ public class NameServer {
 			        	//add new values to map
 			        	addToMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
 			        }
-                
+			        
+			        /*
+			         * CRASHES WHEN SECOND CLIENT CONNECTS
+					if(k> 0)
+					{
+						fileReplicateLocation = new String[filenamesArr.length];
+				        for (int i = 0; i < filenamesArr.length; i++) 
+				        {
+							int previousNode = 0;	
+							boolean done = false;
+						    Set keys = nodeMap.keySet();
+						    Iterator itr = keys.iterator();
+						    while(itr.hasNext() && done == false)
+						    {	
+						    	previousNode = (int) itr.next();
+						    	
+						    	
+						    	if((filenamesArr[1] > previousNode) && (Integer.parseInt(clientStats[0]) != previousNode ))
+							    {
+						    		done = true;
+							    }
+						    }
+						    Client node = nodeMap.get(previousNode);
+						    
+						    fileReplicateLocation[i] = node.getIpaddress();
+
+						}
+					}
+					*/
+					
 					System.out.println("hash: " + clientStats[0]);
+					dgram.setLength(inBuf.length);
+					try {
+						//notify client about amount of nodes
+						name = "//localhost/ntn";
+						ntnI = null;
+						ntnI = (NodeToNodeInterface) Naming.lookup(name);
+						
+						
+						ntnI.serverAnswer(nodeMap.size(), fileReplicateLocation);
+						
+						
+						k++;
+						System.err.println("Amount of clients: " + k);
+					} catch (Exception e) {
+						System.err.println("FileServer exception: "
+								+ e.getMessage());
+						e.printStackTrace();
+					}
 
 
 				} catch (ClassNotFoundException e) {
@@ -104,20 +152,8 @@ public class NameServer {
 						// ignore close exception
 					}
 				}
-				//reset length field
-				dgram.setLength(inBuf.length);
-				try {
-					//notify client about amount of nodes
-					name = "//" + clientStats[1] + "/ntn";
-					ntnI = null;
-					ntnI = (NodeToNodeInterface) Naming.lookup(name);
-					System.out.println("lookup done = " + name);
-					ntnI.serverAnswer(nodeMap.size());
-					System.err.println("Amount of clients: " + nodeMap.size());
-				} catch (Exception e) {
-					System.err.println("FileServer exception: " + e.getMessage());
-					e.printStackTrace();
-				}
+
+				
 			}
 		} catch (UnknownHostException e) {
 		} catch (IOException e) {
@@ -147,7 +183,7 @@ public class NameServer {
 	 * @param ip
 	 * @param filenames
 	 */
-	public void addToMap(int hashedName, String ip, List<String> filenames) {
+	public void addToMap(int hashedName, String ip, List<Integer> filenames) {
 		try {
 			//Instantiate new Client object
 			Client node = new Client();

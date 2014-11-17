@@ -54,11 +54,12 @@ public class Client {
 	
 	
 	public Client client;
+	public String[] fileReplicateList = null;
 	
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
 	
 	String myFilesFolderName = "myfiles";
-	List<File> myFiles = null;
+	List<File> files = null;
 
 	
 	
@@ -81,7 +82,7 @@ public class Client {
 		}
 		
 		ntn = new NodeToNode();
-		myFiles = listFilesInDir("C:\\Users");
+		files = listFilesInDir("C:\\Users");
 		
 		///////////////////////////////////////////////
 		
@@ -89,23 +90,15 @@ public class Client {
         String nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
         
         //get all file paths
-		String[] filenames = new String[myFiles.size()];
-		for (int i = 0; i< myFiles.size(); i++) {
-			filenames[i] = myFiles.get(i).getName();
+		int[] filenames = new int[files.size()];
+		for (int i = 0; i< files.size(); i++) {
+			filenames[i] = hashString(files.get(i).getName());
+
 		}
 		//send TCP and receive TCP test
-		/*String option = readFromConsole("Send, receive or just continue? (S/R/C)");
-		if (option.equals("S")) {
-			TCPUtil tcpSender = new TCPUtil(null, 20000, true, myFiles.get(0));
-			Thread t = new Thread(tcpSender);
-			t.start();
-		} else if(option.equals("R")) {
-			TCPUtil tcpReceiver = new TCPUtil("127.0.0.1", 20000, false, null);
-			Thread t = new Thread(tcpReceiver);
-			t.start();
-		} else if(option.equals("C")) {
-			
-		}*/
+
+		
+
 		
 		//set own to hashed own name
 		currentHash = hashString(nameClient);
@@ -116,11 +109,14 @@ public class Client {
 		
 		//list with clientstats arr and filenames arr
 		List<Object> message = createDiscoveryMessage(subject[0], clientInfo, filenames, shutdown);
+		//List<Object> message = createDiscoveryMessage(subject[0], clientInfo, filenames, shutdown);
 		
 		//bind remote object
 		bootstrap(this.myIPAddress);
 		//multicast and process answers
 		discover(message, InetAddress.getByName(serverIp), socketPort);
+		//REPLICATE FILES NOT DONE
+		//replicate();
 	    
 	    listenForDiscoveryMessage();
 	}
@@ -155,7 +151,7 @@ public class Client {
 		{
 			System.out.println("Waiting, next hash: "+ntn.nextHash + " # of nodes: " + ntn.numberOfNodes);
 			
-			//if there are no neighbor nodes 
+			//if there are no neighbour nodes 
 			if (ntn.numberOfNodes == 1)
 			{
 				System.out.println("No neighbours! All hashes set to own");
@@ -174,7 +170,9 @@ public class Client {
 				Thread.currentThread().interrupt();
 			}
 		}
-		System.out.println("Total connected clients: " + (ntn.numberOfNodes));
+
+		System.out.println("Total connected clients: " + (ntn.numberOfNodes)); //waarom +1?
+
 		
 		//set client's hash fields
 		this.nextHash = ntn.nextHash();
@@ -185,6 +183,28 @@ public class Client {
 		if (useLocalHost) {
 			unbindRemoteObject(this.rmiBindLocation);
 		}
+	}
+	
+	/**
+	 * NOT DONE
+	 */
+	void replicate() {
+		fileReplicateList = ntn.replicationAnswer;
+		/*for( int i = 0; i< fileReplicateList.length; i++ )
+		{
+			String name = "//" + clientStats[1] + "/ntn";
+			try {
+				TCPUtil tcpSender = new TCPUtil(null, 20000, true, files.get(i), null);
+				Thread t = new Thread(tcpSender);
+				t.start();
+				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+				ntnI.getReceiverIp(fileReplicateList[i], 20000, files.get(i).getName());
+			} catch (NotBoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			
+		}*/
 	}
 	
 	void failure(int hash){
@@ -472,7 +492,7 @@ public class Client {
      * @param shutdown
      * @return 
      */
-    List<Object> createDiscoveryMessage(String subject, String[] clientInfo, String[] filenames, Boolean shutdown) {
+    List<Object> createDiscoveryMessage(String subject, String[] clientInfo, int[] filenames, Boolean shutdown) {
      	List<Object> message = new ArrayList<Object>();
      	message.add(subject);
      	message.add(clientInfo);

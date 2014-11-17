@@ -1,6 +1,17 @@
 package be.uantwerpen.server;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -9,6 +20,8 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	public int nextHash = -1;
 	public int prevHash = -1;
 	public int numberOfNodes = -1;
+	public String[] replicationAnswer;
+	public String ipAdress = "localhost";
 	
 	
 	public NodeToNode() throws RemoteException{
@@ -82,10 +95,20 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		prevHash = prev;
 	}
 	
-	public void serverAnswer(int nodes)
+	public void getReceiverIp(String ip, int port, String fileName) throws UnknownHostException, IOException {
+		TCPUtil tcpSender = new TCPUtil(ip, port, false, null, fileName);
+		Thread t = new Thread(tcpSender);
+		t.start();
+
+	}
+	    
+	   
+	
+	public void serverAnswer(int nodes, String[] fileReplicationList)
 	{
-		numberOfNodes = nodes;
-		
+		System.out.println("Answer from server.");
+		this.numberOfNodes = nodes;
+		this.replicationAnswer = fileReplicationList;
 	}
 	int nextHash()
 	{

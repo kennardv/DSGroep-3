@@ -1,11 +1,9 @@
 package be.uantwerpen.server;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
-
 public class TCPUtil extends Thread {
 	
 	ServerSocket ssocket = null;
@@ -15,12 +13,14 @@ public class TCPUtil extends Thread {
 	int port = 0;
 	boolean send = false;
 	File file = null;
+	String fileName = null;
 	
-	public TCPUtil(String ipaddress, int port, boolean send, File file) throws IOException {
+	public TCPUtil(String ipaddress, int port, boolean send, File file, String fileName) throws IOException {
 		this.ipaddress = ipaddress;
 		this.port = port;
 		this.send = send;
 		this.file = file;
+		this.fileName = fileName;
 	}
 	
 	public void run() {
@@ -33,7 +33,7 @@ public class TCPUtil extends Thread {
 			}
 		} else {
 			try {
-				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Kennard\\test2.txt");
+				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Nick\\test\\" + fileName);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -78,6 +78,7 @@ public class TCPUtil extends Thread {
 			 os.write(bytearray,0,bytearray.length);
 			 os.flush();
 		     this.socket.close();
+		     this.ssocket.close();
 		     //socket.close(); don't close server socket
 		 } catch(IOException e) {}
 		 
@@ -115,13 +116,11 @@ public class TCPUtil extends Thread {
 	    BufferedOutputStream bos = new BufferedOutputStream(fos);
 	    bytesRead = is.read(bytearray,0,bytearray.length);
 	    currentTot = bytesRead;
-
 	    do {
 	       bytesRead =
 	          is.read(bytearray, currentTot, (bytearray.length-currentTot));
 	       if(bytesRead >= 0) currentTot += bytesRead;
 	    } while(bytesRead > -1);
-
 	    bos.write(bytearray, 0 , currentTot);
 	    bos.flush();
 	    bos.close();
