@@ -42,7 +42,7 @@ public class NameServer {
 		    while(true) {
 		    	// blocks until a datagram is received
 				socket.receive(dgram); 
-				String[][] fileReplicateLocation;
+				String[] fileReplicateLocation;
 				//process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
@@ -57,7 +57,7 @@ public class NameServer {
 
 					int[] filenamesArr = (int[])message.get(1);
 					int l = filenamesArr.length;
-					fileReplicateLocation = new String[l][2];
+					fileReplicateLocation = new String[l];
 					List<Integer> filenames = new ArrayList<>();
 			        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
@@ -100,8 +100,7 @@ public class NameServer {
 						    }
 						    Client node = nodeMap.get(previousNode);
 						    
-						    fileReplicateLocation[i][0] = filenamesArr[i] + "";
-						    fileReplicateLocation[i][1] = node.getIpaddress();
+						    fileReplicateLocation[i] = node.getIpaddress();
 
 						}
 					}

@@ -29,7 +29,7 @@ public class Client {
 	public NodeToNode ntn; //declaratie van remote object
 	public Registry registry = null;
 	public Client client;
-	public String[][] fileReplicateList = null;
+	public String[] fileReplicateList = null;
 	
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
 	
@@ -69,18 +69,7 @@ public class Client {
 		}
 		//send TCP and receive TCP test
 		String option = readFromConsole("Send, receive or just continue? (S/R/C)");
-		if (option.equals("S")) {
-			TCPUtil tcpSender = new TCPUtil(null, 20000, true, files);
-
-			Thread t = new Thread(tcpSender);
-			t.start();
-		} else if(option.equals("R")) {
-			TCPUtil tcpReceiver = new TCPUtil( 20000, false);
-			Thread t = new Thread(tcpReceiver);
-			t.start();
-		} else if(option.equals("C")) {
-			
-		}
+		
 		Boolean shutdown = false;
 		
 		//set own to hashed own name
@@ -140,6 +129,24 @@ public class Client {
 				Thread.currentThread().interrupt();
 			}
 		}
+		fileReplicateList = ntn.replicationAnswer;
+		for( int i = 0; i< fileReplicateList.length; i++ )
+		{
+			String name = "//" + clientStats[1] + "/ntn";
+			try {
+				TCPUtil tcpSender = new TCPUtil(null, 20000, true, files.get(i), null);
+				Thread t = new Thread(tcpSender);
+				t.start();
+				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+				ntnI.getReceiverIp(fileReplicateList[i], 20000, files.get(i).getName());
+			} catch (NotBoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			
+		}
+		
+
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes)); //waarom +1?
 		
 		//set client's hash fields

@@ -1,51 +1,39 @@
 package be.uantwerpen.server;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
-
 public class TCPUtil extends Thread {
 	
 	ServerSocket ssocket = null;
 	Socket socket = null;
 	
-	String[] ipaddress = null;
+	String ipaddress = null;
 	int port = 0;
 	boolean send = false;
-	File[] file = null;
+	File file = null;
+	String fileName = null;
 	
-	public TCPUtil(String[] ipaddress, int port, boolean send, List<File> files ) throws IOException {
+	public TCPUtil(String ipaddress, int port, boolean send, File file, String fileName) throws IOException {
 		this.ipaddress = ipaddress;
 		this.port = port;
 		this.send = send;
 		this.file = file;
+		this.fileName = fileName;
 	}
-	public TCPUtil(int port, boolean send) throws IOException {
-		this.port = port;
-		this.send = send;
-	}
+	
 	public void run() {
 		if (send) {
 			try {
-				int i = 0;
-				boolean done = false;
-				for(i=0;i< file.length; i++)
-				{
-				 sendFilesOverTCP(file[i], this.port);
-				}
+				sendFilesOverTCP(this.file, this.port);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {
 			try {
-				for(int i=0;i< file.length; i++)
-				{
-					receiveFilesOverTCP(ipaddress[i], this.port, "C:\\Users\\Kennard\\test2.txt");
-				}
-				
+				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Nick\\test\\" + fileName);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -61,7 +49,7 @@ public class TCPUtil extends Thread {
      * what port to send the files over
      * @throws IOException
      */
-    boolean sendFilesOverTCP(File file, int port) throws IOException  {
+    void sendFilesOverTCP(File file, int port) throws IOException  {
     	this.ssocket = new ServerSocket(this.port);
     	this.socket = this.ssocket.accept();
     	
@@ -90,11 +78,11 @@ public class TCPUtil extends Thread {
 			 os.write(bytearray,0,bytearray.length);
 			 os.flush();
 		     this.socket.close();
+		     this.ssocket.close();
 		     //socket.close(); don't close server socket
 		 } catch(IOException e) {}
 		 
 		 System.out.println("File transfer complete");
-		 return true;
     }
     
     /**
@@ -128,13 +116,11 @@ public class TCPUtil extends Thread {
 	    BufferedOutputStream bos = new BufferedOutputStream(fos);
 	    bytesRead = is.read(bytearray,0,bytearray.length);
 	    currentTot = bytesRead;
-
 	    do {
 	       bytesRead =
 	          is.read(bytearray, currentTot, (bytearray.length-currentTot));
 	       if(bytesRead >= 0) currentTot += bytesRead;
 	    } while(bytesRead > -1);
-
 	    bos.write(bytearray, 0 , currentTot);
 	    bos.flush();
 	    bos.close();
@@ -143,8 +129,7 @@ public class TCPUtil extends Thread {
     
     /***
      * Helper function to convert the contents of a file to a byte array
-     * @
-     * param path
+     * @param path
      * path to the file
      * @return bFile
      * byte array of the contents of the file

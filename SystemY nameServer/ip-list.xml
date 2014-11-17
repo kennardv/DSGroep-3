@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <clients>
     <clientMap>
-
+        <entry>
+            <key>19892</key>
+            <value>
+                <id>1</id>
+                <name>19892</name>
+                <ipaddress>localhost</ipaddress>
+                <filenames>
+                    <filename>4963</filename>
+                    <filename>8978</filename>
+                </filenames>
+            </value>
+        </entry>
+        <entry>
+            <key>49</key>
+            <value>
+                <id>1</id>
+                <name>49</name>
+                <ipaddress>localhost</ipaddress>
+                <filenames>
+                    <filename>4963</filename>
+                    <filename>8978</filename>
+                </filenames>
+            </value>
+        </entry>
     </clientMap>
 </clients>
