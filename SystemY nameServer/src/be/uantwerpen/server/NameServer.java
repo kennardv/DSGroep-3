@@ -12,20 +12,24 @@ public class NameServer {
 
 	XMLMarshaller marshaller = new XMLMarshaller();
 
-	int id = 0;
-	public int k = 0;
+	int k = 0;
 	
 	NodeToNodeInterface ntnI;
+	ServerToNodeInterface stvI;
 	String name;
 	
 	String serverIp = "226.100.100.125";
 
 	public NameServer() {
+		//bind rmi object
+		//Naming.bind("localhost", stvI);
+		
 		ntnI = null;
 		name = null;
 
 		ListenForPacket();
 	}
+	
 	
 	public void ListenForPacket() {
 		try {
@@ -73,11 +77,9 @@ public class NameServer {
 			        if(shutdown == true){
 			        	System.err.println("shutdown client: " + clientStats[0]);
 			        	removeFromHashMap(Integer.parseInt(clientStats[0]));
-			        	k--;
 			        }else{
 			        	//add new values to map
 			        	addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
-						k++;
 			        }
                 
 					if(k> 0)
@@ -141,6 +143,7 @@ public class NameServer {
 					}
 				}
 
+				
 			}
 		} catch (UnknownHostException e) {
 		} catch (IOException e) {

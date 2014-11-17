@@ -93,7 +93,6 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	{
 		nextHash = next;
 		prevHash = prev;
-		//System.out.println("Setting neighbour hashes in NodeToNode. nextHash: " + nextHash + " prevHash: " + prevHash);
 	}
 	
 	public void getReceiverIp(String ip, int port, String fileName) throws UnknownHostException, IOException {
