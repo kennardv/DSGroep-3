@@ -191,7 +191,7 @@ public class Client {
 	 */
 	void replicate() {
 		fileReplicateList = ntn.replicationAnswer;
-		/*for( int i = 0; i< fileReplicateList.length; i++ )
+		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
 			String name = "//" + clientStats[1] + "/ntn";
 			try {
@@ -205,7 +205,7 @@ public class Client {
 				e.printStackTrace();
 			}	
 			
-		}*/
+		}
 	}
 	
 	void failure(int hash){
@@ -293,7 +293,6 @@ public class Client {
         
         System.out.println("Closing client");
         System.exit(1);
-        
 	}
 
     /**

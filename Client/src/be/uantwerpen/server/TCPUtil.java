@@ -33,7 +33,7 @@ public class TCPUtil extends Thread {
 			}
 		} else {
 			try {
-				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Nick\\test\\" + fileName);
+				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Ruben_Hirschberg\\test\\" + fileName);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
