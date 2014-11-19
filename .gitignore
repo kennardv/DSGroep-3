@@ -2,6 +2,7 @@
 
 ### Java ###
 *.class
+*.orig
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -95,3 +96,6 @@ atlassian-ide-plugin.xml
 com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
+
+#Project specific
+SystemY nameServer/ip-list.xml
