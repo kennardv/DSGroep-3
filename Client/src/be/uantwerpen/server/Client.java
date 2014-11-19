@@ -31,6 +31,7 @@ public class Client {
 	private NodeToNodeInterface ntnI = null;
 	private ServerToNodeInterface stvI = null;
 	private String rmiBindLocation = null;
+	private String[] clientStats = new String[2];
 	
 	//TCP vars
 	private String multicastAddress = null;
@@ -118,7 +119,7 @@ public class Client {
 		//multicast and process answers
 		discover(message, InetAddress.getByName(multicastIp), socketPort);
 		//REPLICATE FILES NOT DONE
-		//replicate();
+		replicate();
 	    
 	    listenForDiscoveryMessage();
 	}
@@ -192,7 +193,7 @@ public class Client {
 	 */
 	void replicate() {
 		fileReplicateList = ntn.replicationAnswer;
-		/*for( int i = 0; i< fileReplicateList.length; i++ )
+		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
 			String name = "//" + clientStats[1] + "/ntn";
 			try {
@@ -201,12 +202,12 @@ public class Client {
 				t.start();
 				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
 				ntnI.getReceiverIp(fileReplicateList[i], 20000, files.get(i).getName());
-			} catch (NotBoundException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
 			
-		}*/
+		}
 	}
 	
 	void failure(int hash){
@@ -327,7 +328,6 @@ public class Client {
         
         System.out.println("Closing client");
         System.exit(1);
-        
 	}
 
     /**
@@ -346,6 +346,7 @@ public class Client {
 				
 				try {
 					List<Object> message = unpackDiscoveryMessage(dgram);
+
 					String subject = (String)message.get(0);
 					switch (subject) {
 					case "discovery":
@@ -365,6 +366,7 @@ public class Client {
 					
 					
 					String[] clientStats = (String[]) message.get(1);
+
 					Boolean shutdown = (Boolean) message.get(3);
 					//System.out.println(shutdown);
 					int[] neighbours = null;

@@ -84,9 +84,12 @@ public class NameServer {
 			        	//add new values to map
 			        	addToMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
 			        }
+<<<<<<< HEAD
 			        
-			        /*
-			         * CRASHES WHEN SECOND CLIENT CONNECTS
+			   //CLIENT CONNECTS
+=======
+
+>>>>>>> 7a04a19d927d7cdc81af946ca62b3e09d73259b1
 					if(k> 0)
 					{
 						fileReplicateLocation = new String[filenamesArr.length];
@@ -112,7 +115,7 @@ public class NameServer {
 
 						}
 					}
-					*/
+					
 					
 					System.out.println("hash: " + clientStats[0]);
 					dgram.setLength(inBuf.length);
