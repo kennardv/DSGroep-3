@@ -118,7 +118,7 @@ public class NameServer {
 					dgram.setLength(inBuf.length);
 					try {
 						//notify client about amount of nodes
-						name = "//localhost/ntn";
+						name = "//" + clientStats[1] + "/ntn";
 						ntnI = null;
 						ntnI = (NodeToNodeInterface) Naming.lookup(name);
 						

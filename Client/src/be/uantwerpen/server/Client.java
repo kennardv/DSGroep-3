@@ -16,7 +16,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = true;
+	boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -36,7 +36,8 @@ public class Client {
 	private int socketPort = 4545;
 	
 	String myIPAddress = null;
-	String serverIp = "226.100.100.125";
+	String multicastIp = "226.100.100.125";
+	String serverIp = "192.168.1.1";
 	
 	/**
 	 * String array because enum serialization causes trouble
@@ -114,7 +115,7 @@ public class Client {
 		//bind remote object
 		bootstrap(this.myIPAddress);
 		//multicast and process answers
-		discover(message, InetAddress.getByName(serverIp), socketPort);
+		discover(message, InetAddress.getByName(multicastIp), socketPort);
 		//REPLICATE FILES NOT DONE
 		//replicate();
 	    
@@ -251,7 +252,7 @@ public class Client {
 		
 		//remove node from server
 		try {
-			String name = "//" + serverIp + "/ntn";
+			String name = createBindLocation(serverIp);
 			stvI = (ServerToNodeInterface) Naming.lookup(name);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
@@ -285,7 +286,7 @@ public class Client {
         System.out.println("Object written");
         byte[] b = byteArr.toByteArray();
         DatagramPacket dgram;
-        dgram = new DatagramPacket(b, b.length, InetAddress.getByName(serverIp), socketPort);
+        dgram = new DatagramPacket(b, b.length, InetAddress.getByName(multicastIp), socketPort);
 
         socket.send(dgram);
         System.out.println("send");
@@ -303,7 +304,7 @@ public class Client {
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
 			MulticastSocket socket = new MulticastSocket(socketPort);
-			socket.joinGroup(InetAddress.getByName(serverIp));
+			socket.joinGroup(InetAddress.getByName(multicastIp));
 			
 			//do this forever
 			while (true) {
