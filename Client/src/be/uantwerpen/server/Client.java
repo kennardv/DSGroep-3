@@ -435,7 +435,7 @@ public class Client {
      * @return 
      */
     List<Object> createDiscoveryMessage(String[] clientInfo, String[] filenames, Boolean shutdown) {
-     	List<Object> message = new ArrayList<Object>();
+     	List<Object> message = new ArrayList<Object>();k
      	message.add(clientInfo);
      	message.add(filenames);
      	message.add(shutdown);
