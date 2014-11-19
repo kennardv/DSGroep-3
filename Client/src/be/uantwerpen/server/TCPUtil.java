@@ -1,9 +1,10 @@
 package be.uantwerpen.server;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.List;
+
 public class TCPUtil extends Thread {
 	
 	ServerSocket ssocket = null;
@@ -11,38 +12,43 @@ public class TCPUtil extends Thread {
 	
 	String ipaddress = null;
 	int port = 0;
-	boolean send = false;
+	public enum Mode {
+		SEND,
+		RECEIVE
+	}
+	private Mode mode;
 	File file = null;
 	String fileName = null;
 	
-	public TCPUtil(String ipaddress, int port, boolean send, File file, String fileName) throws IOException {
+	public TCPUtil(String ipaddress, int port, Mode mode, File file, String fileName) throws IOException {
 		this.ipaddress = ipaddress;
 		this.port = port;
-		this.send = send;
+		this.mode = mode;
 		this.file = file;
 		this.fileName = fileName;
 	}
 	
 	public void run() {
-		if (send) {
-			try {
+		try {
+			switch (this.mode) {
+			case SEND:
 				sendFilesOverTCP(this.file, this.port);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			try {
+				break;
+			case RECEIVE:
 				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Ruben_Hirschberg\\test\\" + fileName);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				break;
+	
+			default:
+				break;
 			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
 	/**
-     * Send multiple files over a socket via TCP
+     * Send a file over a socket via TCP
      * @param filenames
      * a string array containing all the filenames 
      * @param port

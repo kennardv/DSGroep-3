@@ -22,6 +22,11 @@ public class Client {
 	/************************************************************/
 	/************************************************************/
 	
+	//Info
+	String nameClient = null;
+	List<File> files = null;
+	int[] filenames = null;
+	
 	//my hashes
 	private int previousHash, currentHash, nextHash;
 	
@@ -43,6 +48,7 @@ public class Client {
 	
 	/**
 	 * String array because enum serialization causes trouble
+	 * @param
 	 * 0 = discovery
 	 * 1 = shutdown
 	 * 2 = failure
@@ -53,8 +59,6 @@ public class Client {
 		"failure"
 	};
 	
-	//Client client;
-	
 	
 	public Client client;
 	public String[] fileReplicateList = null;
@@ -62,10 +66,6 @@ public class Client {
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
 	
 	String myFilesFolderName = "myfiles";
-	List<File> files = null;
-
-	
-	
 	
 	//ctor
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
@@ -76,48 +76,34 @@ public class Client {
 		}
 		
 		///////////// INIT VARIABLES HERE /////////////
-		
 		//create registry if it doesn't exist yet
 		try {
 			registry = LocateRegistry.createRegistry(1099);
 		} catch (RemoteException e) {
-			
 		}
 		
-		ntn = new NodeToNode();
-		files = listFilesInDir("C:\\Users");
+		this.ntn = new NodeToNode();
+		
+		//Give client a name from console input
+        this.nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
+		//set own to hashed own name
+		this.currentHash = hashString(this.nameClient);
+		
+		//get all file paths
+		this.files = listFilesInDir("C:\\Users");
+		
+		this.filenames = new int[this.files.size()];
+		for (int i = 0; i< files.size(); i++) {
+			this.filenames[i] = hashString(this.files.get(i).getName());
+		}
 		
 		///////////////////////////////////////////////
 		
-		//Give client a name from console input
-        String nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
-        
-        //get all file paths
-		int[] filenames = new int[files.size()];
-		for (int i = 0; i< files.size(); i++) {
-			filenames[i] = hashString(files.get(i).getName());
-
-		}
-		//send TCP and receive TCP test
-
-		
-
-		
-		//set own to hashed own name
-		currentHash = hashString(nameClient);
-		
-		//fill array with info
-		String[] clientInfo = { String.valueOf(currentHash), this.myIPAddress };
-		Boolean shutdown = false;
-		
-		//list with clientstats arr and filenames arr
-		List<Object> message = createDiscoveryMessage(subject[0], clientInfo, filenames, shutdown);
-		//List<Object> message = createDiscoveryMessage(subject[0], clientInfo, filenames, shutdown);
 		
 		//bind remote object
 		bootstrap(this.myIPAddress);
 		//multicast and process answers
-		discover(message, InetAddress.getByName(multicastIp), socketPort);
+		discover(InetAddress.getByName(multicastIp), socketPort);
 		//REPLICATE FILES NOT DONE
 		replicate();
 	    
@@ -144,9 +130,13 @@ public class Client {
 	 * @param port
 	 * Port to send on
 	 */
-	void discover(Object message, InetAddress ip, int port) {
+	void discover(InetAddress ip, int port) {
+		//fill array with info
+		String[] clientInfo = { String.valueOf(this.currentHash), this.myIPAddress };
+		List<Object> message = createDiscoveryMessage(clientInfo, filenames);
+		
 		//create message and multicast it
-		multicastDatagramPacket(message, ip, port);
+		sendDatagramPacket(message, ip, port);
 		
 		//NS or other nodes answering on remote object
 		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
@@ -197,7 +187,7 @@ public class Client {
 		{
 			String name = "//" + clientStats[1] + "/ntn";
 			try {
-				TCPUtil tcpSender = new TCPUtil(null, 20000, true, files.get(i), null);
+				TCPUtil tcpSender = new TCPUtil(null, 20000, TCPUtil.Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
 				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
@@ -211,92 +201,64 @@ public class Client {
 	}
 	
 	void failure(int hash){
-		//get previous and next node of failing node
-		int[] hashes = null;
-		try {
-			hashes = stvI.getPreviousAndNextNodeHash(hash);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//compute paths for nodes to update
+		int[] neighbourHashes = null;
 		String previousPath = null;
-		try {
-			previousPath = createBindLocation(stvI.getNodeIPAddress(hashes[0]));
-		} catch (RemoteException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
 		String nextPath = null;
+		String previousIP = null;
+		String nextIP = null;
+		List<Object> messagePreviousNode = null;
+		List<Object> messageNextNode = null;
 		try {
-			nextPath = createBindLocation(stvI.getNodeIPAddress(hashes[1]));
-		} catch (RemoteException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		
-		//packet send (subject) 
-		//van vorige en volgende ip krijgen en aan server to node interface vragen
-		//2 packet sturen met ip van vorige en volgende 
-		//packet als subject = failure 
-		String prvIp = null;
-		String nxtIp = null;
-		try {
-			prvIp = stvI.getNodeIPAddress(hashes[0]);
-			nxtIp = stvI.getNodeIPAddress(hashes[1]);
-		} catch (RemoteException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		List<Object> messagePrev = createFailureMessage(this.subject[2],"previous");
-		List<Object> messageNxt = createFailureMessage(this.subject[2],"next");
-		InetAddress inetPrev = null;
-		InetAddress inetNext = null;
-		try {
-			inetPrev = InetAddress.getByName(prvIp);
-			inetNext = InetAddress.getByName(nxtIp);
-		} catch (UnknownHostException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		
-		
-		multicastDatagramPacket(messagePrev, inetPrev, this.socketPort);
-		multicastDatagramPacket(messageNxt, inetNext, this.socketPort);
-		
-		
-		
-		
-		
-		//update hashes at prev and next
-		try {
-			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
-			ntnI.updateHashes(-1, hashes[1]);
-		} catch (MalformedURLException | RemoteException | NotBoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
-			ntnI = (NodeToNodeInterface) Naming.lookup(nextPath);
-			ntnI.updateHashes(hashes[0], -1);
-		} catch (MalformedURLException | RemoteException | NotBoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		//remove node from server
-		try {
-			String name = createBindLocation(serverIp);
-			stvI = (ServerToNodeInterface) Naming.lookup(name);
-		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			// TODO Auto-generated catch block
+			//get previous and next node of failing node
+			neighbourHashes = stvI.getPreviousAndNextNodeHash(hash);
+			//compute paths for nodes to update
+			previousPath = createBindLocation(stvI.getNodeIPAddress(neighbourHashes[0]));
+			nextPath = createBindLocation(stvI.getNodeIPAddress(neighbourHashes[1]));
+			
+			//get ip of neighbour nodes
+			previousIP = stvI.getNodeIPAddress(neighbourHashes[0]);
+			nextIP = stvI.getNodeIPAddress(neighbourHashes[1]);
+			
+			//create failure messages
+			messagePreviousNode = createFailureMessage("previous");
+			messageNextNode = createFailureMessage("next");
+		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+		
+		InetAddress inetAddressPrevious = null;
+		InetAddress inetAddressNext = null;
 		try {
+			//create inetAddress vars
+			inetAddressPrevious = InetAddress.getByName(previousIP);
+			inetAddressNext = InetAddress.getByName(nextIP);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		
+		sendDatagramPacket(messagePreviousNode, inetAddressPrevious, this.socketPort);
+		sendDatagramPacket(messageNextNode, inetAddressNext, this.socketPort);
+		
+		try {
+			//update hashes at prev and next
+			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
+			ntnI.updateHashes(-1, neighbourHashes[1]);
+			
+			ntnI = (NodeToNodeInterface) Naming.lookup(nextPath);
+			ntnI.updateHashes(neighbourHashes[0], -1);
+			
+			//lookup server remote object
+			String serverPath = createBindLocation(serverIp);
+			stvI = (ServerToNodeInterface) Naming.lookup(serverPath);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		}
+		
+
+		try {
+			//remove node from server
 			stvI.removeNode(hash);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -350,15 +312,11 @@ public class Client {
 					String subject = (String)message.get(0);
 					switch (subject) {
 					case "discovery":
-						
 						break;
 					case "shutdown" :
-						
-						
 						break;
 					case "failure" :
 						checkRMI((String)message.get(1));
-						
 						break;
 					default:
 						break;
@@ -367,14 +325,14 @@ public class Client {
 					
 					String[] clientStats = (String[]) message.get(1);
 
-					Boolean shutdown = (Boolean) message.get(3);
+					//Boolean shutdown = (Boolean) message.get(3);
 					//System.out.println(shutdown);
 					int[] neighbours = null;
-					if(shutdown == true){
+					/*if(shutdown == true){
 						neighbours = (int[]) message.get(4);
 						System.out.println("next = " + neighbours[0]);
 						System.out.println("previous = " + neighbours[1]);
-					}
+					}*/
 					int receivedHash = Integer.parseInt(clientStats[0]); //get hashesName from message
 					//System.out.println(receivedHash);
 					
@@ -494,7 +452,7 @@ public class Client {
     * What port to use
     * @return successful or not
     */
-    boolean multicastDatagramPacket(Object message, InetAddress ipaddress, int port) {
+    boolean sendDatagramPacket(Object message, InetAddress ipaddress, int port) {
     	//init datatypes
     	boolean sent = false;
     	DatagramSocket socket = null;
@@ -577,21 +535,19 @@ public class Client {
      * @param shutdown
      * @return 
      */
-
-    List<Object> createFailureMessage(String subject, String position) {
+    List<Object> createDiscoveryMessage(String[] clientInfo, int[] filenames) {
      	List<Object> message = new ArrayList<Object>();
-     	message.add(subject);
-     	message.add(position);
+     	message.add(subject[0]);
+     	message.add(clientInfo);
+     	message.add(filenames);
      	
      	return message;
      }
     
-    List<Object> createDiscoveryMessage(String subject, String[] clientInfo, int[] filenames, Boolean shutdown) {
+    List<Object> createFailureMessage(String position) {
      	List<Object> message = new ArrayList<Object>();
-     	message.add(subject);
-     	message.add(clientInfo);
-     	message.add(filenames);
-     	message.add(shutdown);
+     	message.add(subject[2]);
+     	message.add(position);
      	
      	return message;
      }

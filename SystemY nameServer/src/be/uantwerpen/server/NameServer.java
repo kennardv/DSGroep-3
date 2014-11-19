@@ -55,7 +55,7 @@ public class NameServer {
 			//check if a packet was received
 		    while(true) {
 		    	// blocks until a datagram is received
-				socket.receive(dgram); 
+				socket.receive(dgram);
 				String[] fileReplicateLocation = null;
 				//process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
@@ -75,15 +75,15 @@ public class NameServer {
 						filenames.add(filenamesArr[i]);
 					}
 			        
-			        Boolean shutdown = (Boolean) message.get(3);
+			        //Boolean shutdown = (Boolean) message.get(3);
 			        
-			        if(shutdown == true){
+			        /*if(shutdown == true){
 			        	System.err.println("shutdown client: " + clientStats[0]);
 			        	removeFromMap(Integer.parseInt(clientStats[0]));
-			        }else{
+			        }else{*/
 			        	//add new values to map
-			        	addToMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
-			        }
+			        addToMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+			        //}
 			        
 			        
 					if(k> 0)
