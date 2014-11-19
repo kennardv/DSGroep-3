@@ -1,6 +1,7 @@
 package be.uantwerpen.server;
 
 import java.net.*;
+import java.net.UnknownHostException;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -234,6 +235,39 @@ public class Client {
 			e2.printStackTrace();
 		}
 		
+		//packet send (subject) 
+		//van vorige en volgende ip krijgen en aan server to node interface vragen
+		//2 packet sturen met ip van vorige en volgende 
+		//packet als subject = failure 
+		String prvIp = null;
+		String nxtIp = null;
+		try {
+			prvIp = stvI.getNodeIPAddress(hashes[0]);
+			nxtIp = stvI.getNodeIPAddress(hashes[1]);
+		} catch (RemoteException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		List<Object> messagePrev = createFailureMessage(this.subject[2],"previous");
+		List<Object> messageNxt = createFailureMessage(this.subject[2],"next");
+		InetAddress inetPrev = null;
+		InetAddress inetNext = null;
+		try {
+			inetPrev = InetAddress.getByName(prvIp);
+			inetNext = InetAddress.getByName(nxtIp);
+		} catch (UnknownHostException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
+		
+		multicastDatagramPacket(messagePrev, inetPrev, this.socketPort);
+		multicastDatagramPacket(messageNxt, inetNext, this.socketPort);
+		
+		
+		
+		
+		
 		//update hashes at prev and next
 		try {
 			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
@@ -312,6 +346,24 @@ public class Client {
 				
 				try {
 					List<Object> message = unpackDiscoveryMessage(dgram);
+					String subject = (String)message.get(0);
+					switch (subject) {
+					case "discovery":
+						
+						break;
+					case "shutdown" :
+						
+						
+						break;
+					case "failure" :
+						checkRMI((String)message.get(1));
+						
+						break;
+					default:
+						break;
+					}
+					
+					
 					String[] clientStats = (String[]) message.get(1);
 					Boolean shutdown = (Boolean) message.get(3);
 					//System.out.println(shutdown);
@@ -335,7 +387,35 @@ public class Client {
 		}
 	}
     
-    /**
+    private void checkRMI(String position) {
+    	
+    
+		if (position.equals("previous")){
+			while(ntn.nextHash == -1){
+				
+			}
+			this.nextHash = ntn.nextHash;
+			
+		}else
+			if(position.equals("next")){
+				while(ntn.nextHash == -1){
+    				
+    			}
+				this.previousHash = ntn.prevHash;
+			}
+		
+		try {
+			//wait 100 ms
+			Thread.sleep(100);	
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+		}
+		System.out.println("CheckRMI Hashes set : Previous: " + this.previousHash + ". Current: " + this.currentHash + ". Next: " + this.nextHash);
+		
+		
+	}
+
+	/**
 	 * Algorithm to decide about my hashes, and inform discovery sender
 	 * @param receivedHash
 	 * Discovery sender's hashed name
@@ -433,9 +513,11 @@ public class Client {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		
 		//fill in datagram packet
 		//IP ADDRESS NODIG? IS TOCH EEN MULTICAST???
 		dgram = new DatagramPacket(b, b.length, ipaddress, port);
+	
 		
 		//try to send the packet
 		try {
@@ -494,6 +576,14 @@ public class Client {
      * @return 
      */
 
+    List<Object> createFailureMessage(String subject, String position) {
+     	List<Object> message = new ArrayList<Object>();
+     	message.add(subject);
+     	message.add(position);
+     	
+     	return message;
+     }
+    
     List<Object> createDiscoveryMessage(String subject, String[] clientInfo, int[] filenames, Boolean shutdown) {
      	List<Object> message = new ArrayList<Object>();
      	message.add(subject);
@@ -679,4 +769,6 @@ public class Client {
 		Client client = new Client();
 		
 	}
+	
+
 }

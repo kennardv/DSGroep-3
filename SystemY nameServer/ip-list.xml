@@ -12,5 +12,49 @@
                 </filenames>
             </value>
         </entry>
+        <entry>
+            <key>50</key>
+            <value>
+                <id>1</id>
+                <name>50</name>
+                <ipaddress>localhost</ipaddress>
+                <filenames>
+                    <filename>desktop.ini</filename>
+                </filenames>
+            </value>
+        </entry>
+        <entry>
+            <key>51</key>
+            <value>
+                <id>1</id>
+                <name>51</name>
+                <ipaddress>localhost</ipaddress>
+                <filenames>
+                    <filename>desktop.ini</filename>
+                </filenames>
+            </value>
+        </entry>
+        <entry>
+            <key>52</key>
+            <value>
+                <id>1</id>
+                <name>52</name>
+                <ipaddress>localhost</ipaddress>
+                <filenames>
+                    <filename>desktop.ini</filename>
+                </filenames>
+            </value>
+        </entry>
+        <entry>
+            <key>53</key>
+            <value>
+                <id>1</id>
+                <name>53</name>
+                <ipaddress>localhost</ipaddress>
+                <filenames>
+                    <filename>desktop.ini</filename>
+                </filenames>
+            </value>
+        </entry>
     </clientMap>
 </clients>
