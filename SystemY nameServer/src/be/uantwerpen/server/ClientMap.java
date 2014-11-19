@@ -13,13 +13,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType (XmlAccessType.FIELD)
 public class ClientMap {
 	
-	private Map<Integer, Client> clientMap = new HashMap<Integer, Client>();
+	private TreeMap<Integer, Client> clientMap = new TreeMap<Integer, Client>();
 
 	public Map<Integer, Client> getClientMap() {
 		return clientMap;
 	}
 
-	public void setClientMap(Map<Integer, Client> clientMap) {
+	public void setClientMap(TreeMap<Integer, Client> clientMap) {
 		this.clientMap = clientMap;
 	}
 	

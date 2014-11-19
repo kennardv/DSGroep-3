@@ -8,7 +8,7 @@ import java.util.*;
 
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
-	public Map<Integer, Client> nodeMap = new TreeMap<Integer, Client>(Collections.reverseOrder());
+	TreeMap<Integer, Client> nodeMap = new TreeMap<Integer, Client>();
 
 	XMLMarshaller marshaller = new XMLMarshaller();
 
@@ -19,11 +19,21 @@ public class NameServer {
 	String name;
 	
 	String serverIp = "226.100.100.125";
+	
+	/**
+	 * 0 = discovery
+	 * 1 = shutdown
+	 * 2 = failure
+	 */
+	private String[] subject = {
+		"discovery",
+		"shutdown",
+		"failure"
+	};
 
 	public NameServer() {
 		//bind rmi object
 		//Naming.bind("localhost", stvI);
-		
 		ntnI = null;
 		name = null;
 
@@ -40,50 +50,46 @@ public class NameServer {
 			socket.joinGroup(InetAddress.getByName(serverIp));
 			
 			
-			//String[] clientStats = null;
+			String[] clientStats = null;
 			//loop forever
 			//check if a packet was received
 		    while(true) {
 		    	// blocks until a datagram is received
 				socket.receive(dgram); 
-				String[] fileReplicateLocation;
+				String[] fileReplicateLocation = null;
 				//process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
 				try {
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
-					
 					//pull values from message and store
 					List message = (List) o;
-					String[] clientStats = (String[]) message.get(0);
+					clientStats = (String[]) message.get(1);
+					
 					System.out.println("Received dgram from " + clientStats[1]);
-
-					int[] filenamesArr = (int[])message.get(1);
-					int l = filenamesArr.length;
-					fileReplicateLocation = new String[l];
-					List<Integer> filenames = new ArrayList<>();
+					
+					int[] filenamesArr = (int[])message.get(2);
+					List<Integer> filenames = new ArrayList<Integer>();
 			        for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
-		        
-
-
-					
-					
-
-			        Boolean shutdown = (Boolean) message.get(2);
+			        
+			        Boolean shutdown = (Boolean) message.get(3);
 			        
 			        if(shutdown == true){
 			        	System.err.println("shutdown client: " + clientStats[0]);
-			        	removeFromHashMap(Integer.parseInt(clientStats[0]));
+			        	removeFromMap(Integer.parseInt(clientStats[0]));
 			        }else{
 			        	//add new values to map
-			        	addToHashMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+			        	addToMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
 			        }
-                
+			        
+			        /*
+			         * CRASHES WHEN SECOND CLIENT CONNECTS
 					if(k> 0)
 					{
+						fileReplicateLocation = new String[filenamesArr.length];
 				        for (int i = 0; i < filenamesArr.length; i++) 
 				        {
 							int previousNode = 0;	
@@ -95,7 +101,7 @@ public class NameServer {
 						    	previousNode = (int) itr.next();
 						    	
 						    	
-						    	if((filenamesArr[1] > previousNode)  &&  (Integer.parseInt(clientStats[0]) != previousNode ))
+						    	if((filenamesArr[1] > previousNode) && (Integer.parseInt(clientStats[0]) != previousNode ))
 							    {
 						    		done = true;
 							    }
@@ -106,7 +112,7 @@ public class NameServer {
 
 						}
 					}
-					
+					*/
 					
 					System.out.println("hash: " + clientStats[0]);
 					dgram.setLength(inBuf.length);
@@ -115,7 +121,11 @@ public class NameServer {
 						name = "//localhost/ntn";
 						ntnI = null;
 						ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						ntnI.serverAnswer(k, fileReplicateLocation);
+						
+						
+						ntnI.serverAnswer(nodeMap.size(), fileReplicateLocation);
+						
+						
 						k++;
 						System.err.println("Amount of clients: " + k);
 					} catch (Exception e) {
@@ -155,7 +165,7 @@ public class NameServer {
 	 * @param key
 	 * This is the hashed name for this particular map.
 	 */
-	public void removeFromHashMap(int key) {
+	public void removeFromMap(int key) {
 		try {
 	        System.out.println("Delete node with key : " + key);
 			clientMap.removeKeyValuePair(key);
@@ -173,7 +183,7 @@ public class NameServer {
 	 * @param ip
 	 * @param filenames
 	 */
-	public void addToHashMap(int hashedName, String ip, List<Integer> filenames) {
+	public void addToMap(int hashedName, String ip, List<Integer> filenames) {
 		try {
 			//Instantiate new Client object
 			Client node = new Client();

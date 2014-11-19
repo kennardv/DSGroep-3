@@ -14,4 +14,5 @@ public interface NodeToNodeInterface extends Remote {
 	public void startFileListAgent(FileListAgent agent) throws RemoteException;
 	public void getReceiverIp(String ip, int port, String fileName) throws UnknownHostException, IOException;
 	public void startFileRecoveryAgent(FileRecoveryAgent agent) throws RemoteException;
+   	public void updateHashes(int previous, int next) throws RemoteException;
 }

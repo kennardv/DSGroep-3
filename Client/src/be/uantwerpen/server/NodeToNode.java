@@ -106,9 +106,9 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	
 	public void serverAnswer(int nodes, String[] fileReplicationList)
 	{
-		numberOfNodes = nodes;
-		replicationAnswer = fileReplicationList;
-		
+		System.out.println("Answer from server.");
+		this.numberOfNodes = nodes;
+		this.replicationAnswer = fileReplicationList;
 	}
 	int nextHash()
 	{
@@ -122,5 +122,11 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	int numberOfNodes()
 	{
 		return numberOfNodes;
+	}
+
+	@Override
+	public void updateHashes(int previous, int next) throws RemoteException {
+		this.prevHash = previous;
+		this.nextHash = next;
 	}
 }
