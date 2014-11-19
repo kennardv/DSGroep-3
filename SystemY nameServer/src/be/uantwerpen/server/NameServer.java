@@ -50,7 +50,7 @@ public class NameServer {
 			socket.joinGroup(InetAddress.getByName(serverIp));
 			
 			
-			String[] clientStats = null;
+			int clientHashedName;
 			//loop forever
 			//check if a packet was received
 		    while(true) {
@@ -65,9 +65,9 @@ public class NameServer {
 					Object o = in.readObject();
 					//pull values from message and store
 					List message = (List) o;
-					clientStats = (String[]) message.get(1);
+					clientHashedName = (int)message.get(1);
 					
-					System.out.println("Received dgram from " + clientStats[1]);
+					System.out.println("Received dgram from " + dgram.getAddress().getHostAddress());
 					
 					int[] filenamesArr = (int[])message.get(2);
 					List<Integer> filenames = new ArrayList<Integer>();
@@ -82,7 +82,7 @@ public class NameServer {
 			        	removeFromMap(Integer.parseInt(clientStats[0]));
 			        }else{*/
 			        	//add new values to map
-			        addToMap(Integer.parseInt(clientStats[0]), clientStats[1], filenames);
+			        addToMap(clientHashedName, dgram.getAddress().getHostAddress(), filenames);
 			        //}
 			        
 			        
@@ -100,7 +100,7 @@ public class NameServer {
 						    	previousNode = (int) itr.next();
 						    	
 						    	
-						    	if((filenamesArr[1] > previousNode) && (Integer.parseInt(clientStats[0]) != previousNode ))
+						    	if((filenamesArr[1] > previousNode) && (clientHashedName != previousNode ))
 							    {
 						    		done = true;
 							    }
@@ -113,23 +113,18 @@ public class NameServer {
 					}
 					
 					
-					System.out.println("hash: " + clientStats[0]);
+					System.out.println("hash: " + clientHashedName);
 					dgram.setLength(inBuf.length);
 					try {
 						//notify client about amount of nodes
-						name = "//" + clientStats[1] + "/ntn";
+						name = "//" + dgram.getAddress().getHostAddress() + "/ntn";
 						ntnI = null;
 						ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						
-						
-						ntnI.serverAnswer(nodeMap.size(), fileReplicateLocation);
-						
-						
+						ntnI.serverAnswer(clientMap.getClientMap().size(), fileReplicateLocation);
 						k++;
-						System.err.println("Amount of clients: " + k);
+						System.err.println("Amount of clients: " + clientMap.getClientMap().size());
 					} catch (Exception e) {
-						System.err.println("FileServer exception: "
-								+ e.getMessage());
+						System.err.println("FileServer exception: " + e.getMessage());
 						e.printStackTrace();
 					}
 

@@ -17,11 +17,11 @@ import java.rmi.server.UnicastRemoteObject;
 
 
 public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterface {
-	public int nextHash = -1;
-	public int prevHash = -1;
-	public int numberOfNodes = -1;
-	public String[] replicationAnswer;
-	public String ipAdress = "localhost";
+	private int nextHash = -1;
+	private int previousHash = -1;
+	private int numberOfNodes = -1;
+	private String[] replicationAnswer;
+	private String ipAddress = "localhost";
 	
 	
 	public NodeToNode() throws RemoteException{
@@ -92,17 +92,15 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	public void answerDiscovery(int prev, int next)
 	{
 		nextHash = next;
-		prevHash = prev;
+		previousHash = prev;
 	}
 	
 	public void getReceiverIp(String ip, int port, String fileName) throws UnknownHostException, IOException {
-		TCPUtil tcpSender = new TCPUtil(ip, port, TCPUtil.Mode.RECEIVE, null, fileName);
+		TCPUtil tcpSender = new TCPUtil(ip, port, TCPUtil.Mode.SEND, null, fileName);
 		Thread t = new Thread(tcpSender);
 		t.start();
 
 	}
-	    
-	   
 	
 	public void serverAnswer(int nodes, String[] fileReplicationList)
 	{
@@ -110,23 +108,60 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		this.numberOfNodes = nodes;
 		this.replicationAnswer = fileReplicationList;
 	}
-	int nextHash()
-	{
-		return nextHash;
-	}
-	int prevHash()
-	{
-		return prevHash;
-	}
-	
-	int numberOfNodes()
-	{
-		return numberOfNodes;
+
+	@Override
+	public void updatePreviousHash(int hash) throws RemoteException {
+		this.previousHash = hash;
 	}
 
 	@Override
-	public void updateHashes(int previous, int next) throws RemoteException {
-		this.prevHash = previous;
-		this.nextHash = next;
+	public void updateNextHash(int hash) throws RemoteException {
+		this.nextHash = hash;
+	}
+	
+	public String[] replicationAnswer() {
+		return this.replicationAnswer;
+	}
+	public void setReplicationAnswer(String[] answer) {
+		this.replicationAnswer = answer;
+	}
+	
+	public String iPAddress() {
+		return this.ipAddress;
+	}
+	public void setIPAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+	
+	public int nextHash()
+	{
+		return this.nextHash;
+	}
+	public void setNextHash(int hash) {
+		this.nextHash = hash;
+	}
+	
+	public int previousHash()
+	{
+		return this.previousHash;
+	}
+	public void setPreviousHash(int hash) {
+		this.previousHash = hash;
+	}
+	
+	public int numberOfNodes()
+	{
+		return this.numberOfNodes;
+	}
+	public void setNumberOfNodes(int amount) {
+		this.numberOfNodes = amount;
+	}
+	public void decreaseNumberOfNodes(int amountToSubtract) {
+		this.numberOfNodes--;
+	}
+	
+	public void resetHashes() {
+		this.previousHash = -1;
+		this.nextHash = -1;
 	}
 }

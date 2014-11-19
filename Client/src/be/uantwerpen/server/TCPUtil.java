@@ -7,16 +7,18 @@ import java.net.UnknownHostException;
 
 public class TCPUtil extends Thread {
 	
-	ServerSocket ssocket = null;
-	Socket socket = null;
-	
-	String ipaddress = null;
-	int port = 0;
 	public enum Mode {
 		SEND,
 		RECEIVE
 	}
 	private Mode mode;
+	
+	ServerSocket ssocket = null;
+	Socket socket = null;
+	
+	String ipaddress = null;
+	int port = 0;
+	
 	File file = null;
 	String fileName = null;
 	
