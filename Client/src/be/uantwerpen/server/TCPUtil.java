@@ -96,7 +96,7 @@ public class TCPUtil extends Thread {
     void receiveFilesOverTCP(String ip, int port, String pathToSaveTo) throws UnknownHostException, IOException {
     	
     	Socket socket = null;
-    	
+    	System.out.println("part1");
     	try {
     		socket = new Socket(ip,port);
     	} catch (UnknownHostException e) {
@@ -105,7 +105,8 @@ public class TCPUtil extends Thread {
             System.err.println("Couldn't get I/O for "
                                + "the connection to: " + ip);
         }
-    	
+    	System.out.println("part2");
+
     	int filesize=1022386; 
 	    int bytesRead;
 	    int currentTot = 0;

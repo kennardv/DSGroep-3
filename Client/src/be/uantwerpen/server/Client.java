@@ -38,7 +38,7 @@ public class Client {
 	
 	String myIPAddress = null;
 	String multicastIp = "226.100.100.125";
-	String serverIp = "192.168.1.1";
+	String serverIp = "192.168.17.50";
 	
 	/**
 	 * String array because enum serialization causes trouble
@@ -118,8 +118,10 @@ public class Client {
 		//multicast and process answers
 		discover(message, InetAddress.getByName(multicastIp), socketPort);
 		//REPLICATE FILES NOT DONE
+		if(ntn.numberOfNodes != 1)
+		{
 		replicate();
-	    
+		}
 	    listenForDiscoveryMessage();
 	}
 	
@@ -199,6 +201,7 @@ public class Client {
 				TCPUtil tcpSender = new TCPUtil(null, 20000, true, files.get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
+				Thread.sleep(1000);
 				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
 				ntnI.getReceiverIp(fileReplicateList[i], 20000, files.get(i).getName());
 			} catch (Exception e) {
