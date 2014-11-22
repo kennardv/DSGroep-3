@@ -7,7 +7,6 @@ import java.util.HashMap;
 public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInterface {
 	
 	ClientMap clientMap;
-	XMLMarshaller marshaller = new XMLMarshaller();
 	
 	protected ServerToNode(ClientMap clientMap) throws RemoteException {
 		super();
@@ -58,8 +57,7 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 
 	@Override
 	public void removeNode(int nodeHash) throws RemoteException {
-		this.clientMap.removeKeyValuePair(nodeHash);
-		marshaller.jaxbObjectToXML(clientMap);
+		this.clientMap.remove(nodeHash);
 	}
 
 	@Override

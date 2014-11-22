@@ -42,7 +42,7 @@ public class Client {
 	
 	String myIPAddress = null;
 	String multicastIp = "226.100.100.125";
-	String serverIp = "192.168.1.1";
+	String serverIp = "192.168.17.53";
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
 	
@@ -50,6 +50,7 @@ public class Client {
 	public String[] fileReplicateList = null;
 	
 	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
+	ClassLoader classLoader = null;
 	
 	String myFilesFolderName = "myfiles";
 	
@@ -69,6 +70,7 @@ public class Client {
 		}
 		
 		this.ntn = new NodeToNode();
+		this.classLoader = getClass().getClassLoader();
 		
 		//Give client a name from console input
         this.nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
@@ -76,7 +78,8 @@ public class Client {
 		this.currentHash = hashString(this.nameClient);
 		
 		//get all file paths
-		this.files = listFilesInDir("C:\\Users");
+		//RELATIVE PATH !!!!
+		this.files = listFilesInDir("C:\\Users\\Kennard\\Desktop\\Test");
 		
 		this.filenames = new int[this.files.size()];
 		for (int i = 0; i< files.size(); i++) {
@@ -91,7 +94,9 @@ public class Client {
 		//multicast and process answers
 		discover(InetAddress.getByName(multicastIp), socketPort);
 		//REPLICATE FILES NOT DONE
-		replicate();
+		if (ntn.numberOfNodes() != 1) {
+			replicate();
+		}
 	    
 	    listenForPackets();
 	}
@@ -118,7 +123,7 @@ public class Client {
 	 */
 	void discover(InetAddress ip, int port) {
 		//fill array with info
-		List<Object> message = createDiscoveryMessage(this.currentHash, filenames);
+		List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
 		
 		//create message and multicast it
 		sendDatagramPacket(message, ip, port);
@@ -167,6 +172,7 @@ public class Client {
 	 * NOT DONE
 	 */
 	void replicate() {
+		//get files to replicate
 		fileReplicateList = ntn.replicationAnswer();
 		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
@@ -302,7 +308,7 @@ public class Client {
 					int[] neighbours = null;
 					
 					//decide what to do depending on protocol
-					switch (this.sendProtocol) {
+					switch (this.receiveProtocol) {
 					case DISCOVERY:
 						updateHashes(senderHashedName, dgram.getAddress().getHostAddress(), neighbours);
 						break;
@@ -512,6 +518,10 @@ public class Client {
      * array of filenames
      * @param shutdown
      * @return 
+     * List<Object>.
+     * index 0: Protocol 
+     * index 1: clientNameHash
+     * index 2: filenames
      */
     List<Object> createDiscoveryMessage(int clientNameHash, int[] filenames) {
      	List<Object> message = new ArrayList<Object>();
