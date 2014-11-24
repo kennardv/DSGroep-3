@@ -180,7 +180,7 @@ public class Client {
 				t.start();
 				Thread.sleep(1000);
 				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-				ntnI.getReceiverIp(fileReplicateList[i], 20000, files.get(i).getName());
+				ntnI.startReceive(clientStats[1], 20000, files.get(i).getName());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	

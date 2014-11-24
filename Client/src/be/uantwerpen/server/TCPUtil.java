@@ -37,7 +37,7 @@ public class TCPUtil extends Thread {
 				sendFilesOverTCP(this.file, this.port);
 				break;
 			case RECEIVE:
-				receiveFilesOverTCP(this.ipaddress, this.port, "C:\\Users\\Ruben_Hirschberg\\test\\" + fileName);
+				receiveFilesOverTCP(this.ipaddress, this.port, ".\\src\\resources\\replicates\\" + fileName);
 				break;
 	
 			default:
