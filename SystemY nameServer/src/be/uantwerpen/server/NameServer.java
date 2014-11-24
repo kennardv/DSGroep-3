@@ -8,30 +8,49 @@ import java.util.*;
 
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
+<<<<<<< HEAD
+	TreeMap<Integer, Client> nodeMap = new TreeMap<Integer, Client>();
+
+	XMLMarshaller marshaller = new XMLMarshaller();
+
+	int k = 0;
+
+=======
 	
+>>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
 	String name;
-	
+
 	String serverIp = "226.100.100.125";
+<<<<<<< HEAD
+
+	/**
+	 * 0 = discovery 1 = shutdown 2 = failure
+	 */
+	private String[] subject = { "discovery", "shutdown", "failure" };
+
+=======
 	
+>>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 	public NameServer() {
-		//bind rmi object
-		//Naming.bind("localhost", stvI);
+		// bind rmi object
+		// Naming.bind("localhost", stvI);
 		ntnI = null;
 		name = null;
 
 		ListenForPacket();
 	}
-	
-	
+
 	public void ListenForPacket() {
 		try {
-			//create socket, buffer and join socket group
+			// create socket, buffer and join socket group
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
-			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
+			MulticastSocket socket = new MulticastSocket(4545); // must bind
+																// receive side
 			socket.joinGroup(InetAddress.getByName(serverIp));
+
 			
 			
 			int clientHashedName;
@@ -41,23 +60,25 @@ public class NameServer {
 		    	// blocks until a datagram is received
 				socket.receive(dgram);
 				String[] fileReplicateLocation = null;
-				//process received packet
+				// process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
 				try {
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
-					//pull values from message and store
+					// pull values from message and store
 					List message = (List) o;
+
 					clientHashedName = (int)message.get(1);
 					
 					System.out.println("Received dgram from " + dgram.getAddress().getHostAddress());
 					
 					int[] filenamesArr = (int[])message.get(2);
 					List<Integer> filenames = new ArrayList<Integer>();
-			        for (int i = 0; i < filenamesArr.length; i++) {
+					for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
+
 			        
 			        //Boolean shutdown = (Boolean) message.get(3);
 			        
@@ -74,10 +95,10 @@ public class NameServer {
 					if(this.clientMap.getClientMap().size() > 1)
 					{
 						fileReplicateLocation = new String[filenamesArr.length];
-				        for (int i = 0; i < filenamesArr.length; i++) 
-				        {
-							int previousNode = 0;	
+						for (int i = 0; i < filenamesArr.length; i++) {
+							int previousNode = 0;
 							boolean done = false;
+
 						    Set<Integer> keys = this.clientMap.getClientMap().keySet();
 						    Iterator<Integer> itr = keys.iterator();
 						    while(itr.hasNext() && done == false)
@@ -110,7 +131,6 @@ public class NameServer {
 						e.printStackTrace();
 					}
 
-
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -129,17 +149,77 @@ public class NameServer {
 					}
 				}
 
-				
 			}
 		} catch (UnknownHostException e) {
+<<<<<<< HEAD
+		} catch (IOException e) {
+		}
+	}
+
+	/**
+	 * Remove a key/value pair with specified key
+	 * 
+	 * @param key
+	 *            This is the hashed name for this particular map.
+	 */
+	public void removeFromMap(int key) {
+		try {
+			System.out.println("Delete node with key : " + key);
+			clientMap.removeKeyValuePair(key);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		// update xml
+		marshaller.jaxbObjectToXML(clientMap);
+	}
+
+	/**
+	 * Add a key/value pair with passed data. Value is of type Client
+	 * 
+	 * @param hashedName
+	 * @param ip
+	 * @param filenames
+	 */
+	public void addToMap(int hashedName, String ip, List<Integer> filenames) {
+		try {
+			// Instantiate new Client object
+			Client node = new Client();
+			node.setId(1);
+			node.setName(hashedName);
+			node.setIpaddress(ip);
+			node.setFiles(filenames);
+
+			// add to map
+			nodeMap.put(hashedName, node);
+
+			// Save nodeMap to parent map
+			clientMap.setClientMap(nodeMap);
+
+			// use parent clientMap to update XML file
+			marshaller.jaxbObjectToXML(clientMap);
+		} catch (Exception e) {
+
+		}
+	}
+
+	/**
+	 * Fill the hashmap with data from the XML file
+	 */
+	public void initHashMapFromXML() {
+		clientMap = marshaller.jaxbXMLToObject();
+	}
+=======
 			
 		} catch (IOException e) {
 			
 		}
 	}
+>>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 
-	public static void main(String[] argv) throws RemoteException, ClassNotFoundException {
+	public static void main(String[] argv) throws RemoteException,
+			ClassNotFoundException {
 		NameServer nameServer = new NameServer();
-		
+
 	}
 }

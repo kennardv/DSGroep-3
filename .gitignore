@@ -99,3 +99,4 @@ crashlytics-build.properties
 
 #Project specific
 SystemY nameServer/ip-list.xml
+Client/src/resources/

@@ -42,6 +42,7 @@ public class Client {
 	
 	String myIPAddress = null;
 	String multicastIp = "226.100.100.125";
+
 	String serverIp = "192.168.17.53";
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
@@ -89,6 +90,7 @@ public class Client {
 		//multicast and process answers
 		discover(InetAddress.getByName(multicastIp), socketPort);
 		//REPLICATE FILES NOT DONE
+
 		if (ntn.numberOfNodes() != 1) {
 			replicate();
 		}
