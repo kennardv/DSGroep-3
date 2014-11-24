@@ -1,22 +1,21 @@
-package be.uantwerpen.server;
+package networking;
+
+import enumerations.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import be.uantwerpen.server.Client;
+
 public class UDPUtil extends Thread {
 	
-	public enum Mode {
-		SEND,
-		LISTEN
-	}
-	private Mode mode;
+	private UDPMode mode;
 	
 	private Object message;
 	private InetAddress receiverIP;
-	private int port;
+	private int port = 4545;
 	
-	private int socketPort = 4545;
 	private String multicastIp = "226.100.100.125";
 	
 	private Protocol sendProtocol;
@@ -25,7 +24,19 @@ public class UDPUtil extends Thread {
 	private Client client;
 	
 	/**
-	 * You must call method createXmessage after constructor
+	 * Listener ctor.
+	 * @param client
+	 * @param port
+	 * @param mode
+	 */
+	public UDPUtil(Client client, int port, UDPMode mode) {
+		this.client = client;
+		this.port = port;
+		this.mode = mode;
+	}
+	
+	/**
+	 * Sender ctor. You must call method createXmessage after constructor
 	 * @param client
 	 * pass in this
 	 * @param receiverIP
@@ -35,7 +46,7 @@ public class UDPUtil extends Thread {
 	 * @param protocol
 	 * Discovery, shutdown, ...
 	 */
-	public UDPUtil(Client client, InetAddress receiverIP, int port, Mode mode, Protocol protocol) {
+	public UDPUtil(Client client, InetAddress receiverIP, int port, UDPMode mode, Protocol protocol) {
 		this.client = client;
 		this.receiverIP = receiverIP;
 		this.port = port;
@@ -47,7 +58,7 @@ public class UDPUtil extends Thread {
 		case SEND:
 			sendDatagramPacket(this.message, this.receiverIP, this.port);
 			break;
-		case LISTEN:
+		case RECEIVE:
 			listenForPackets();
 			break;
 		default:
@@ -113,7 +124,7 @@ public class UDPUtil extends Thread {
 			System.out.println("Listening for packets in UDPUtil");
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
-			MulticastSocket socket = new MulticastSocket(socketPort);
+			MulticastSocket socket = new MulticastSocket(this.port);
 			socket.joinGroup(InetAddress.getByName(multicastIp));
 			
 			//do this forever
@@ -146,13 +157,10 @@ public class UDPUtil extends Thread {
 					default:
 						break;
 					}
-					
 				} finally {
-
 				}
 			}
 		} catch (IOException e) {
-			
 		}
 	}
     

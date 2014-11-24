@@ -1,4 +1,4 @@
-package be.uantwerpen.server;
+package agents;
 
 import java.io.Serializable;
 

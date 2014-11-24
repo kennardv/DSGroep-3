@@ -6,7 +6,7 @@
             <value>
                 <id>1</id>
                 <name>49</name>
-                <ipaddress>192.168.1.1</ipaddress>
+                <ipaddress>192.168.1.119</ipaddress>
                 <filenames>
                     <filename>10476</filename>
                     <filename>30366</filename>
@@ -14,11 +14,11 @@
             </value>
         </entry>
         <entry>
-            <key>23538</key>
+            <key>50</key>
             <value>
                 <id>1</id>
-                <name>23538</name>
-                <ipaddress>192.168.1.2</ipaddress>
+                <name>50</name>
+                <ipaddress>192.168.1.119</ipaddress>
                 <filenames>
                     <filename>10476</filename>
                     <filename>30366</filename>

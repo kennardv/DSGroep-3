@@ -1,5 +1,7 @@
 package be.uantwerpen.server;
 
+import rmi.interfaces.*;
+
 import java.io.*;
 import java.net.*;
 import java.net.UnknownHostException;
@@ -8,31 +10,12 @@ import java.util.*;
 
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
-<<<<<<< HEAD
-	TreeMap<Integer, Client> nodeMap = new TreeMap<Integer, Client>();
-
-	XMLMarshaller marshaller = new XMLMarshaller();
-
-	int k = 0;
-
-=======
-	
->>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
 	String name;
 
 	String serverIp = "226.100.100.125";
-<<<<<<< HEAD
 
-	/**
-	 * 0 = discovery 1 = shutdown 2 = failure
-	 */
-	private String[] subject = { "discovery", "shutdown", "failure" };
-
-=======
-	
->>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 	public NameServer() {
 		// bind rmi object
 		// Naming.bind("localhost", stvI);
@@ -47,23 +30,22 @@ public class NameServer {
 			// create socket, buffer and join socket group
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
-			MulticastSocket socket = new MulticastSocket(4545); // must bind
-																// receive side
+			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
 			socket.joinGroup(InetAddress.getByName(serverIp));
 
-			
-			
 			int clientHashedName;
 			//loop forever
 			//check if a packet was received
 		    while(true) {
 		    	// blocks until a datagram is received
+		    	System.out.println("Listening for packet");
 				socket.receive(dgram);
 				String[] fileReplicateLocation = null;
 				// process received packet
 				ByteArrayInputStream bis = new ByteArrayInputStream(inBuf);
 				ObjectInput in = null;
 				try {
+					System.out.println("Receiving packet");
 					in = new ObjectInputStream(bis);
 					Object o = in.readObject();
 					// pull values from message and store
@@ -116,7 +98,6 @@ public class NameServer {
 						}
 					}
 					
-					
 					System.out.println("hash: " + clientHashedName);
 					dgram.setLength(inBuf.length);
 					try {
@@ -148,74 +129,14 @@ public class NameServer {
 						// ignore close exception
 					}
 				}
-
 			}
 		} catch (UnknownHostException e) {
-<<<<<<< HEAD
-		} catch (IOException e) {
-		}
-	}
 
-	/**
-	 * Remove a key/value pair with specified key
-	 * 
-	 * @param key
-	 *            This is the hashed name for this particular map.
-	 */
-	public void removeFromMap(int key) {
-		try {
-			System.out.println("Delete node with key : " + key);
-			clientMap.removeKeyValuePair(key);
-		} catch (Exception e) {
-			System.out.println(e);
-		}
-
-		// update xml
-		marshaller.jaxbObjectToXML(clientMap);
-	}
-
-	/**
-	 * Add a key/value pair with passed data. Value is of type Client
-	 * 
-	 * @param hashedName
-	 * @param ip
-	 * @param filenames
-	 */
-	public void addToMap(int hashedName, String ip, List<Integer> filenames) {
-		try {
-			// Instantiate new Client object
-			Client node = new Client();
-			node.setId(1);
-			node.setName(hashedName);
-			node.setIpaddress(ip);
-			node.setFiles(filenames);
-
-			// add to map
-			nodeMap.put(hashedName, node);
-
-			// Save nodeMap to parent map
-			clientMap.setClientMap(nodeMap);
-
-			// use parent clientMap to update XML file
-			marshaller.jaxbObjectToXML(clientMap);
-		} catch (Exception e) {
-
-		}
-	}
-
-	/**
-	 * Fill the hashmap with data from the XML file
-	 */
-	public void initHashMapFromXML() {
-		clientMap = marshaller.jaxbXMLToObject();
-	}
-=======
-			
 		} catch (IOException e) {
 			
 		}
 	}
->>>>>>> a2183aeed286504b527e48a7e228208ef241691d
+
 
 	public static void main(String[] argv) throws RemoteException,
 			ClassNotFoundException {

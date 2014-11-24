@@ -1,4 +1,4 @@
-package be.uantwerpen.server;
+package enumerations;
 
 public enum Protocol {
 	DISCOVERY,

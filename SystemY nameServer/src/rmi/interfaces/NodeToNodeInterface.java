@@ -1,9 +1,7 @@
-package be.uantwerpen.server;
+package rmi.interfaces;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-
 
 public interface NodeToNodeInterface extends Remote {
    public void answerDiscovery(int prev, int next) throws RemoteException;

@@ -1,10 +1,13 @@
-package be.uantwerpen.server;
+package utils;
 
 import java.io.File;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+
+import be.uantwerpen.server.ClientMap;
 
 public class XMLMarshaller {
 

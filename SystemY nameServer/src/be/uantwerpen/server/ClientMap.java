@@ -1,7 +1,8 @@
 package be.uantwerpen.server;
 
-import java.util.*;
+import utils.*;
 
+import java.util.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;

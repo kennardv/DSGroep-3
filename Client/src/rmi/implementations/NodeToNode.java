@@ -1,20 +1,14 @@
-package be.uantwerpen.server;
+package rmi.implementations;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import agents.*;
+import rmi.interfaces.*;
+import networking.*;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-
 
 public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterface {
 	private int nextHash = -1;

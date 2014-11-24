@@ -1,4 +1,4 @@
-package be.uantwerpen.server;
+package rmi.interfaces;
 
 import java.rmi.RemoteException;
 

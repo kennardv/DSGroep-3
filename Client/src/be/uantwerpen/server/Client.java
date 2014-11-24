@@ -1,5 +1,10 @@
 package be.uantwerpen.server;
 
+import enumerations.*;
+import networking.*;
+import rmi.implementations.*;
+import rmi.interfaces.*;
+
 import java.net.*;
 import java.net.UnknownHostException;
 import java.io.*;
@@ -7,8 +12,6 @@ import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
-
-
 
 public class Client {
 	
@@ -99,7 +102,7 @@ public class Client {
 			replicate();
 		}
 	    
-		this.udpUtilListener = new UDPUtil(this, null, 0, UDPUtil.Mode.LISTEN, null);
+		this.udpUtilListener = new UDPUtil(this, this.socketPort, UDPMode.RECEIVE);
 		Thread t = new Thread(this.udpUtilListener);
 		t.start();
 	    //listenForPackets();
@@ -130,7 +133,7 @@ public class Client {
 		//List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
 		
 		//create message and multicast it
-		UDPUtil udpUtil = new UDPUtil(this, ip, port, UDPUtil.Mode.SEND, Protocol.DISCOVERY);
+		UDPUtil udpUtil = new UDPUtil(this, ip, port, UDPMode.SEND, Protocol.DISCOVERY);
 		udpUtil.createDiscoveryMessage(this.currentHash, this.filenames);
 		Thread t = new Thread(udpUtil);
 		t.start();
@@ -239,8 +242,8 @@ public class Client {
 		
 		//create failure messages
 		//send message to previous and next neighbour
-		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, this.socketPort, UDPUtil.Mode.SEND, Protocol.FAILURE);
-		udpUtilNext = new UDPUtil(this, inetAddressNext, this.socketPort, UDPUtil.Mode.SEND, Protocol.FAILURE);
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, this.socketPort, UDPMode.SEND, Protocol.FAILURE);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, this.socketPort, UDPMode.SEND, Protocol.FAILURE);
 		udpUtilPrevious.createFailureMessage("previous");
 		udpUtilNext.createFailureMessage("next");
 		Thread t1 = new Thread(udpUtilPrevious);
@@ -336,7 +339,7 @@ public class Client {
 	 * used to create bind location for remote object
 	 * @param neighbours
 	 */
-	void updateHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
+	public void updateHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
 		try {
 			String name = createBindLocation(receivedIPAddress);
 			ntnI = (NodeToNodeInterface) Naming.lookup(name);

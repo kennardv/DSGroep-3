@@ -1,8 +1,10 @@
-package be.uantwerpen.server;
+package rmi.implementations;
+
+import be.uantwerpen.server.*;
+import rmi.interfaces.*;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 
 public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInterface {
 	

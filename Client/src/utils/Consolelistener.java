@@ -1,11 +1,11 @@
-package be.uantwerpen.server;
+package utils;
+
+import be.uantwerpen.server.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
-
-
 
 public class Consolelistener extends Thread {
 	
