@@ -35,6 +35,7 @@ public class ClientMap {
 		this.clientMap.remove(key);
 		
 		marshaller.jaxbObjectToXML(this);
+		System.out.println("Removed key from clientMap and updated XML");
 	}
 	
 	/**

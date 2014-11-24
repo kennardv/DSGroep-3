@@ -15,7 +15,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = false;
+	boolean useLocalHost = true;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -47,6 +47,9 @@ public class Client {
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
 	
+	//UDP vars
+	private UDPUtil udpUtilListener = null;
+	
 	//file replication
 	private String myFilesPath = ".\\src\\resources\\myfiles";
 	public String[] fileReplicateList = null;
@@ -68,6 +71,7 @@ public class Client {
 		}
 		
 		this.ntn = new NodeToNode();
+		
 		
 		//Give client a name from console input
         this.nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
@@ -95,7 +99,10 @@ public class Client {
 			replicate();
 		}
 	    
-	    listenForPackets();
+		this.udpUtilListener = new UDPUtil(this, null, 0, UDPUtil.Mode.LISTEN, null);
+		Thread t = new Thread(this.udpUtilListener);
+		t.start();
+	    //listenForPackets();
 	}
 	
 	/**
@@ -120,10 +127,14 @@ public class Client {
 	 */
 	void discover(InetAddress ip, int port) {
 		//fill array with info
-		List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
+		//List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
 		
 		//create message and multicast it
-		sendDatagramPacket(message, ip, port);
+		UDPUtil udpUtil = new UDPUtil(this, ip, port, UDPUtil.Mode.SEND, Protocol.DISCOVERY);
+		udpUtil.createDiscoveryMessage(this.currentHash, this.filenames);
+		Thread t = new Thread(udpUtil);
+		t.start();
+		//sendDatagramPacket(message, ip, port);
 		
 		//NS or other nodes answering on remote object
 		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
@@ -198,6 +209,9 @@ public class Client {
 		List<Object> messagePreviousNode = null;
 		List<Object> messageNextNode = null;
 		
+		UDPUtil udpUtilPrevious = null;
+		UDPUtil udpUtilNext = null;
+		
 		try {
 			//get previous and next node of failing node
 			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
@@ -209,9 +223,6 @@ public class Client {
 			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
 			nextIP = stnI.getNodeIPAddress(neighbourHashes[1]);
 			
-			//create failure messages
-			messagePreviousNode = createFailureMessage("previous");
-			messageNextNode = createFailureMessage("next");
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -226,9 +237,16 @@ public class Client {
 			e.printStackTrace();
 		}
 		
+		//create failure messages
 		//send message to previous and next neighbour
-		sendDatagramPacket(messagePreviousNode, inetAddressPrevious, this.socketPort);
-		sendDatagramPacket(messageNextNode, inetAddressNext, this.socketPort);
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, this.socketPort, UDPUtil.Mode.SEND, Protocol.FAILURE);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, this.socketPort, UDPUtil.Mode.SEND, Protocol.FAILURE);
+		udpUtilPrevious.createFailureMessage("previous");
+		udpUtilNext.createFailureMessage("next");
+		Thread t1 = new Thread(udpUtilPrevious);
+		t1.start();
+		Thread t2 = new Thread(udpUtilNext);
+		t2.start();
 		
 		try {
 			//update previous node's next hash
@@ -283,58 +301,8 @@ public class Client {
         System.out.println("Closing client");
         System.exit(1);
 	}
-
-    /**
-     * Poll continuously for a discovery message from a new node 
-     */
-    void listenForPackets() {
-		try {
-			byte[] inBuf = new byte[256];
-			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
-			MulticastSocket socket = new MulticastSocket(socketPort);
-			socket.joinGroup(InetAddress.getByName(multicastIp));
-			
-			//do this forever
-			while (true) {
-				//blocks untill package is received
-				socket.receive(dgram); 
-				
-				try {
-					List<Object> message = readDatagramPacket(dgram);
-					this.receiveProtocol = (Protocol) message.get(0);
-					int senderHashedName = (int)message.get(1);
-					int[] neighbours = null;
-					
-					//decide what to do depending on protocol
-					switch (this.receiveProtocol) {
-					case DISCOVERY:
-						updateHashes(senderHashedName, dgram.getAddress().getHostAddress(), neighbours);
-						break;
-					case SHUTDOWN:
-						//System.out.println(shutdown);
-						/*if(shutdown == true){
-							neighbours = (int[]) message.get(4);
-							System.out.println("next = " + neighbours[0]);
-							System.out.println("previous = " + neighbours[1]);
-						}*/
-						break;
-					case FAILURE:
-						checkForNTNUpdate((String)message.get(1));
-						break;
-					default:
-						break;
-					}
-					
-				} finally {
-
-				}
-			}
-		} catch (IOException e) {
-			
-		}
-	}
     
-    private void checkForNTNUpdate(String position) {
+    public void checkForNTNUpdate(String position) {
 		if (position.equals("previous")){
 			//wait untill property is updated
 			while(ntn.nextHash() == -1){
@@ -426,56 +394,6 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
-    
-    /**
-    * Send a datagramPacket
-    * @param message
-    * Contents to send
-    * @param receiverIP
-    * Destination address
-    * @param port
-    * What port to use
-    * @return successful or not
-    */
-    boolean sendDatagramPacket(Object message, InetAddress receiverIP, int port) {
-    	//init datatypes
-    	boolean sent = false;
-    	DatagramSocket socket = null;
-    	DatagramPacket dgram;
-    	byte[] b = null;
-    	
-    	//create a socket
-		try {
-			socket = new DatagramSocket();
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//convert message object to byte array
-		try {
-			b = objectToByteArr(message);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//create dgram packet
-		dgram = new DatagramPacket(b, b.length, receiverIP, port);
-		
-		//try to send the packet
-		try {
-			socket.send(dgram);
-			sent = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		//close the socket
-		System.out.println("Datagram sent to " + dgram.getAddress().getHostAddress());
-		socket.close();
-    	
-		//return successful or not
-    	return sent;
-    }
 
     /**
      * Bind the specified object to a location
@@ -509,62 +427,6 @@ public class Client {
     /////////////// UTILITY METHODS ///////////////
     
     /**
-     * Create the message that is sent during multicast
-     * @param clientInfo
-     * containing hashed name and ip address
-     * @param filenames
-     * array of filenames
-     * @param shutdown
-     * @return 
-     * List<Object>.
-     * index 0: Protocol 
-     * index 1: clientNameHash
-     * index 2: filenames
-     */
-    List<Object> createDiscoveryMessage(int clientNameHash, int[] filenames) {
-     	List<Object> message = new ArrayList<Object>();
-     	//message.add(subject[0]);
-     	message.add(Protocol.DISCOVERY);
-     	message.add(clientNameHash);
-     	message.add(filenames);
-     	
-     	return message;
-     }
-    
-    List<Object> createFailureMessage(String position) {
-     	List<Object> message = new ArrayList<Object>();
-     	message.add(Protocol.FAILURE);
-     	message.add(position);
-     	
-     	return message;
-     }
-    
-    List<Object> createShutdownMessage() {
-     	List<Object> message = new ArrayList<Object>();
-     	message.add(Protocol.SHUTDOWN);
-     	//message.add();
-     	
-     	return message;
-     }
-    
-    /**
-     * Unpack the received datagram packet to a List<Object>
-     * @param dgramPacket
-     * @return List containing string array with client info, string array with filenames and shutdown boolean
-     */
- 	List<Object> readDatagramPacket(DatagramPacket dgramPacket) {
-     	byte[] b = null;
-     	b = dgramPacket.getData();
-     	List<Object> obj = null;
-     	try {
- 			obj = (ArrayList<Object>)byteArrToObject(b);
- 		} catch (ClassNotFoundException | IOException e) {
- 			e.printStackTrace();
- 		}
-     	return obj;
-     }
-    
-    /**
      * List all the files under a directory
      * @param directoryName to be listed - RELATIVE PATH
      */
@@ -579,70 +441,6 @@ public class Client {
 			}
     	}
         return files;
-    }
-    
-    /***
-     * Helper function to convert an object to a byte array
-     * @param path
-     * path to the file
-     * @return bFile
-     * byte array of the contents of the file
-     * @throws IOException 
-     */
-    byte[] objectToByteArr(Object obj) throws IOException {
-    	ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    	ObjectOutput out = null;
-    	byte[] b = null;
-    	try {
-    	  out = new ObjectOutputStream(bos);   
-    	  out.writeObject(obj);
-    	  b = bos.toByteArray();
-    	} finally {
-    	  try {
-    	    if (out != null) {
-    	      out.close();
-    	    }
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	  try {
-    	    bos.close();
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	}
-    	return b;
-    }
-    
-    /**
-     * Helper function to convert a byte array to an object
-     * @param b
-     * @return
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    Object byteArrToObject(byte[] b) throws IOException, ClassNotFoundException {
-    	ByteArrayInputStream bis = new ByteArrayInputStream(b);
-    	ObjectInput in = null;
-    	Object obj = null;
-    	try {
-    	  in = new ObjectInputStream(bis);
-    	  obj = in.readObject(); 
-    	} finally {
-    	  try {
-    	    bis.close();
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	  try {
-    	    if (in != null) {
-    	      in.close();
-    	    }
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	}
-    	return obj;
     }
     
     /**
