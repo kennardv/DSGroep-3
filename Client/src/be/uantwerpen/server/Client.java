@@ -15,7 +15,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = true;
+	boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -171,13 +171,14 @@ public class Client {
 		fileReplicateList = ntn.replicationAnswer();
 		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
-			String name = "//" + clientStats[1] + "/ntn";
+			String name = createBindLocation(fileReplicateList[i]);
 			try {
 				TCPUtil tcpSender = new TCPUtil(null, 20000, TCPUtil.Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
 				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-				ntnI.getReceiverIp(fileReplicateList[i], 20000, files.get(i).getName());
+				ntnI.startReceive(myIPAddress, 20000, files.get(i).getName());
+				t.join();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	

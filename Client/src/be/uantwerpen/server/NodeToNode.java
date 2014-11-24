@@ -95,9 +95,9 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		previousHash = prev;
 	}
 	
-	public void getReceiverIp(String ip, int port, String fileName) throws UnknownHostException, IOException {
-		TCPUtil tcpSender = new TCPUtil(ip, port, TCPUtil.Mode.SEND, null, fileName);
-		Thread t = new Thread(tcpSender);
+	public void startReceive(String ip, int port, String fileName) throws UnknownHostException, IOException {
+		TCPUtil tcpReiver = new TCPUtil(ip, port, TCPUtil.Mode.RECEIVE, null, fileName);
+		Thread t = new Thread(tcpReiver);
 		t.start();
 
 	}

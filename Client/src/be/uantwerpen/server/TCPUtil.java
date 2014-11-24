@@ -58,7 +58,9 @@ public class TCPUtil extends Thread {
      * @throws IOException
      */
     void sendFilesOverTCP(File file, int port) throws IOException  {
-    	this.ssocket = new ServerSocket(this.port);
+    	System.out.println("Starting send file");
+    	this.ssocket = new ServerSocket(port);
+    	System.out.println("Serversocket opened");
     	this.socket = this.ssocket.accept();
     	
     	File transferFile = file;
