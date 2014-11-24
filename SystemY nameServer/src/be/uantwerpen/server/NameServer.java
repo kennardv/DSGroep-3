@@ -8,23 +8,31 @@ import java.util.*;
 
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
+<<<<<<< HEAD
 	TreeMap<Integer, Client> nodeMap = new TreeMap<Integer, Client>();
 
 	XMLMarshaller marshaller = new XMLMarshaller();
 
 	int k = 0;
 
+=======
+	
+>>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
 	String name;
 
 	String serverIp = "226.100.100.125";
+<<<<<<< HEAD
 
 	/**
 	 * 0 = discovery 1 = shutdown 2 = failure
 	 */
 	private String[] subject = { "discovery", "shutdown", "failure" };
 
+=======
+	
+>>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 	public NameServer() {
 		// bind rmi object
 		// Naming.bind("localhost", stvI);
@@ -79,33 +87,32 @@ public class NameServer {
 			        	removeFromMap(Integer.parseInt(clientStats[0]));
 			        }else{*/
 			        	//add new values to map
-			        addToMap(clientHashedName, dgram.getAddress().getHostAddress(), filenames);
+			        this.clientMap.add(clientHashedName, dgram.getAddress().getHostAddress(), filenames);
+			        //addToMap(clientHashedName, dgram.getAddress().getHostAddress(), filenames);
 			        //}
 			        
 			        
-					if(k> 0)
+					if(this.clientMap.getClientMap().size() > 1)
 					{
 						fileReplicateLocation = new String[filenamesArr.length];
 						for (int i = 0; i < filenamesArr.length; i++) {
 							int previousNode = 0;
 							boolean done = false;
 
-						    Set keys = nodeMap.keySet();
-						    Iterator itr = keys.iterator();
+						    Set<Integer> keys = this.clientMap.getClientMap().keySet();
+						    Iterator<Integer> itr = keys.iterator();
 						    while(itr.hasNext() && done == false)
 						    {	
-						    	previousNode = (int) itr.next();
+						    	previousNode = itr.next();
 						    	
-						    	
-						    	if((filenamesArr[1] > previousNode) && (clientHashedName != previousNode ))
+						    	if((filenamesArr[filenamesArr.length - 1] > previousNode) && (clientHashedName != previousNode ))
 							    {
 						    		done = true;
 							    }
 						    }
-						    Client node = nodeMap.get(previousNode);
+						    Client c = this.clientMap.getClientMap().get(previousNode);
 						    
-						    fileReplicateLocation[i] = node.getIpaddress();
-
+						    fileReplicateLocation[i] = c.getIpaddress();
 						}
 					}
 					
@@ -117,9 +124,8 @@ public class NameServer {
 						name = "//" + dgram.getAddress().getHostAddress() + "/ntn";
 						ntnI = null;
 						ntnI = (NodeToNodeInterface) Naming.lookup(name);
-						ntnI.serverAnswer(clientMap.getClientMap().size(), fileReplicateLocation);
-						k++;
-						System.err.println("Amount of clients: " + clientMap.getClientMap().size());
+						ntnI.serverAnswer(this.clientMap.getClientMap().size(), fileReplicateLocation);
+						System.out.println("Amount of clients: " + this.clientMap.getClientMap().size());
 					} catch (Exception e) {
 						System.err.println("FileServer exception: " + e.getMessage());
 						e.printStackTrace();
@@ -145,6 +151,7 @@ public class NameServer {
 
 			}
 		} catch (UnknownHostException e) {
+<<<<<<< HEAD
 		} catch (IOException e) {
 		}
 	}
@@ -202,6 +209,13 @@ public class NameServer {
 	public void initHashMapFromXML() {
 		clientMap = marshaller.jaxbXMLToObject();
 	}
+=======
+			
+		} catch (IOException e) {
+			
+		}
+	}
+>>>>>>> a2183aeed286504b527e48a7e228208ef241691d
 
 	public static void main(String[] argv) throws RemoteException,
 			ClassNotFoundException {
