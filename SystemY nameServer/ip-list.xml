@@ -2,13 +2,13 @@
 <clients>
     <clientMap>
         <entry>
-            <key>49</key>
+            <key>9383</key>
             <value>
                 <id>1</id>
-                <name>49</name>
-                <ipaddress>localhost</ipaddress>
+                <name>9383</name>
+                <ipaddress>192.168.17.50</ipaddress>
                 <filenames>
-                    <filename>desktop.ini</filename>
+                    <filename>8978</filename>
                 </filenames>
             </value>
         </entry>

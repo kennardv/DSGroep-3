@@ -43,11 +43,13 @@ public class NameServer {
 																// receive side
 			socket.joinGroup(InetAddress.getByName(serverIp));
 
-			String[] clientStats = null;
-			// loop forever
-			// check if a packet was received
-			while (true) {
-				// blocks until a datagram is received
+			
+			
+			int clientHashedName;
+			//loop forever
+			//check if a packet was received
+		    while(true) {
+		    	// blocks until a datagram is received
 				socket.receive(dgram);
 				String[] fileReplicateLocation = null;
 				// process received packet
@@ -58,65 +60,68 @@ public class NameServer {
 					Object o = in.readObject();
 					// pull values from message and store
 					List message = (List) o;
-					clientStats = (String[]) message.get(1);
 
-					System.out.println("Received dgram from " + clientStats[1]);
-
-					int[] filenamesArr = (int[]) message.get(2);
+					clientHashedName = (int)message.get(1);
+					
+					System.out.println("Received dgram from " + dgram.getAddress().getHostAddress());
+					
+					int[] filenamesArr = (int[])message.get(2);
 					List<Integer> filenames = new ArrayList<Integer>();
 					for (int i = 0; i < filenamesArr.length; i++) {
 						filenames.add(filenamesArr[i]);
 					}
 
-					Boolean shutdown = (Boolean) message.get(3);
-
-					if (shutdown == true) {
-						System.err
-								.println("shutdown client: " + clientStats[0]);
-						removeFromMap(Integer.parseInt(clientStats[0]));
-					} else {
-						// add new values to map
-						addToMap(Integer.parseInt(clientStats[0]),
-								clientStats[1], filenames);
-					}
-
-					if (k > 0) {
+			        
+			        //Boolean shutdown = (Boolean) message.get(3);
+			        
+			        /*if(shutdown == true){
+			        	System.err.println("shutdown client: " + clientStats[0]);
+			        	removeFromMap(Integer.parseInt(clientStats[0]));
+			        }else{*/
+			        	//add new values to map
+			        addToMap(clientHashedName, dgram.getAddress().getHostAddress(), filenames);
+			        //}
+			        
+			        
+					if(k> 0)
+					{
 						fileReplicateLocation = new String[filenamesArr.length];
 						for (int i = 0; i < filenamesArr.length; i++) {
 							int previousNode = 0;
 							boolean done = false;
-							Set keys = nodeMap.keySet();
-							Iterator itr = keys.iterator();
-							while (itr.hasNext() && done == false) {
-								previousNode = (int) itr.next();
 
-								if ((filenamesArr[1] > previousNode)
-										&& (Integer.parseInt(clientStats[0]) != previousNode)) {
-									done = true;
-								}
-							}
-							Client node = nodeMap.get(previousNode);
-
-							fileReplicateLocation[i] = node.getIpaddress();
+						    Set keys = nodeMap.keySet();
+						    Iterator itr = keys.iterator();
+						    while(itr.hasNext() && done == false)
+						    {	
+						    	previousNode = (int) itr.next();
+						    	
+						    	
+						    	if((filenamesArr[1] > previousNode) && (clientHashedName != previousNode ))
+							    {
+						    		done = true;
+							    }
+						    }
+						    Client node = nodeMap.get(previousNode);
+						    
+						    fileReplicateLocation[i] = node.getIpaddress();
 
 						}
 					}
-
-					System.out.println("hash: " + clientStats[0]);
+					
+					
+					System.out.println("hash: " + clientHashedName);
 					dgram.setLength(inBuf.length);
 					try {
-						// notify client about amount of nodes
-						name = "//" + clientStats[1] + "/ntn";
+						//notify client about amount of nodes
+						name = "//" + dgram.getAddress().getHostAddress() + "/ntn";
 						ntnI = null;
 						ntnI = (NodeToNodeInterface) Naming.lookup(name);
-
-						ntnI.serverAnswer(nodeMap.size(), fileReplicateLocation);
-
+						ntnI.serverAnswer(clientMap.getClientMap().size(), fileReplicateLocation);
 						k++;
-						System.err.println("Amount of clients: " + k);
+						System.err.println("Amount of clients: " + clientMap.getClientMap().size());
 					} catch (Exception e) {
-						System.err.println("FileServer exception: "
-								+ e.getMessage());
+						System.err.println("FileServer exception: " + e.getMessage());
 						e.printStackTrace();
 					}
 
