@@ -47,13 +47,10 @@ public class Client {
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
 	
-	public Client client;
+	//file replication
+	private String myFilesPath = ".\\src\\resources\\myfiles";
 	public String[] fileReplicateList = null;
 	
-	HashMap<File, Boolean> allFiles = new HashMap<File, Boolean>();
-	ClassLoader classLoader = null;
-	
-	String myFilesFolderName = "myfiles";
 	
 	//ctor
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
@@ -71,7 +68,6 @@ public class Client {
 		}
 		
 		this.ntn = new NodeToNode();
-		this.classLoader = getClass().getClassLoader();
 		
 		//Give client a name from console input
         this.nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
@@ -79,8 +75,7 @@ public class Client {
 		this.currentHash = hashString(this.nameClient);
 		
 		//get all file paths
-		//RELATIVE PATH !!!!
-		this.files = listFilesInDir("C:\\Users\\Kennard\\Desktop\\Test");
+		this.files = listFilesInDir(myFilesPath);
 		
 		this.filenames = new int[this.files.size()];
 		for (int i = 0; i< files.size(); i++) {
@@ -571,17 +566,19 @@ public class Client {
     
     /**
      * List all the files under a directory
-     * @param directoryName to be listed
+     * @param directoryName to be listed - RELATIVE PATH
      */
     public List<File> listFilesInDir(String directoryName){
-    	 File[] f = new File(directoryName).listFiles();
-    	 List<File> files = new ArrayList<File>();
-    	 for (int i = 0; i < f.length; i++) {
-    		 if (f[i].isFile()) {
-				files.add(f[i]);
+    	String path = null;
+		path = new File(directoryName).getAbsolutePath();
+    	File[] f = new File(path).listFiles();
+    	List<File> files = new ArrayList<File>();
+    	for (int i = 0; i < f.length; i++) {
+    		if (f[i].isFile()) {
+    			files.add(f[i]);
 			}
-    	 }
-         return files;
+    	}
+        return files;
     }
     
     /***
