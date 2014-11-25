@@ -3,9 +3,11 @@ package be.uantwerpen.server;
 import utils.*;
 
 import java.util.*;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 
 @XmlRootElement(name = "clients")
@@ -13,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ClientMap {
 	
 	private TreeMap<Integer, Client> clientMap = new TreeMap<Integer, Client>();
+	@XmlTransient
 	private XMLMarshaller marshaller;
 	
 	public ClientMap() {
