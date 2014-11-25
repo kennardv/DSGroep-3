@@ -4,6 +4,7 @@ import enumerations.*;
 import networking.*;
 import rmi.implementations.*;
 import rmi.interfaces.*;
+import utils.Toolkit;
 
 import java.net.*;
 import java.net.UnknownHostException;
@@ -37,6 +38,7 @@ public class Client {
 	private NodeToNodeInterface ntnI = null;
 	private ServerToNodeInterface stnI = null;
 	private String rmiBindLocation = null;
+	private String rmiSuffix = "ntn";
 	private String[] clientStats = new String[2];
 	
 	//TCP vars
@@ -79,14 +81,14 @@ public class Client {
 		//Give client a name from console input
         this.nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
 		//set own to hashed own name
-		this.currentHash = hashString(this.nameClient);
+		this.currentHash = Toolkit.hashString(this.nameClient);
 		
 		//get all file paths
-		this.files = listFilesInDir(myFilesPath);
+		this.files = Toolkit.listFilesInDir(myFilesPath);
 		
 		this.filenames = new int[this.files.size()];
 		for (int i = 0; i< files.size(); i++) {
-			this.filenames[i] = hashString(this.files.get(i).getName());
+			this.filenames[i] = Toolkit.hashString(this.files.get(i).getName());
 		}
 		
 		///////////////////////////////////////////////
@@ -96,16 +98,16 @@ public class Client {
 		bootstrap(this.myIPAddress);
 		//multicast and process answers
 		discover(InetAddress.getByName(multicastIp), socketPort);
-		//REPLICATE FILES NOT DONE
-
+		
+		//replicate files
 		if (ntn.numberOfNodes() != 1) {
 			replicate();
 		}
 	    
+		//listen for packets
 		this.udpUtilListener = new UDPUtil(this, this.socketPort, Mode.RECEIVE);
 		Thread t = new Thread(this.udpUtilListener);
 		t.start();
-	    //listenForPackets();
 	}
 	
 	/**
@@ -115,7 +117,7 @@ public class Client {
 	 */
 	void bootstrap(String ip) {
 		//bind remote object at location
-		this.rmiBindLocation = createBindLocation(ip);
+		this.rmiBindLocation = Toolkit.createBindLocation(ip, this.rmiSuffix);
 		bindRemoteObject(this.rmiBindLocation, this.ntn);
 	}
 	
@@ -187,7 +189,7 @@ public class Client {
 		fileReplicateList = ntn.replicationAnswer();
 		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
-			String name = createBindLocation(fileReplicateList[i]);
+			String name = Toolkit.createBindLocation(fileReplicateList[i], this.rmiSuffix);
 			try {
 				TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
@@ -219,8 +221,8 @@ public class Client {
 			//get previous and next node of failing node
 			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
 			//compute paths for nodes to update
-			previousPath = createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]));
-			nextPath = createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]));
+			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), this.rmiSuffix);
+			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), this.rmiSuffix);
 			
 			//get ip of neighbour nodes
 			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
@@ -261,7 +263,7 @@ public class Client {
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 			
 			//lookup server remote object
-			String serverPath = createBindLocation(serverIp);
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
@@ -341,7 +343,7 @@ public class Client {
 	 */
 	public void updateHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
 		try {
-			String name = createBindLocation(receivedIPAddress);
+			String name = Toolkit.createBindLocation(receivedIPAddress, this.rmiSuffix);
 			ntnI = (NodeToNodeInterface) Naming.lookup(name);
 			
 			//I am the only node -- SPECIAL CASE FOR FIRST NODE
@@ -397,8 +399,10 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
-
-    /**
+    
+    /////////////// UTILITY METHODS ///////////////
+	
+	/**
      * Bind the specified object to a location
      * @param path
      * @param ntn
@@ -427,58 +431,6 @@ public class Client {
 		}
     }
     
-    /////////////// UTILITY METHODS ///////////////
-    
-    /**
-     * List all the files under a directory
-     * @param directoryName to be listed - RELATIVE PATH
-     */
-    public List<File> listFilesInDir(String directoryName){
-    	String path = null;
-		path = new File(directoryName).getAbsolutePath();
-    	File[] f = new File(path).listFiles();
-    	List<File> files = new ArrayList<File>();
-    	for (int i = 0; i < f.length; i++) {
-    		if (f[i].isFile()) {
-    			files.add(f[i]);
-			}
-    	}
-        return files;
-    }
-    
-    /**
-     * Helper function to convert the contents of a file to a byte array
-     * @param path
-     * path to the file
-     * @return bFile
-     * byte array of the contents of the file
-     */
-    byte[] fileToByteArr(File f) {
-    	FileInputStream fis = null;
-    	 
-        File file = f;
- 
-        byte[] bFile = new byte[(int) file.length()];
- 
-        try {
-            //convert file into array of bytes
-		    fis = new FileInputStream(file);
-		    fis.read(bFile);
-		    fis.close();
-		    
-		    System.out.println("Contents of byte array.");
-		    for (int i = 0; i < bFile.length; i++) {
-		    	System.out.print((char)bFile[i]);
-            }
- 
-		    System.out.println("Done");
-        }catch(Exception e){
-        	e.printStackTrace();
-        }
-        
-        return bFile;
-    }
-    
     /**
      * This method blocks untill console receives input
      */
@@ -498,25 +450,6 @@ public class Client {
         /******************************************/
         
         return str;
-    }
-    
-    /**
-     * Helper method to convert a string to a hash. Range goes from 0 to 32768.
-     * @param name
-     * String to be hashed
-     * @return Returns the hashed inputted string.
-     */
-    int hashString(String name) {
-		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
-	}
-    
-    /**
-     * Create a correctly formated location string
-     * @param name
-     * @return formated location string
-     */
-    String createBindLocation(String name) {
-    	return "//" + name + "/ntn";
     }
     
 	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {

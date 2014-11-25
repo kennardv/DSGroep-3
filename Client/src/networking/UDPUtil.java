@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import utils.Toolkit;
 import be.uantwerpen.server.Client;
 
 public class UDPUtil extends Thread {
@@ -92,7 +93,7 @@ public class UDPUtil extends Thread {
 		}
 		//convert message object to byte array
 		try {
-			b = objectToByteArr(message);
+			b = Toolkit.objectToByteArr(message);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -174,76 +175,12 @@ public class UDPUtil extends Thread {
 	 	b = dgramPacket.getData();
 	 	List<Object> obj = null;
 	 	try {
-			obj = (ArrayList<Object>)byteArrToObject(b);
+			obj = (ArrayList<Object>)Toolkit.byteArrToObject(b);
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
 	 	return obj;
 	}
- 	
- 	/**
-     * Helper function to convert a byte array to an object
-     * @param b
-     * @return
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    Object byteArrToObject(byte[] b) throws IOException, ClassNotFoundException {
-    	ByteArrayInputStream bis = new ByteArrayInputStream(b);
-    	ObjectInput in = null;
-    	Object obj = null;
-    	try {
-    	  in = new ObjectInputStream(bis);
-    	  obj = in.readObject(); 
-    	} finally {
-    	  try {
-    	    bis.close();
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	  try {
-    	    if (in != null) {
-    	      in.close();
-    	    }
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	}
-    	return obj;
-    }
-    
-    /***
-     * Helper function to convert an object to a byte array
-     * @param path
-     * path to the file
-     * @return bFile
-     * byte array of the contents of the file
-     * @throws IOException 
-     */
-    byte[] objectToByteArr(Object obj) throws IOException {
-    	ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    	ObjectOutput out = null;
-    	byte[] b = null;
-    	try {
-    	  out = new ObjectOutputStream(bos);   
-    	  out.writeObject(obj);
-    	  b = bos.toByteArray();
-    	} finally {
-    	  try {
-    	    if (out != null) {
-    	      out.close();
-    	    }
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	  try {
-    	    bos.close();
-    	  } catch (IOException ex) {
-    	    // ignore close exception
-    	  }
-    	}
-    	return b;
-    }
     
     /**
      * Create the message that is sent during multicast

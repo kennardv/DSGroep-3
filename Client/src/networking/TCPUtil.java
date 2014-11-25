@@ -135,47 +135,4 @@ public class TCPUtil extends Thread {
 	    bos.close();
 	    socket.close();
     }
-    
-    /***
-     * Helper function to convert the contents of a file to a byte array
-     * @param path
-     * path to the file
-     * @return bFile
-     * byte array of the contents of the file
-     */
-    byte[] fileToByteArr(File f) {
-    	FileInputStream fis = null;
-    	 
-        File file = f;
- 
-        byte[] bFile = new byte[(int) file.length()];
- 
-        try {
-            //convert file into array of bytes
-		    fis = new FileInputStream(file);
-		    fis.read(bFile);
-		    fis.close();
-		    
-		    System.out.println("Contents of byte array.");
-		    for (int i = 0; i < bFile.length; i++) {
-		    	System.out.print((char)bFile[i]);
-            }
- 
-		    System.out.println("Done");
-        }catch(Exception e){
-        	e.printStackTrace();
-        }
-        
-        return bFile;
-    }
-    
-    byte[] intToBytes(int my_int) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = new ObjectOutputStream(bos);
-        out.writeInt(my_int);
-        out.close();
-        byte[] int_bytes = bos.toByteArray();
-        bos.close();
-        return int_bytes;
-    }
 }
