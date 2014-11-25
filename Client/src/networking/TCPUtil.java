@@ -1,5 +1,7 @@
 package networking;
 
+import enumerations.*;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -7,10 +9,6 @@ import java.net.UnknownHostException;
 
 public class TCPUtil extends Thread {
 	
-	public enum Mode {
-		SEND,
-		RECEIVE
-	}
 	private Mode mode;
 	
 	ServerSocket ssocket = null;

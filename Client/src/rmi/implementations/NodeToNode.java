@@ -3,6 +3,7 @@ package rmi.implementations;
 import agents.*;
 import rmi.interfaces.*;
 import networking.*;
+import enumerations.*;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -90,7 +91,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	}
 	
 	public void startReceive(String ip, int port, String fileName) throws UnknownHostException, IOException {
-		TCPUtil tcpReceiver = new TCPUtil(ip, port, TCPUtil.Mode.RECEIVE, null, fileName);
+		TCPUtil tcpReceiver = new TCPUtil(ip, port, Mode.RECEIVE, null, fileName);
 		Thread t = new Thread(tcpReceiver);
 		t.start();
 

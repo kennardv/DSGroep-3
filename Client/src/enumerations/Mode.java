@@ -1,6 +1,6 @@
 package enumerations;
 
-public enum UDPMode {
+public enum Mode {
 	SEND,
 	RECEIVE
 }

@@ -10,7 +10,7 @@ import be.uantwerpen.server.Client;
 
 public class UDPUtil extends Thread {
 	
-	private UDPMode mode;
+	private Mode mode;
 	
 	private Object message;
 	private InetAddress receiverIP;
@@ -29,7 +29,7 @@ public class UDPUtil extends Thread {
 	 * @param port
 	 * @param mode
 	 */
-	public UDPUtil(Client client, int port, UDPMode mode) {
+	public UDPUtil(Client client, int port, Mode mode) {
 		this.client = client;
 		this.port = port;
 		this.mode = mode;
@@ -46,7 +46,7 @@ public class UDPUtil extends Thread {
 	 * @param protocol
 	 * Discovery, shutdown, ...
 	 */
-	public UDPUtil(Client client, InetAddress receiverIP, int port, UDPMode mode, Protocol protocol) {
+	public UDPUtil(Client client, InetAddress receiverIP, int port, Mode mode, Protocol protocol) {
 		this.client = client;
 		this.receiverIP = receiverIP;
 		this.port = port;

@@ -102,7 +102,7 @@ public class Client {
 			replicate();
 		}
 	    
-		this.udpUtilListener = new UDPUtil(this, this.socketPort, UDPMode.RECEIVE);
+		this.udpUtilListener = new UDPUtil(this, this.socketPort, Mode.RECEIVE);
 		Thread t = new Thread(this.udpUtilListener);
 		t.start();
 	    //listenForPackets();
@@ -133,7 +133,7 @@ public class Client {
 		//List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
 		
 		//create message and multicast it
-		UDPUtil udpUtil = new UDPUtil(this, ip, port, UDPMode.SEND, Protocol.DISCOVERY);
+		UDPUtil udpUtil = new UDPUtil(this, ip, port, Mode.SEND, Protocol.DISCOVERY);
 		udpUtil.createDiscoveryMessage(this.currentHash, this.filenames);
 		Thread t = new Thread(udpUtil);
 		t.start();
@@ -189,7 +189,7 @@ public class Client {
 		{
 			String name = createBindLocation(fileReplicateList[i]);
 			try {
-				TCPUtil tcpSender = new TCPUtil(null, 20000, TCPUtil.Mode.SEND, files.get(i), null);
+				TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
 				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
@@ -242,8 +242,8 @@ public class Client {
 		
 		//create failure messages
 		//send message to previous and next neighbour
-		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, this.socketPort, UDPMode.SEND, Protocol.FAILURE);
-		udpUtilNext = new UDPUtil(this, inetAddressNext, this.socketPort, UDPMode.SEND, Protocol.FAILURE);
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, this.socketPort, Mode.SEND, Protocol.FAILURE);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, this.socketPort, Mode.SEND, Protocol.FAILURE);
 		udpUtilPrevious.createFailureMessage("previous");
 		udpUtilNext.createFailureMessage("next");
 		Thread t1 = new Thread(udpUtilPrevious);
