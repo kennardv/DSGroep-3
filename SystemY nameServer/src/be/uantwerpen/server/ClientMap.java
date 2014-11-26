@@ -17,6 +17,8 @@ public class ClientMap {
 	private TreeMap<Integer, Client> clientMap = new TreeMap<Integer, Client>();
 	@XmlTransient
 	private XMLMarshaller marshaller;
+	@XmlTransient
+	private int lastAddedKey = -1;
 	
 	public ClientMap() {
 		this.marshaller = new XMLMarshaller();
@@ -61,5 +63,11 @@ public class ClientMap {
 
 		// use parent clientMap to update XML file
 		marshaller.jaxbObjectToXML(this);
+		
+		this.lastAddedKey = hashedName;
+	}
+	
+	public int getLastAddedKey() {
+		return this.lastAddedKey;
 	}
 }
