@@ -14,7 +14,7 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 	
 	ClientMap clientMap;
 	
-	protected ServerToNode(ClientMap clientMap) throws RemoteException {
+	public ServerToNode(ClientMap clientMap) throws RemoteException {
 		super();
 		this.clientMap = clientMap;
 	}
