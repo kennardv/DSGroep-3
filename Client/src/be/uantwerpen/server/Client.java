@@ -31,7 +31,7 @@ public class Client {
 	
 	//my hashes
 	private int previousHash, currentHash, nextHash;
-	
+	//watch watcher = new watch();
 	//RMI vars
 	private Registry registry = null;
 	private NodeToNode ntn = null;
@@ -67,6 +67,7 @@ public class Client {
 		} else {
 			myIPAddress = "localhost";
 		}
+		
 		
 		///////////// INIT VARIABLES HERE /////////////
 		//create registry if it doesn't exist yet
