@@ -230,6 +230,8 @@ public class Client {
 			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
 			nextIP = stnI.getNodeIPAddress(neighbourHashes[1]);
 			
+						
+			
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -273,11 +275,34 @@ public class Client {
 		
 
 		try {
+			
 			//remove node from server
 			stnI.removeNode(hash);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+		
+		InetAddress host = null;
+		try {
+			try {
+				host = InetAddress.getByName(stnI.getNodeIPAddress(hash));
+				System.out.println(InetAddress.getByName(stnI.getNodeIPAddress(hash)));
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			System.out.println("host.isReachable(1000) = " + host.isReachable(1000));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
     public void shutdown(List<Object> message) throws IOException {
