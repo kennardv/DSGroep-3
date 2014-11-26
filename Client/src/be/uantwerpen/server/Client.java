@@ -74,7 +74,13 @@ public class Client {
 			registry = LocateRegistry.createRegistry(1099);
 		} catch (RemoteException e) {
 		}
-		
+		//lookup server remote object
+		String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
+		try {
+			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		}
 		this.ntn = new NodeToNode();
 		
 		
