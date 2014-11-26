@@ -287,6 +287,8 @@ public class Client {
 			e.printStackTrace();
 		}
 		
+		
+		//pingen naar gefailde hash
 		InetAddress host = null;
 		try {
 			try {
