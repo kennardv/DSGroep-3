@@ -12,8 +12,13 @@ public class watch {
     public static void main(String[] args) {
 
         //define a folder root
-        Path myDir = Paths.get(".\\src\\resources\\replicates");       
 
+    }
+
+    public void test()
+    {
+        Path myDir = Paths.get(".\\src\\resources\\replicates");       
+        System.out.println("testing");
         try {
            WatchService watcher = myDir.getFileSystem().newWatchService();
            myDir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE, 
@@ -23,6 +28,7 @@ public class watch {
 
            List<WatchEvent<?>> events = watckKey.pollEvents();
            for (WatchEvent event : events) {
+        	   System.out.println("grfygf");
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                     System.out.println("Created: " + event.context().toString());
                 }
