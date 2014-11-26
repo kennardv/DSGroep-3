@@ -4,6 +4,7 @@ import enumerations.*;
 import networking.*;
 import rmi.implementations.*;
 import rmi.interfaces.*;
+import utils.Consolelistener;
 import utils.Toolkit;
 
 import java.net.*;
@@ -19,7 +20,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = false;
+	boolean useLocalHost = true;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -54,6 +55,7 @@ public class Client {
 	
 	//UDP vars
 	private UDPUtil udpUtilListener = null;
+	private Consolelistener conslisten;
 	
 	//file replication
 	private String myFilesPath = ".\\src\\resources\\myfiles";
@@ -112,6 +114,11 @@ public class Client {
 		this.udpUtilListener = new UDPUtil(this, this.socketPort, Mode.RECEIVE);
 		Thread t = new Thread(this.udpUtilListener);
 		t.start();
+		
+		
+		this.conslisten = new Consolelistener(this, this.currentHash);
+		Thread t2 = new Thread(this.conslisten);
+		t2.start();
 	}
 	
 	/**
@@ -337,7 +344,8 @@ public class Client {
 		}
 	}
 	
-    public void shutdown(List<Object> message) throws IOException {
+	// Not available (see shutdown2)
+    public void shutdown(List<Object> message) throws IOException {		
         System.out.println("Shutting down..");
 
         ntn.decreaseNumberOfNodes(1);
@@ -362,6 +370,86 @@ public class Client {
         socket.send(dgram);
         System.out.println("send");
         
+        System.out.println("Closing client");
+        System.exit(1);
+	}
+    // end shutdown
+   
+    public void shutdown2(int hash){
+        System.out.println("Shutting down..");
+        
+		//variables
+		int[] neighbourHashes = null;
+		String previousPath = null;
+		String nextPath = null;
+		String previousIP = null;
+		String nextIP = null;
+		
+		UDPUtil udpUtilPrevious = null;
+		UDPUtil udpUtilNext = null;
+		
+		try {
+			System.out.println("Getting previous and next node of node that's shutting down");
+			//get previous and next node of failing node
+			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
+			//compute paths for nodes to update
+			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), this.rmiSuffix);
+			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), this.rmiSuffix);
+			
+			//get ip of neighbour nodes
+			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
+			nextIP = stnI.getNodeIPAddress(neighbourHashes[1]);
+			
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		InetAddress inetAddressPrevious = null;
+		InetAddress inetAddressNext = null;
+		try {
+			//create inetAddress vars
+			inetAddressPrevious = InetAddress.getByName(previousIP);
+			inetAddressNext = InetAddress.getByName(nextIP);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		
+		//create shutdown messages
+		//send message to previous and next neighbour
+        System.out.println("Sending message to previous and next neighbour");
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, this.socketPort, Mode.SEND, Protocol.SHUTDOWN);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, this.socketPort, Mode.SEND, Protocol.SHUTDOWN);
+		udpUtilPrevious.createFailureMessage("previous");
+		udpUtilNext.createFailureMessage("next");
+		Thread t1 = new Thread(udpUtilPrevious);
+		t1.start();
+		Thread t2 = new Thread(udpUtilNext);
+		t2.start();
+		
+		try {
+			//update previous node's next hash
+			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
+			ntnI.updateNextHash(neighbourHashes[1]);
+			
+			//update next node's previous hash
+			ntnI = (NodeToNodeInterface) Naming.lookup(nextPath);
+			ntnI.updatePreviousHash(neighbourHashes[0]);
+			
+			//lookup server remote object
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
+			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			System.out.println("Removing node from nameserver");
+			//remove node from server
+			stnI.removeNode(hash);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
         System.out.println("Closing client");
         System.exit(1);
 	}
