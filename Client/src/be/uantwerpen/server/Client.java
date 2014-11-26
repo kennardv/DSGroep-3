@@ -38,7 +38,8 @@ public class Client {
 	private NodeToNodeInterface ntnI = null;
 	private ServerToNodeInterface stnI = null;
 	private String rmiBindLocation = null;
-	private String rmiSuffix = "ntn";
+	private String rmiSuffixNode = "ntn";
+	private String rmiSuffixServer = "stn";
 	private String[] clientStats = new String[2];
 	
 	//TCP vars
@@ -75,7 +76,7 @@ public class Client {
 		} catch (RemoteException e) {
 		}
 		//lookup server remote object
-		String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
+		String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
 		try {
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (NotBoundException e) {
@@ -121,7 +122,7 @@ public class Client {
 	 */
 	void bootstrap(String ip) {
 		//bind remote object at location
-		this.rmiBindLocation = Toolkit.createBindLocation(ip, this.rmiSuffix);
+		this.rmiBindLocation = Toolkit.createBindLocation(ip, this.rmiSuffixNode);
 		bindRemoteObject(this.rmiBindLocation, this.ntn);
 	}
 	
@@ -202,7 +203,7 @@ public class Client {
 		}
 		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
-			String name = Toolkit.createBindLocation(fileReplicateList[i], this.rmiSuffix);
+			String name = Toolkit.createBindLocation(fileReplicateList[i], this.rmiSuffixNode);
 			try {
 				TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
@@ -234,8 +235,8 @@ public class Client {
 			//get previous and next node of failing node
 			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
 			//compute paths for nodes to update
-			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), this.rmiSuffix);
-			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), this.rmiSuffix);
+			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), this.rmiSuffixNode);
+			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), this.rmiSuffixNode);
 			
 			//get ip of neighbour nodes
 			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
@@ -278,7 +279,7 @@ public class Client {
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 			
 			//lookup server remote object
-			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
@@ -322,7 +323,7 @@ public class Client {
 		//variables
 		try {
 			//lookup server remote object
-			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
@@ -402,7 +403,7 @@ public class Client {
 	 */
 	public void updateHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
 		try {
-			String name = Toolkit.createBindLocation(receivedIPAddress, this.rmiSuffix);
+			String name = Toolkit.createBindLocation(receivedIPAddress, this.rmiSuffixNode);
 			ntnI = (NodeToNodeInterface) Naming.lookup(name);
 			
 			//I am the only node -- SPECIAL CASE FOR FIRST NODE

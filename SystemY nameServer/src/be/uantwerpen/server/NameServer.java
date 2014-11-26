@@ -1,5 +1,6 @@
 package be.uantwerpen.server;
 
+import rmi.implementations.ServerToNode;
 import rmi.interfaces.*;
 
 import java.io.*;
@@ -10,6 +11,7 @@ import java.util.*;
 
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
+	ServerToNode stn = null;
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
 	String name;
@@ -18,7 +20,13 @@ public class NameServer {
 
 	public NameServer() {
 		// bind rmi object
-		// Naming.bind("localhost", stvI);
+		try {
+			Naming.bind("//" + InetAddress.getLocalHost().getHostAddress() + "/stn", stn);
+		} catch (MalformedURLException | RemoteException | UnknownHostException
+				| AlreadyBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		ntnI = null;
 		name = null;
 
