@@ -19,7 +19,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = true;
+	boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -48,7 +48,7 @@ public class Client {
 	String myIPAddress = null;
 	String multicastIp = "226.100.100.125";
 
-	String serverIp = "192.168.17.53";
+	String serverIp = "192.168.1.1";
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
 	
