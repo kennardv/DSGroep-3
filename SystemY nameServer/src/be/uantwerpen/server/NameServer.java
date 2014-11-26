@@ -102,6 +102,7 @@ public class NameServer {
 						    {	
 						    	previousNode = itr.next();
 						    	
+						    	
 						    	if((filenamesArr[filenamesArr.length - 1] > previousNode) && (clientHashedName != previousNode ))
 							    {
 						    		done = true;

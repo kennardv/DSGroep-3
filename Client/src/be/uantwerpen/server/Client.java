@@ -156,7 +156,7 @@ public class Client {
 		//NS or other nodes answering on remote object
 		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
 		int i = 0;
-		while ((ntn.nextHash() == -1 || ntn.numberOfNodes() == -1) && i < 100)
+		while ((ntn.nextHash() == -1 || ntn.numberOfNodes() == -1))
 		{
 			System.out.println("Waiting, next hash: "+ntn.nextHash() + " # of nodes: " + ntn.numberOfNodes());
 			
@@ -171,11 +171,16 @@ public class Client {
 				System.out.println(ntn.numberOfNodes() + " neighbours. Setting hashes to hashes from previous node.");
 				this.nextHash = ntn.nextHash();
 				this.previousHash = ntn.previousHash();
+				i++;
+				if(i==10)
+				{
+					failure();
+				}
 			}
 			try {
 				//wait 100 ms
 				Thread.sleep(100);
-				i++;
+				
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
@@ -323,7 +328,7 @@ public class Client {
 		//variables
 		try {
 			//lookup server remote object
-			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
