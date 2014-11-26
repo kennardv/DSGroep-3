@@ -394,8 +394,8 @@ public class Client {
 			//get previous and next node of failing node
 			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
 			//compute paths for nodes to update
-			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), this.rmiSuffix);
-			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), this.rmiSuffix);
+			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), this.rmiSuffixNode);
+			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), this.rmiSuffixNode);
 			
 			//get ip of neighbour nodes
 			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
@@ -437,7 +437,7 @@ public class Client {
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 			
 			//lookup server remote object
-			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();

@@ -1,12 +1,14 @@
 package be.uantwerpen.server;
 
-import rmi.implementations.ServerToNode;
+import rmi.implementations.*;
 import rmi.interfaces.*;
 
 import java.io.*;
 import java.net.*;
 import java.net.UnknownHostException;
 import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.*;
 
 public class NameServer {
@@ -15,16 +17,21 @@ public class NameServer {
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
 	String name;
+	private Registry registry = null;
 
 	String serverIp = "226.100.100.125";
 
 	public NameServer() {
+		try {
+			registry = LocateRegistry.createRegistry(1099);
+		} catch (RemoteException e) {
+		}
 		// bind rmi object
 		try {
+			stn = new ServerToNode(this.clientMap);
 			Naming.bind("//" + InetAddress.getLocalHost().getHostAddress() + "/stn", stn);
 		} catch (MalformedURLException | RemoteException | UnknownHostException
 				| AlreadyBoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		ntnI = null;
