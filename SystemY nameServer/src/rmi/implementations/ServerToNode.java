@@ -9,6 +9,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
+import java.util.Set;
 
 public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInterface {
 	
@@ -63,16 +64,19 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 
 	@Override
 	public void removeNode(int nodeHash) throws RemoteException {
+		System.out.println("Last added key: " + this.clientMap.getLastAddedKey());
 		if ((nodeHash == this.clientMap.getLastAddedKey()) && (this.clientMap.getLastAddedKey() != -1)) {
-			Iterator<Integer> it = this.clientMap.getClientMap().keySet().iterator();
+			Set<Integer> keys = this.clientMap.getClientMap().keySet();
+		    Iterator<Integer> it = keys.iterator();
 
 			while (it.hasNext())
 			{
-			  it.next();
-			  if (!it.equals(nodeHash))
-			    it.remove();
+			  int i = it.next();
+			  if (i != nodeHash)
+			    this.clientMap.remove(i);
+			  	System.out.println("Special case: Removed " + i);
 			}
-			String name = "//" + this.clientMap.getClientMap().get(nodeHash) + "/ntn";
+			String name = "//" + this.clientMap.getClientMap().get(nodeHash).getIpaddress() + "/ntn";
 			NodeToNodeInterface ntnI = null;
 			try {
 				ntnI = (NodeToNodeInterface) Naming.lookup(name);
@@ -81,6 +85,7 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 			}
 			ntnI.serverAnswer(this.clientMap.getClientMap().size(), null);
 		} else {
+			System.out.println("Removing anyway: " + nodeHash);
 			this.clientMap.remove(nodeHash);
 		}
 	}

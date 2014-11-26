@@ -171,6 +171,8 @@ public class Client {
 				System.out.println(ntn.numberOfNodes() + " neighbours. Setting hashes to hashes from previous node.");
 				this.nextHash = ntn.nextHash();
 				this.previousHash = ntn.previousHash();
+				
+				
 			}
 			try {
 				//wait 100 ms
