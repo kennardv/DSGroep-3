@@ -3,8 +3,12 @@ package rmi.implementations;
 import be.uantwerpen.server.*;
 import rmi.interfaces.*;
 
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Iterator;
 
 public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInterface {
 	
@@ -59,7 +63,26 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 
 	@Override
 	public void removeNode(int nodeHash) throws RemoteException {
-		this.clientMap.remove(nodeHash);
+		if ((nodeHash == this.clientMap.getLastAddedKey()) && (this.clientMap.getLastAddedKey() != -1)) {
+			Iterator<Integer> it = this.clientMap.getClientMap().keySet().iterator();
+
+			while (it.hasNext())
+			{
+			  it.next();
+			  if (!it.equals(nodeHash))
+			    it.remove();
+			}
+			String name = "//" + this.clientMap.getClientMap().get(nodeHash) + "/ntn";
+			NodeToNodeInterface ntnI = null;
+			try {
+				ntnI = (NodeToNodeInterface) Naming.lookup(name);
+			} catch (MalformedURLException | NotBoundException e) {
+				e.printStackTrace();
+			}
+			ntnI.serverAnswer(this.clientMap.getClientMap().size(), null);
+		} else {
+			this.clientMap.remove(nodeHash);
+		}
 	}
 
 	@Override

@@ -101,9 +101,7 @@ public class Client {
 		discover(InetAddress.getByName(multicastIp), socketPort);
 		
 		//replicate files
-		if (ntn.numberOfNodes() != 1) {
-			replicate();
-		}
+		replicate();
 	    
 		//listen for packets
 		this.udpUtilListener = new UDPUtil(this, this.socketPort, Mode.RECEIVE);
@@ -145,7 +143,7 @@ public class Client {
 		//NS or other nodes answering on remote object
 		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
 		int i = 0;
-		while ((ntn.nextHash() == -1 || ntn.numberOfNodes() == -1) && i < 100)
+		while (ntn.nextHash() == -1 || ntn.numberOfNodes() == -1)
 		{
 			System.out.println("Waiting, next hash: "+ntn.nextHash() + " # of nodes: " + ntn.numberOfNodes());
 			
@@ -160,11 +158,15 @@ public class Client {
 				System.out.println(ntn.numberOfNodes() + " neighbours. Setting hashes to hashes from previous node.");
 				this.nextHash = ntn.nextHash();
 				this.previousHash = ntn.previousHash();
+				
+				i++;
+				if (i == 100) {
+					failure();
+				}
 			}
 			try {
 				//wait 100 ms
 				Thread.sleep(100);
-				i++;
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
@@ -190,6 +192,9 @@ public class Client {
 	void replicate() {
 		//get files to replicate
 		fileReplicateList = ntn.replicationAnswer();
+		if (fileReplicateList == null) {
+			return;
+		}
 		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
 			String name = Toolkit.createBindLocation(fileReplicateList[i], this.rmiSuffix);
@@ -283,6 +288,8 @@ public class Client {
 			e.printStackTrace();
 		}
 		
+		
+		//pingen naar gefailde hash
 		InetAddress host = null;
 		try {
 			try {
@@ -304,6 +311,25 @@ public class Client {
 		}
 		
 		
+	}
+	
+	void failure(){
+		//variables
+		try {
+			//lookup server remote object
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffix);
+			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		}
+		
+
+		try {
+			//remove node from server
+			stnI.removeNode(this.currentHash);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 	
     public void shutdown(List<Object> message) throws IOException {
