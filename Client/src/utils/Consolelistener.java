@@ -5,44 +5,34 @@ import be.uantwerpen.server.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
 
 public class Consolelistener extends Thread {
 	
 	
-	   private Thread t;
 	   private String threadName;
 	   private Client client;
-	   private List<Object> message;
-	   
-	   Consolelistener(String name, Client clientinput, List<Object> messageinput){
-	       threadName = name;
+       private String s = null;
+       private int hash;
+
+	   public Consolelistener(Client client, int hash){
+	       //threadName = name;
 	       System.out.println("Creating " +  threadName );
-	       this.client = clientinput;
+	       this.client = client;
+	       this.hash = hash;
 	   }
 	   
 	   public void run(){
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	        System.out.print("Enter String \n");
-	        String s;
+	        System.out.print("Enter String: ");
 			try {
-				s = br.readLine();
-				this.client.shutdown(this.message);
+				this.s = br.readLine();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			if(this.s.equals("shutdown")){
+				this.client.shutdown2(this.hash);
+			}
 	   }
-	   
-	   public void start ()
-	   {
-	      System.out.println("Starting " +  threadName );
-	      if (t == null)
-	      {
-	         t = new Thread (this, threadName);
-	         t.start ();
-	      }
-	   }
-
-	}
+}
 
