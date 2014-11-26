@@ -109,9 +109,7 @@ public class Client {
 		discover(InetAddress.getByName(multicastIp), socketPort);
 		
 		//replicate files
-		if (ntn.numberOfNodes() != 1) {
-			replicate();
-		}
+		replicate();
 	    
 		//listen for packets
 		this.udpUtilListener = new UDPUtil(this, this.socketPort, Mode.RECEIVE);
@@ -202,6 +200,9 @@ public class Client {
 	 */
 	void replicate() {
 		//get files to replicate
+		if (fileReplicateList == null) {
+			return;
+		}
 		fileReplicateList = ntn.replicationAnswer();
 		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
