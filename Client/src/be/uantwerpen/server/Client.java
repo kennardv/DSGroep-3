@@ -19,7 +19,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = true;
+	boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -48,7 +48,7 @@ public class Client {
 	String myIPAddress = null;
 	String multicastIp = "226.100.100.125";
 
-	String serverIp = "192.168.17.53";
+	String serverIp = "192.168.1.1";
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
 	
@@ -143,7 +143,8 @@ public class Client {
 		
 		//NS or other nodes answering on remote object
 		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
-		while (ntn.nextHash() == -1 || ntn.numberOfNodes() == -1)
+		int i = 0;
+		while ((ntn.nextHash() == -1 || ntn.numberOfNodes() == -1) && i < 100)
 		{
 			System.out.println("Waiting, next hash: "+ntn.nextHash() + " # of nodes: " + ntn.numberOfNodes());
 			
@@ -161,7 +162,8 @@ public class Client {
 			}
 			try {
 				//wait 100 ms
-				Thread.sleep(100);	
+				Thread.sleep(100);
+				i++;
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
