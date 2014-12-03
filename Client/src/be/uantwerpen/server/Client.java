@@ -18,7 +18,7 @@ import java.util.*;
 import agents.FileListAgent;
 
 public class Client {
-	
+
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
@@ -26,15 +26,15 @@ public class Client {
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
-	
+
 	//Info
 	String nameClient = null;
 	List<File> files = null;
 	int[] filenames = null;
-	
+
 	//my hashes
 	private int previousHash, currentHash, nextHash;
-	
+
 	//RMI vars
 	private Registry registry = null;
 	private NodeToNode ntn = null;
@@ -44,18 +44,18 @@ public class Client {
 	private String rmiSuffixNode = "ntn";
 	private String rmiSuffixServer = "stn";
 	private String[] clientStats = new String[2];
-	
+
 	//TCP vars
 	private String multicastAddress = null;
 	private int socketPort = 4545;
-	
+
 	String myIPAddress = null;
 	String multicastIp = "226.100.100.125";
 
-	String serverIp = "192.168.1.1";
+	String serverIp = "localhost";
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
-	
+
 	//UDP vars
 	private UDPUtil udpUtilListener = null;
 	private Consolelistener conslisten;
@@ -612,6 +612,4 @@ public class Client {
 		Client client = new Client();
 		
 	}
-	
-
 }

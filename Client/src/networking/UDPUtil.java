@@ -145,12 +145,8 @@ public class UDPUtil extends Thread {
 						this.client.updateHashes(senderHashedName, dgram.getAddress().getHostAddress(), neighbours);
 						break;
 					case SHUTDOWN:
-						//System.out.println(shutdown);
-						/*if(shutdown == true){
-							neighbours = (int[]) message.get(4);
-							System.out.println("next = " + neighbours[0]);
-							System.out.println("previous = " + neighbours[1]);
-						}*/
+						System.out.println("Shutdown");
+						this.client.checkForNTNUpdate((String)message.get(1));
 						break;
 					case FAILURE:
 						this.client.checkForNTNUpdate((String)message.get(1));
