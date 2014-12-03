@@ -44,6 +44,7 @@ public class Client {
 	private String rmiSuffixNode = "ntn";
 	private String rmiSuffixServer = "stn";
 	private String[] clientStats = new String[2];
+	private String serverPath = null;
 
 	//TCP vars
 	private String multicastAddress = null;
@@ -52,7 +53,7 @@ public class Client {
 	String myIPAddress = null;
 	String multicastIp = "226.100.100.125";
 
-	String serverIp = "localhost";
+	String serverIp = "192.168.1.1";
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
 
@@ -83,7 +84,7 @@ public class Client {
 		} catch (RemoteException e) {
 		}
 		//lookup server remote object
-		String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
+		serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
 		try {
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (NotBoundException e) {
@@ -158,9 +159,6 @@ public class Client {
 		t.start();
 		//sendDatagramPacket(message, ip, port);
 		
-		//NS or other nodes answering on remote object
-		//keep looping as long as nextHash isn't changed or number of nodes isn't changed
-		int i = 0;
 		while ((ntn.nextHash() == -1 || ntn.numberOfNodes() == -1))
 		{
 			System.out.println("Waiting, next hash: "+ntn.nextHash() + " # of nodes: " + ntn.numberOfNodes());
@@ -172,20 +170,10 @@ public class Client {
 				//set next and previous hash equal to own hash
 				ntn.setNextHash(this.currentHash);
 				ntn.setPreviousHash(this.currentHash);
-			}else if(ntn.numberOfNodes() == 2){
-				this.fileListAgent = new FileListAgent();
-				this.ntn.startFileListAgent(this.fileListAgent, this.stnI, this.currentHash, this.rmiSuffixNode);
-			
-				
 			} else if (ntn.numberOfNodes() > 1) {
 				System.out.println(ntn.numberOfNodes() + " neighbours. Setting hashes to hashes from previous node.");
 				this.nextHash = ntn.nextHash();
 				this.previousHash = ntn.previousHash();
-				i++;
-				if(i==10)
-				{
-					failure();
-				}
 			}
 			try {
 				//wait 100 ms
@@ -203,6 +191,12 @@ public class Client {
 		this.nextHash = ntn.nextHash();
 		this.previousHash = ntn.previousHash();
 		System.out.println("Hashes: Previous: " + this.previousHash + ". Own: " + this.currentHash + ". Next: " + this.nextHash);
+		
+		if(ntn.numberOfNodes() == 2){
+			System.out.println("Start file list agent");
+			this.fileListAgent = new FileListAgent(this.currentHash, this.serverPath);
+			this.ntn.startFileListAgent(this.fileListAgent, this.stnI, this.currentHash, this.rmiSuffixNode);
+		}
 		
 		//unbind object from location
 		if (useLocalHost) {

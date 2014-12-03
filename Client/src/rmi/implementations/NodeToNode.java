@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterface {
 	private int nextHash = -1;
@@ -18,7 +19,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	private int numberOfNodes = -1;
 	private String[] replicationAnswer;
 	private String ipAddress = "localhost";
-	
+	private List<String> fileList;
 	
 	public NodeToNode() throws RemoteException{
 		super();
@@ -95,6 +96,8 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		}
 	}
 	
+	
+	
 	public void answerDiscovery(int prev, int next)
 	{
 		nextHash = next;
@@ -169,5 +172,11 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	public void resetHashes() {
 		this.previousHash = -1;
 		this.nextHash = -1;
+	}
+
+	@Override
+	public void updateFileList(List<String> fileList) throws RemoteException {
+		this.fileList = fileList;
+		System.out.println("fileList " + this.fileList.size());
 	}
 }
