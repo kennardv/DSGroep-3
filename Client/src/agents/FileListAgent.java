@@ -27,6 +27,10 @@ public class FileListAgent implements Runnable, Serializable {
 		List<File> tmp = Toolkit.listFilesInDir(".\\src\\resources\\myfiles");
 		List<String> filesOnNode = null;
 		
+		for (File f : tmp) {
+			filesOnNode.add(f.getName());
+		}
+		
 		//if the file wasn't found yet, add it to found list
 		for (String f : filesOnNode) {
 			//int k = hashString(f);
