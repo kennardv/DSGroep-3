@@ -44,12 +44,13 @@ public class replicaterUtil {
 			}	
 			
 		}
+		updater(fileReplicateList, ntn, rmiSuffixNode, files, myIPAddress);
 	}
     
 
-    public void updater()
+    public void updater(String[] fileReplicateList, NodeToNode ntn, String rmiSuffixNode, List<File> files, String myIPAddress )
     {
-        Path myDir = Paths.get(".\\src\\resources\\replicates");       
+        Path myDir = Paths.get(".\\src\\resources\\myfiles\\");       
         System.out.println("testing");
         try {
            WatchService watcher = myDir.getFileSystem().newWatchService();
@@ -63,7 +64,17 @@ public class replicaterUtil {
         	   System.out.println("grfygf");
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                     File newFile = new File(".\\src\\resources\\myfiles\\" + event.context().toString() );
-
+                    String name = Toolkit.createBindLocation(fileReplicateList[i], rmiSuffixNode);
+        			try {
+        				TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, newFile, null);
+        				Thread t = new Thread(tcpSender);
+        				t.start();
+        				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+        				ntnI.startReceive(myIPAddress, 20000, newFile.getName());
+        				t.join();
+        			} catch (Exception e) {
+        				e.printStackTrace();
+        			}
                 }
             }
            
