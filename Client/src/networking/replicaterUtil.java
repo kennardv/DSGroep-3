@@ -62,7 +62,8 @@ public class replicaterUtil {
            for (WatchEvent event : events) {
         	   System.out.println("grfygf");
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    System.out.println("Created: " + event.context().toString());
+                    File newFile = new File(".\\src\\resources\\myfiles\\" + event.context().toString() );
+
                 }
             }
            
