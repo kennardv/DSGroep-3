@@ -9,6 +9,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
+import java.util.Set;
 
 public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInterface {
 	
@@ -91,7 +92,28 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 		c = this.clientMap.getClientMap().get(nodeHash);
 		return c.getIpaddress();
 	}
+	@Override
+	public String getnewFileReplicationNode(int filehash) throws RemoteException {
+		int previousNode = 0;
+		boolean done = false;
 
+	    Set<Integer> keys = this.clientMap.getClientMap().keySet();
+	    Iterator<Integer> itr = keys.iterator();
+	    while(itr.hasNext() && done == false)
+	    {	
+	    	previousNode = itr.next();
+	    	
+	    	
+	    	if((filenamesArr[filenamesArr.length - 1] > previousNode) && (clientHashedName != previousNode ))
+		    {
+	    		done = true;
+		    }
+	    }
+	    Client c = this.clientMap.getClientMap().get(previousNode);
+	    
+	    fileReplicateLocation[i] = c.getIpaddress();
+		return c.getIpaddress();
+	}
 	@Override
 	public int[] getPreviousAndNextNodeHash(int hash) throws RemoteException {
 		//Object type because can't cast to int array
