@@ -10,6 +10,7 @@ public class FileListAgent implements Runnable, Serializable {
 	
 	@Override
 	public void run() {
+		/*
 		List<String> filesOnNode = new ArrayList<String>();
 		File tmp = new File(".\\src\\resources\\myfiles");
 		
@@ -33,7 +34,7 @@ public class FileListAgent implements Runnable, Serializable {
 				filesOnNode.add(key);
 			}
 		}
-		
+		*/
 		//if lock request on current node and file not locked -> lock in foundFiles map
 		System.out.println("Agentzzz");
 		//unlock files downloaded by current node

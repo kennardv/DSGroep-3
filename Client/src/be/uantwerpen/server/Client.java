@@ -172,8 +172,11 @@ public class Client {
 				//set next and previous hash equal to own hash
 				ntn.setNextHash(this.currentHash);
 				ntn.setPreviousHash(this.currentHash);
+			}else if(ntn.numberOfNodes() == 2){
 				this.fileListAgent = new FileListAgent();
 				this.ntn.startFileListAgent(this.fileListAgent, this.stnI, this.currentHash, this.rmiSuffixNode);
+			
+				
 			} else if (ntn.numberOfNodes() > 1) {
 				System.out.println(ntn.numberOfNodes() + " neighbours. Setting hashes to hashes from previous node.");
 				this.nextHash = ntn.nextHash();
