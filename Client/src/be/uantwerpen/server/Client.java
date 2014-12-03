@@ -15,12 +15,14 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
 
+import agents.FileListAgent;
+
 public class Client {
 	
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = true;
+	boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -61,6 +63,9 @@ public class Client {
 	//file replication
 	private String myFilesPath = ".\\src\\resources\\myfiles";
 	public String[] fileReplicateList = null;
+	
+	//Agents
+	private FileListAgent fileListAgent = null;
 	
 	
 	//ctor
@@ -167,6 +172,8 @@ public class Client {
 				//set next and previous hash equal to own hash
 				ntn.setNextHash(this.currentHash);
 				ntn.setPreviousHash(this.currentHash);
+				this.fileListAgent = new FileListAgent();
+				this.ntn.startFileListAgent(this.fileListAgent, this.stnI, this.currentHash, this.rmiSuffixNode);
 			} else if (ntn.numberOfNodes() > 1) {
 				System.out.println(ntn.numberOfNodes() + " neighbours. Setting hashes to hashes from previous node.");
 				this.nextHash = ntn.nextHash();

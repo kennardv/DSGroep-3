@@ -124,4 +124,29 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 		}
 		return hashes;
 	}
+
+	@Override
+	public int getNextNodeHash(int hash) throws RemoteException {
+		//Object type because can't cast to int array
+		Object[] tmp = this.clientMap.getClientMap().keySet().toArray();
+		int[] keys = new int[tmp.length];
+		//cast all elements to int
+		for (int i = 0; i < tmp.length; i++) {
+			keys[i] = (int)tmp[i];
+		}
+		//previous and next node array
+		int nextHash = 0;
+		for (int i = 0; i < keys.length; i++) {
+			if (keys[i] == hash) {
+				if (i == 0) {
+					nextHash = keys[i + 1];
+				} else if (i == keys.length -1) {
+					nextHash = keys[0];
+				} else {
+					nextHash = keys[i + 1];
+				}
+			}
+		}
+		return nextHash;
+	}
 }

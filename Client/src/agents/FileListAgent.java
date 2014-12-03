@@ -11,7 +11,7 @@ public class FileListAgent implements Runnable, Serializable {
 	@Override
 	public void run() {
 		List<String> filesOnNode = new ArrayList<String>();
-		File tmp = new File("/src/resources/myfiles");
+		File tmp = new File(".\\src\\resources\\myfiles");
 		
 		//list of all owned files for this node
 		File[] files = tmp.listFiles();
@@ -35,17 +35,7 @@ public class FileListAgent implements Runnable, Serializable {
 		}
 		
 		//if lock request on current node and file not locked -> lock in foundFiles map
-		
+		System.out.println("Agentzzz");
 		//unlock files downloaded by current node
-	}
-	
-	/**
-     * Helper method to convert a string to a hash. Range goes from 0 to 32768.
-     * @param name
-     * String to be hashed
-     * @return Returns the hashed inputted string.
-     */
-    int hashString(String name) {
-		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
 	}
 }

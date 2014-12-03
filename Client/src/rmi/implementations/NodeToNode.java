@@ -2,6 +2,7 @@ package rmi.implementations;
 
 import agents.*;
 import rmi.interfaces.*;
+import utils.Toolkit;
 import networking.*;
 import enumerations.*;
 
@@ -23,7 +24,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		super();
 	}
 	
-	public void startFileListAgent(FileListAgent agent) {
+	public void startFileListAgent(FileListAgent agent, ServerToNodeInterface stnI, int currentHash, String suffix) {
 		//make new thread with argument: agent
 		Thread t = new Thread(agent);
 		
@@ -36,8 +37,18 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 			e.printStackTrace();
 		}
 		
+		
 		//call same method on next node
-		String name = "//localhost/ntn";
+		int nextNode = 0;
+		String name = null;
+		try {
+			nextNode = stnI.getNextNodeHash(currentHash);
+			name = stnI.getNodeIPAddress(nextNode);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		name = Toolkit.createBindLocation(name, suffix); //"//" + stnI.getNextNodeHash(currentHash) + "/ntn";
 		NodeToNodeInterface ntnI = null;
 		try {
 			ntnI = (NodeToNodeInterface) Naming.lookup(name);
@@ -46,7 +57,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 			e.printStackTrace();
 		}
 		try {
-			ntnI.startFileListAgent(agent);
+			ntnI.startFileListAgent(agent, stnI, nextNode, suffix);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
