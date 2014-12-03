@@ -20,8 +20,11 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 		this.clientMap = clientMap;
 	}
 
-	/***
-	 * Get an array containing the neighbours of the specified node. Index 0 = previous, index 1 = next
+	/**
+	 * 
+	 * @param nodeHash Hash to get neighbours of
+	 * @return Get an array containing the neighbours of the specified node. Index 0 = previous, index 1 = next
+	 * @throws RemoteException
 	 */
 	public int[] getNeighbourNodes(int nodeHash) throws RemoteException {
 		Object[] tmp = null;

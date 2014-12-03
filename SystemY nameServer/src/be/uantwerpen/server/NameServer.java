@@ -16,26 +16,22 @@ public class NameServer {
 	ServerToNode stn = null;
 	NodeToNodeInterface ntnI;
 	ServerToNodeInterface stvI;
-	String name;
 	private Registry registry = null;
-
-	String serverIp = "226.100.100.125";
 
 	public NameServer() {
 		try {
-			registry = LocateRegistry.createRegistry(1099);
+			registry = LocateRegistry.createRegistry(Constants.REGISTRY_PORT);
 		} catch (RemoteException e) {
 		}
 		// bind rmi object
 		try {
 			stn = new ServerToNode(this.clientMap);
-			Naming.bind("//" + InetAddress.getLocalHost().getHostAddress() + "/stn", stn);
+			Naming.bind("//" + InetAddress.getLocalHost().getHostAddress() + "/" + Constants.RMI_SUFFIX_SERVER, stn);
 		} catch (MalformedURLException | RemoteException | UnknownHostException
 				| AlreadyBoundException e) {
 			e.printStackTrace();
 		}
 		ntnI = null;
-		name = null;
 
 		ListenForPacket();
 	}
@@ -45,8 +41,8 @@ public class NameServer {
 			// create socket, buffer and join socket group
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
-			MulticastSocket socket = new MulticastSocket(4545); // must bind receive side
-			socket.joinGroup(InetAddress.getByName(serverIp));
+			MulticastSocket socket = new MulticastSocket(Constants.SOCKET_PORT_UDP); // must bind receive side
+			socket.joinGroup(InetAddress.getByName(Constants.MULTICAST_IP));
 
 			int clientHashedName;
 			//loop forever
@@ -118,9 +114,9 @@ public class NameServer {
 					dgram.setLength(inBuf.length);
 					try {
 						//notify client about amount of nodes
-						name = "//" + dgram.getAddress().getHostAddress() + "/ntn";
+						String path = "//" + dgram.getAddress().getHostAddress() + "/" + Constants.RMI_SUFFIX_NODE;
 						ntnI = null;
-						ntnI = (NodeToNodeInterface) Naming.lookup(name);
+						ntnI = (NodeToNodeInterface) Naming.lookup(path);
 						ntnI.serverAnswer(this.clientMap.getClientMap().size(), fileReplicateLocation);
 						System.out.println("Amount of clients: " + this.clientMap.getClientMap().size());
 					} catch (Exception e) {

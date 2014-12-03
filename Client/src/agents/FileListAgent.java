@@ -7,6 +7,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.*;
 
+import be.uantwerpen.server.Constants;
 import rmi.interfaces.NodeToNodeInterface;
 import rmi.interfaces.ServerToNodeInterface;
 import utils.Toolkit;
@@ -24,7 +25,7 @@ public class FileListAgent implements Runnable, Serializable {
 	
 	@Override
 	public void run() {
-		List<File> tmp = Toolkit.listFilesInDir(".\\src\\resources\\myfiles");
+		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
 		List<String> filesOnNode = null;
 		
 		for (File f : tmp) {

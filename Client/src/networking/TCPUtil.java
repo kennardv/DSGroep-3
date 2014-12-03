@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import be.uantwerpen.server.Constants;
+
 public class TCPUtil extends Thread {
 	
 	private Mode mode;
@@ -15,14 +17,12 @@ public class TCPUtil extends Thread {
 	Socket socket = null;
 	
 	String ipaddress = null;
-	int port = 0;
 	
 	File file = null;
 	String fileName = null;
 	
-	public TCPUtil(String ipaddress, int port, Mode mode, File file, String fileName) throws IOException {
+	public TCPUtil(String ipaddress, Mode mode, File file, String fileName) throws IOException {
 		this.ipaddress = ipaddress;
-		this.port = port;
 		this.mode = mode;
 		this.file = file;
 		this.fileName = fileName;
@@ -32,10 +32,10 @@ public class TCPUtil extends Thread {
 		try {
 			switch (this.mode) {
 			case SEND:
-				sendFilesOverTCP(this.file, this.port);
+				sendFilesOverTCP(this.file, Constants.SOCKET_PORT_TCP);
 				break;
 			case RECEIVE:
-				receiveFilesOverTCP(this.ipaddress, this.port, ".\\src\\resources\\replicates\\" + fileName);
+				receiveFilesOverTCP(this.ipaddress, Constants.SOCKET_PORT_TCP, Constants.REPLICATES_PATH + fileName);
 				break;
 	
 			default:

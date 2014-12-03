@@ -8,6 +8,7 @@ import java.util.*;
 
 import utils.Toolkit;
 import be.uantwerpen.server.Client;
+import be.uantwerpen.server.Constants;
 
 public class UDPUtil extends Thread {
 	
@@ -15,9 +16,6 @@ public class UDPUtil extends Thread {
 	
 	private Object message;
 	private InetAddress receiverIP;
-	private int port = 4545;
-	
-	private String multicastIp = "226.100.100.125";
 	
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
@@ -30,9 +28,8 @@ public class UDPUtil extends Thread {
 	 * @param port
 	 * @param mode
 	 */
-	public UDPUtil(Client client, int port, Mode mode) {
+	public UDPUtil(Client client, Mode mode) {
 		this.client = client;
-		this.port = port;
 		this.mode = mode;
 	}
 	
@@ -47,20 +44,19 @@ public class UDPUtil extends Thread {
 	 * @param protocol
 	 * Discovery, shutdown, ...
 	 */
-	public UDPUtil(Client client, InetAddress receiverIP, int port, Mode mode, Protocol protocol) {
+	public UDPUtil(Client client, InetAddress receiverIP, Mode mode, Protocol protocol) {
 		this.client = client;
 		this.receiverIP = receiverIP;
-		this.port = port;
 		this.mode = mode;
 	}
 	
 	public void run() {
 		switch (this.mode) {
 		case SEND:
-			sendDatagramPacket(this.message, this.receiverIP, this.port);
+			sendDatagramPacket(this.message, this.receiverIP, Constants.SOCKET_PORT_UDP);
 			break;
 		case RECEIVE:
-			listenForPackets();
+			listenForPackets(Constants.SOCKET_PORT_UDP);
 			break;
 		default:
 			break;
@@ -120,13 +116,13 @@ public class UDPUtil extends Thread {
 	/**
      * Poll continuously for a discovery message from a new node 
      */
-    void listenForPackets() {
+    void listenForPackets(int port) {
 		try {
 			System.out.println("Listening for packets in UDPUtil");
 			byte[] inBuf = new byte[256];
 			DatagramPacket dgram = new DatagramPacket(inBuf, inBuf.length);
-			MulticastSocket socket = new MulticastSocket(this.port);
-			socket.joinGroup(InetAddress.getByName(multicastIp));
+			MulticastSocket socket = new MulticastSocket(port);
+			socket.joinGroup(InetAddress.getByName(Constants.MULTICAST_IP));
 			
 			//do this forever
 			while (true) {
@@ -146,10 +142,10 @@ public class UDPUtil extends Thread {
 						break;
 					case SHUTDOWN:
 						System.out.println("Shutdown");
-						this.client.checkForNTNUpdate((String)message.get(1));
+						this.client.checkForNTNUpdate((Position)message.get(1));
 						break;
 					case FAILURE:
-						this.client.checkForNTNUpdate((String)message.get(1));
+						this.client.checkForNTNUpdate((Position)message.get(1));
 						break;
 					default:
 						break;
@@ -202,7 +198,7 @@ public class UDPUtil extends Thread {
      	this.message = message;
      }
     
-    public void createFailureMessage(String position) {
+    public void createFailureMessage(Position position) {
      	List<Object> message = new ArrayList<Object>();
      	message.add(Protocol.FAILURE);
      	message.add(position);

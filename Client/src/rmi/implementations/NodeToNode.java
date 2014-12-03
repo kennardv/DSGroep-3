@@ -104,8 +104,8 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		previousHash = prev;
 	}
 	
-	public void startReceive(String ip, int port, String fileName) throws UnknownHostException, IOException {
-		TCPUtil tcpReceiver = new TCPUtil(ip, port, Mode.RECEIVE, null, fileName);
+	public void startReceive(String ip, String fileName) throws UnknownHostException, IOException {
+		TCPUtil tcpReceiver = new TCPUtil(ip, Mode.RECEIVE, null, fileName);
 		Thread t = new Thread(tcpReceiver);
 		t.start();
 
