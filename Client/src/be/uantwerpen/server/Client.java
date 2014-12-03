@@ -130,6 +130,7 @@ public class Client {
 	void bootstrap(String ip) {
 		//bind remote object at location
 		this.rmiBindLocation = Toolkit.createBindLocation(ip, this.rmiSuffixNode);
+		System.out.println("bindloc:" + this.rmiBindLocation);
 		bindRemoteObject(this.rmiBindLocation, this.ntn);
 	}
 	
@@ -427,6 +428,7 @@ public class Client {
 		
 		try {
 			//update previous node's next hash
+			System.out.println("prevpath:" + previousPath);
 			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
 			ntnI.updateNextHash(neighbourHashes[1]);
 			
@@ -435,7 +437,7 @@ public class Client {
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 			
 			//lookup server remote object
-			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
+			String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
 			stnI = (ServerToNodeInterface) Naming.lookup(serverPath);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
