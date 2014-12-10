@@ -107,8 +107,11 @@ public class Client {
 		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
 
 		//replicate files
-		ReplicaterUtil replicatUtil = new ReplicaterUtil();
-	    replicatUtil.replicate(fileReplicateList, ntn, files, this.myIPAddress, this.currentHash );
+		ReplicaterUtil replicatUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash);
+		System.out.println(fileReplicateList);
+		System.out.println("kfirjfjrfrf");
+		System.out.println(files);
+	    replicatUtil.replicate(fileReplicateList, files );
 
 	    //listen for packets
 		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
