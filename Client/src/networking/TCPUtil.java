@@ -37,7 +37,6 @@ public class TCPUtil extends Thread {
 			case RECEIVE:
 				receiveFilesOverTCP(this.ipaddress, Constants.SOCKET_PORT_TCP, Constants.REPLICATES_PATH + fileName);
 				break;
-	
 			default:
 				break;
 			}
@@ -118,7 +117,7 @@ public class TCPUtil extends Thread {
     	int filesize=1022386; 
 	    int bytesRead;
 	    int currentTot = 0;
-	    
+
 	    byte[] bytearray  = new byte[filesize];
 	    InputStream is = socket.getInputStream();
 	    FileOutputStream fos = new FileOutputStream(pathToSaveTo);
