@@ -132,13 +132,12 @@ public class UDPUtil extends Thread {
 				try {
 					List<Object> message = readDatagramPacket(dgram);
 					this.receiveProtocol = (Protocol) message.get(0);
-					int senderHashedName = (int)message.get(1);
 					int[] neighbours = null;
 					
 					//decide what to do depending on protocol
 					switch (this.receiveProtocol) {
 					case DISCOVERY:
-						this.client.updateHashes(senderHashedName, dgram.getAddress().getHostAddress(), neighbours);
+						this.client.updateHashes((int)message.get(1), dgram.getAddress().getHostAddress(), neighbours);
 						break;
 					case SHUTDOWN:
 						System.out.println("Shutdown");
