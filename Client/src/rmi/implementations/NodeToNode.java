@@ -2,6 +2,7 @@ package rmi.implementations;
 
 import agents.*;
 import rmi.interfaces.*;
+import utils.Toolkit;
 import networking.*;
 import enumerations.*;
 
@@ -10,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterface {
 	private int nextHash = -1;
@@ -17,13 +19,13 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	private int numberOfNodes = -1;
 	private String[] replicationAnswer;
 	private String ipAddress = "localhost";
-	
+	private List<String> fileList;
 	
 	public NodeToNode() throws RemoteException{
 		super();
 	}
 	
-	public void startFileListAgent(FileListAgent agent) {
+	public void startFileListAgent(FileListAgent agent, ServerToNodeInterface stnI, int currentHash, String suffix) {
 		//make new thread with argument: agent
 		Thread t = new Thread(agent);
 		
@@ -36,8 +38,18 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 			e.printStackTrace();
 		}
 		
+		
 		//call same method on next node
-		String name = "//localhost/ntn";
+		int nextNode = 0;
+		String name = null;
+		try {
+			nextNode = stnI.getNextNodeHash(currentHash);
+			name = stnI.getNodeIPAddress(nextNode);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		name = Toolkit.createBindLocation(name, suffix); //"//" + stnI.getNextNodeHash(currentHash) + "/ntn";
 		NodeToNodeInterface ntnI = null;
 		try {
 			ntnI = (NodeToNodeInterface) Naming.lookup(name);
@@ -46,7 +58,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 			e.printStackTrace();
 		}
 		try {
-			ntnI.startFileListAgent(agent);
+			ntnI.startFileListAgent(agent, stnI, nextNode, suffix);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,14 +96,16 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		}
 	}
 	
+	
+	
 	public void answerDiscovery(int prev, int next)
 	{
 		nextHash = next;
 		previousHash = prev;
 	}
 	
-	public void startReceive(String ip, int port, String fileName) throws UnknownHostException, IOException {
-		TCPUtil tcpReceiver = new TCPUtil(ip, port, Mode.RECEIVE, null, fileName);
+	public void startReceive(String ip, String fileName) throws UnknownHostException, IOException {
+		TCPUtil tcpReceiver = new TCPUtil(ip, Mode.RECEIVE, null, fileName);
 		Thread t = new Thread(tcpReceiver);
 		t.start();
 
@@ -158,5 +172,11 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 	public void resetHashes() {
 		this.previousHash = -1;
 		this.nextHash = -1;
+	}
+
+	@Override
+	public void updateFileList(List<String> fileList) throws RemoteException {
+		this.fileList = fileList;
+		System.out.println("fileList " + this.fileList.size());
 	}
 }

@@ -9,20 +9,18 @@ import java.nio.file.WatchService;
 import java.rmi.Naming;
 import java.util.List;
 
+import be.uantwerpen.server.Constants;
 import rmi.implementations.NodeToNode;
 import rmi.interfaces.NodeToNodeInterface;
+import rmi.interfaces.ServerToNodeInterface;
 import utils.Toolkit;
 import enumerations.Mode;
-
-public class replicaterUtil {
-
-    public static void main(String[] args) {
-
-        //define a folder root
-
-    }
+import networking.*;
+public class ReplicaterUtil {
+	
+	
     
-    public void replicate(String[] fileReplicateList, NodeToNode ntn, String rmiSuffixNode, List<File> files, String myIPAddress  )
+    public void replicate(String[] fileReplicateList, NodeToNode ntn, List<File> files, String myIPAddress, int userName  )
     {
 		//get files to replicate
 		if (fileReplicateList == null) {
@@ -31,24 +29,25 @@ public class replicaterUtil {
 		fileReplicateList = ntn.replicationAnswer();
 		for( int i = 0; i< fileReplicateList.length; i++ )
 		{
-			String name = Toolkit.createBindLocation(fileReplicateList[i], rmiSuffixNode);
+			String name = Toolkit.createBindLocation(fileReplicateList[i], Constants.SUFFIX_NODE_RMI);
 			try {
-				TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, files.get(i), null);
+				//TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, files.get(i), null);
+				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
 				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-				ntnI.startReceive(myIPAddress, 20000, files.get(i).getName());
+				ntnI.startReceive(myIPAddress, files.get(i).getName());
 				t.join();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	
 			
 		}
-		updater(fileReplicateList, ntn, rmiSuffixNode, files, myIPAddress);
+		updater( ntn, myIPAddress, userName);
 	}
     
 
-    public void updater(String[] fileReplicateList, NodeToNode ntn, String rmiSuffixNode, List<File> files, String myIPAddress )
+    public void updater( NodeToNode ntn, String myIPAddress, int userName )
     {
         Path myDir = Paths.get(".\\src\\resources\\myfiles\\");       
         System.out.println("testing");
@@ -63,14 +62,17 @@ public class replicaterUtil {
            for (WatchEvent event : events) {
         	   System.out.println("grfygf");
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                	
                     File newFile = new File(".\\src\\resources\\myfiles\\" + event.context().toString() );
-                    String name = Toolkit.createBindLocation(fileReplicateList[i], rmiSuffixNode);
+                    ServerToNodeInterface stni = (ServerToNodeInterface) Naming.lookup(Constants.SERVER_PATH_RMI);
+                    int previousNode = stni.getnewFileReplicationNode(Toolkit.hashString(newFile.getName()), userName);
+                    String name = Toolkit.createBindLocation(stni.getNodeIPAddress(previousNode),  Constants.SUFFIX_NODE_RMI);
         			try {
-        				TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, newFile, null);
+        				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, newFile, null);
         				Thread t = new Thread(tcpSender);
         				t.start();
         				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
-        				ntnI.startReceive(myIPAddress, 20000, newFile.getName());
+        				ntnI.startReceive(myIPAddress, newFile.getName());
         				t.join();
         			} catch (Exception e) {
         				e.printStackTrace();

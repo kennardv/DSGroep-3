@@ -22,10 +22,10 @@ public class XMLMarshaller {
 			JAXBContext context = JAXBContext.newInstance(ClientMap.class);
 			Unmarshaller un = context.createUnmarshaller();
 			ClientMap clientMap = (ClientMap)un.unmarshal(new File(PATH));
-			for (Integer clientId : clientMap.getClientMap().keySet()) {
+			/*for (Integer clientId : clientMap.getClientMap().keySet()) {
 				System.out.println(clientMap.getClientMap().get(clientId).getName());
 				System.out.println(clientMap.getClientMap().get(clientId).getIpaddress());
-			}
+			}*/
 			return clientMap;
 		} catch (JAXBException e) {
 			e.printStackTrace();

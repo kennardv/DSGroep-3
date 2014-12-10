@@ -20,8 +20,11 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 		this.clientMap = clientMap;
 	}
 
-	/***
-	 * Get an array containing the neighbours of the specified node. Index 0 = previous, index 1 = next
+	/**
+	 * 
+	 * @param nodeHash Hash to get neighbours of
+	 * @return Get an array containing the neighbours of the specified node. Index 0 = previous, index 1 = next
+	 * @throws RemoteException
 	 */
 	public int[] getNeighbourNodes(int nodeHash) throws RemoteException {
 		Object[] tmp = null;
@@ -64,16 +67,19 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 
 	@Override
 	public void removeNode(int nodeHash) throws RemoteException {
+		System.out.println("Last added key: " + this.clientMap.getLastAddedKey());
 		if ((nodeHash == this.clientMap.getLastAddedKey()) && (this.clientMap.getLastAddedKey() != -1)) {
-			Iterator<Integer> it = this.clientMap.getClientMap().keySet().iterator();
+			Set<Integer> keys = this.clientMap.getClientMap().keySet();
+		    Iterator<Integer> it = keys.iterator();
 
 			while (it.hasNext())
 			{
-			  it.next();
-			  if (!it.equals(nodeHash))
-			    it.remove();
+			  int i = it.next();
+			  if (i != nodeHash)
+			    this.clientMap.remove(i);
+			  	System.out.println("Special case: Removed " + i);
 			}
-			String name = "//" + this.clientMap.getClientMap().get(nodeHash) + "/ntn";
+			String name = "//" + this.clientMap.getClientMap().get(nodeHash).getIpaddress() + "/ntn";
 			NodeToNodeInterface ntnI = null;
 			try {
 				ntnI = (NodeToNodeInterface) Naming.lookup(name);
@@ -82,6 +88,7 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 			}
 			ntnI.serverAnswer(this.clientMap.getClientMap().size(), null);
 		} else {
+			System.out.println("Removing anyway: " + nodeHash);
 			this.clientMap.remove(nodeHash);
 		}
 	}
@@ -93,7 +100,7 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 		return c.getIpaddress();
 	}
 	@Override
-	public String getnewFileReplicationNode(int filehash) throws RemoteException {
+	public int getnewFileReplicationNode(int filehash, int clientHashedName) throws RemoteException {
 		int previousNode = 0;
 		boolean done = false;
 
@@ -104,15 +111,14 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 	    	previousNode = itr.next();
 	    	
 	    	
-	    	if((filenamesArr[filenamesArr.length - 1] > previousNode) && (clientHashedName != previousNode ))
+	    	if((filehash > previousNode) && (clientHashedName != previousNode ))
 		    {
 	    		done = true;
 		    }
 	    }
-	    Client c = this.clientMap.getClientMap().get(previousNode);
 	    
-	    fileReplicateLocation[i] = c.getIpaddress();
-		return c.getIpaddress();
+	    
+		return previousNode;
 	}
 	@Override
 	public int[] getPreviousAndNextNodeHash(int hash) throws RemoteException {
@@ -146,5 +152,30 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 			}
 		}
 		return hashes;
+	}
+
+	@Override
+	public int getNextNodeHash(int hash) throws RemoteException {
+		//Object type because can't cast to int array
+		Object[] tmp = this.clientMap.getClientMap().keySet().toArray();
+		int[] keys = new int[tmp.length];
+		//cast all elements to int
+		for (int i = 0; i < tmp.length; i++) {
+			keys[i] = (int)tmp[i];
+		}
+		//previous and next node array
+		int nextHash = 0;
+		for (int i = 0; i < keys.length; i++) {
+			if (keys[i] == hash) {
+				if (i == 0) {
+					nextHash = keys[i + 1];
+				} else if (i == keys.length -1) {
+					nextHash = keys[0];
+				} else {
+					nextHash = keys[i + 1];
+				}
+			}
+		}
+		return nextHash;
 	}
 }

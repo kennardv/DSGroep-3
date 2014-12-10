@@ -1,22 +1,35 @@
 package agents;
 
 import java.io.*;
-import java.lang.management.LockInfo;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.*;
+
+import be.uantwerpen.server.Constants;
+import rmi.interfaces.NodeToNodeInterface;
+import rmi.interfaces.ServerToNodeInterface;
+import utils.Toolkit;
 
 public class FileListAgent implements Runnable, Serializable {
 	
 	HashMap<String, Boolean> foundFiles = new HashMap<String, Boolean>();
+	private int currentNode;
+	private String serverPath = null;
+	
+	public FileListAgent(int currentNode, String serverPath) {
+		this.currentNode = currentNode;
+		this.serverPath = serverPath;
+	}
 	
 	@Override
 	public void run() {
-		List<String> filesOnNode = new ArrayList<String>();
-		File tmp = new File("/src/resources/myfiles");
+		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
+		List<String> filesOnNode = null;
 		
-		//list of all owned files for this node
-		File[] files = tmp.listFiles();
-		for (int i = 0; i < files.length; i++) {
-			filesOnNode.add(files[i].getName());
+		for (File f : tmp) {
+			filesOnNode.add(f.getName());
 		}
 		
 		//if the file wasn't found yet, add it to found list
@@ -34,18 +47,21 @@ public class FileListAgent implements Runnable, Serializable {
 			}
 		}
 		
-		//if lock request on current node and file not locked -> lock in foundFiles map
+		ServerToNodeInterface stnI = null;
+		NodeToNodeInterface ntnI = null;
+		try {
+			stnI = (ServerToNodeInterface) Naming.lookup(this.serverPath);
+			String path = stnI.getNodeIPAddress(currentNode);
+			path = Toolkit.createBindLocation(path, "ntn");
+			ntnI = (NodeToNodeInterface) Naming.lookup(path);
+			ntnI.updateFileList(filesOnNode);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
+		//if lock request on current node and file not locked -> lock in foundFiles map
+		System.out.println("Agentzzz");
 		//unlock files downloaded by current node
-	}
-	
-	/**
-     * Helper method to convert a string to a hash. Range goes from 0 to 32768.
-     * @param name
-     * String to be hashed
-     * @return Returns the hashed inputted string.
-     */
-    int hashString(String name) {
-		return Math.abs(name.hashCode()) % 32768; // berekening van de hash
 	}
 }
