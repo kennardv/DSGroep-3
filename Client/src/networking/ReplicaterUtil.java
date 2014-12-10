@@ -11,8 +11,8 @@ import java.util.List;
 
 import be.uantwerpen.server.Constants;
 import rmi.implementations.NodeToNode;
-import rmi.interfaces.NodeToNodeInterface;
-import rmi.interfaces.ServerToNodeInterface;
+import rmi.interfaces.INodeToNode;
+import rmi.interfaces.IServerToNode;
 import utils.Toolkit;
 import enumerations.Mode;
 import networking.*;
@@ -35,7 +35,7 @@ public class ReplicaterUtil {
 				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
-				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+				INodeToNode ntnI = (INodeToNode) Naming.lookup(name);
 				ntnI.startReceive(myIPAddress, files.get(i).getName());
 				t.join();
 			} catch (Exception e) {
@@ -64,14 +64,14 @@ public class ReplicaterUtil {
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                 	
                     File newFile = new File(".\\src\\resources\\myfiles\\" + event.context().toString() );
-                    ServerToNodeInterface stni = (ServerToNodeInterface) Naming.lookup(Constants.SERVER_PATH_RMI);
+                    IServerToNode stni = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
                     int previousNode = stni.getnewFileReplicationNode(Toolkit.hashString(newFile.getName()), userName);
                     String name = Toolkit.createBindLocation(stni.getNodeIPAddress(previousNode),  Constants.SUFFIX_NODE_RMI);
         			try {
         				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, newFile, null);
         				Thread t = new Thread(tcpSender);
         				t.start();
-        				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+        				INodeToNode ntnI = (INodeToNode) Naming.lookup(name);
         				ntnI.startReceive(myIPAddress, newFile.getName());
         				t.join();
         			} catch (Exception e) {

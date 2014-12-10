@@ -8,8 +8,8 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 import be.uantwerpen.server.Constants;
-import rmi.interfaces.NodeToNodeInterface;
-import rmi.interfaces.ServerToNodeInterface;
+import rmi.interfaces.INodeToNode;
+import rmi.interfaces.IServerToNode;
 import utils.Toolkit;
 
 public class FileListAgent implements Runnable, Serializable {
@@ -47,13 +47,13 @@ public class FileListAgent implements Runnable, Serializable {
 			}
 		}
 		
-		ServerToNodeInterface stnI = null;
-		NodeToNodeInterface ntnI = null;
+		IServerToNode stnI = null;
+		INodeToNode ntnI = null;
 		try {
-			stnI = (ServerToNodeInterface) Naming.lookup(this.serverPath);
+			stnI = (IServerToNode) Naming.lookup(this.serverPath);
 			String path = stnI.getNodeIPAddress(currentNode);
 			path = Toolkit.createBindLocation(path, "ntn");
-			ntnI = (NodeToNodeInterface) Naming.lookup(path);
+			ntnI = (INodeToNode) Naming.lookup(path);
 			ntnI.updateFileList(filesOnNode);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block

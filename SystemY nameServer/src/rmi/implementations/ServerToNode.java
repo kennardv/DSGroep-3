@@ -11,7 +11,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.Set;
 
-public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInterface {
+public class ServerToNode extends UnicastRemoteObject implements IServerToNode {
 	
 	ClientMap clientMap;
 	
@@ -80,9 +80,9 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 			  	System.out.println("Special case: Removed " + i);
 			}
 			String name = "//" + this.clientMap.getClientMap().get(nodeHash).getIpaddress() + "/ntn";
-			NodeToNodeInterface ntnI = null;
+			INodeToNode ntnI = null;
 			try {
-				ntnI = (NodeToNodeInterface) Naming.lookup(name);
+				ntnI = (INodeToNode) Naming.lookup(name);
 			} catch (MalformedURLException | NotBoundException e) {
 				e.printStackTrace();
 			}

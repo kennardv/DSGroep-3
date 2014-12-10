@@ -14,8 +14,8 @@ import java.util.*;
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
 	ServerToNode stn = null;
-	NodeToNodeInterface ntnI;
-	ServerToNodeInterface stvI;
+	INodeToNode ntnI;
+	IServerToNode stvI;
 	private Registry registry = null;
 
 	public NameServer() {
@@ -117,7 +117,7 @@ public class NameServer {
 						//notify client about amount of nodes
 						String path = "//" + dgram.getAddress().getHostAddress() + "/" + Constants.RMI_SUFFIX_NODE;
 						ntnI = null;
-						ntnI = (NodeToNodeInterface) Naming.lookup(path);
+						ntnI = (INodeToNode) Naming.lookup(path);
 						ntnI.serverAnswer(this.clientMap.getClientMap().size(), fileReplicateLocation);
 						System.out.println("Amount of clients: " + this.clientMap.getClientMap().size());
 					} catch (Exception e) {

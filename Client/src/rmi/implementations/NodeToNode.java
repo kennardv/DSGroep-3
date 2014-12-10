@@ -13,7 +13,7 @@ import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
-public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterface {
+public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	private int nextHash = -1;
 	private int previousHash = -1;
 	private int numberOfNodes = -1;
@@ -25,7 +25,7 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		super();
 	}
 	
-	public void startFileListAgent(FileListAgent agent, ServerToNodeInterface stnI, int currentHash, String suffix) {
+	public void startFileListAgent(FileListAgent agent, IServerToNode stnI, int currentHash, String suffix) {
 		//make new thread with argument: agent
 		Thread t = new Thread(agent);
 		
@@ -50,9 +50,9 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 			e.printStackTrace();
 		}
 		name = Toolkit.createBindLocation(name, suffix); //"//" + stnI.getNextNodeHash(currentHash) + "/ntn";
-		NodeToNodeInterface ntnI = null;
+		INodeToNode ntnI = null;
 		try {
-			ntnI = (NodeToNodeInterface) Naming.lookup(name);
+			ntnI = (INodeToNode) Naming.lookup(name);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,9 +80,9 @@ public class NodeToNode extends UnicastRemoteObject implements NodeToNodeInterfa
 		
 		//call same method on next node
 		String name = "//localhost/ntn";
-		NodeToNodeInterface ntnI = null;
+		INodeToNode ntnI = null;
 		try {
-			ntnI = (NodeToNodeInterface) Naming.lookup(name);
+			ntnI = (INodeToNode) Naming.lookup(name);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

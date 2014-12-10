@@ -38,8 +38,8 @@ public class Client {
 	//RMI vars
 	private Registry registry = null;
 	private NodeToNode ntn = null;
-	private NodeToNodeInterface ntnI = null;
-	private ServerToNodeInterface stnI = null;
+	private INodeToNode ntnI = null;
+	private IServerToNode stnI = null;
 	private String rmiBindLocation = null;
 
 	//TCP vars
@@ -78,7 +78,7 @@ public class Client {
 		//lookup server remote object
 		//serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
 		try {
-			stnI = (ServerToNodeInterface) Naming.lookup(Constants.SERVER_PATH_RMI);
+			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -216,7 +216,7 @@ public class Client {
 				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, files.get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
-				NodeToNodeInterface ntnI = (NodeToNodeInterface) Naming.lookup(name);
+				INodeToNode ntnI = (INodeToNode) Naming.lookup(name);
 				ntnI.startReceive(myIPAddress, files.get(i).getName());
 				t.join();
 			} catch (Exception e) {
@@ -277,16 +277,16 @@ public class Client {
 		
 		try {
 			//update previous node's next hash
-			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
+			ntnI = (INodeToNode) Naming.lookup(previousPath);
 			ntnI.updateNextHash(neighbourHashes[1]);
 			
 			//update next node's previous hash
-			ntnI = (NodeToNodeInterface) Naming.lookup(nextPath);
+			ntnI = (INodeToNode) Naming.lookup(nextPath);
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 			
 			//lookup server remote object
 			//String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
-			stnI = (ServerToNodeInterface) Naming.lookup(Constants.SERVER_PATH_RMI);
+			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -329,7 +329,7 @@ public class Client {
 		try {
 			//lookup server remote object
 			//String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
-			stnI = (ServerToNodeInterface) Naming.lookup(Constants.SERVER_PATH_RMI);
+			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -428,17 +428,17 @@ public class Client {
 		try {
 			//update previous node's next hash
 			System.out.println("prevpath:" + previousPath);
-			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
+			ntnI = (INodeToNode) Naming.lookup(previousPath);
 			ntnI.updateNextHash(neighbourHashes[1]);
 			
 			//update next node's previous hash
-			ntnI = (NodeToNodeInterface) Naming.lookup(nextPath);
+			ntnI = (INodeToNode) Naming.lookup(nextPath);
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 			
 			//lookup server remote object
 
 			//String serverPath = Toolkit.createBindLocation(serverIp, Constants.RMI_SUFFIX_NODE);
-			stnI = (ServerToNodeInterface) Naming.lookup(Constants.SERVER_PATH_RMI);
+			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -492,7 +492,7 @@ public class Client {
 	public void updateHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
 		try {
 			String name = Toolkit.createBindLocation(receivedIPAddress, Constants.SUFFIX_NODE_RMI);
-			ntnI = (NodeToNodeInterface) Naming.lookup(name);
+			ntnI = (INodeToNode) Naming.lookup(name);
 			
 			//I am the only node -- SPECIAL CASE FOR FIRST NODE
 			if (this.previousHash == this.currentHash && this.nextHash == this.currentHash) {
