@@ -18,6 +18,7 @@ import rmi.interfaces.IServerToNode;
 import utils.Toolkit;
 import enumerations.Mode;
 import networking.*;
+
 public class ReplicaterUtil extends Thread{
 	 
 	private NodeToNode ntn;
@@ -39,6 +40,7 @@ public class ReplicaterUtil extends Thread{
     	}
     }
     public void replicate(String[] fileReplicateList, List<File> files )
+
     {
 		//get files to replicate
 		if (ntn.numberOfNodes() != 1) {	
@@ -64,7 +66,6 @@ public class ReplicaterUtil extends Thread{
 		Thread t2 = new Thread(r);
 		t2.start();
 	}
-    
 
     public void updater( NodeToNode ntn, String myIPAddress, int userName )
     {
