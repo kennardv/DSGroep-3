@@ -9,6 +9,8 @@ import java.nio.file.WatchService;
 import java.rmi.Naming;
 import java.util.List;
 
+import com.sun.corba.se.impl.orbutil.RepIdDelegator;
+
 import be.uantwerpen.server.Constants;
 import rmi.implementations.NodeToNode;
 import rmi.interfaces.INodeToNode;
@@ -16,34 +18,51 @@ import rmi.interfaces.IServerToNode;
 import utils.Toolkit;
 import enumerations.Mode;
 import networking.*;
-public class ReplicaterUtil {
+public class ReplicaterUtil extends Thread{
+	 
+	private NodeToNode ntn;
+	private String myIPAddress;
+	private int userName;
 	
+	public ReplicaterUtil(NodeToNode ntn, String myIPAddress, int userName)
+	{
+		this.ntn = ntn;
+		this.myIPAddress = myIPAddress;
+		this.userName = userName;
+	}
 	
-    
-    public void replicate(String[] fileReplicateList, NodeToNode ntn, List<File> files, String myIPAddress, int userName  )
+    public void run()
+    {
+    	while(true)
+    	{
+    		updater( ntn, myIPAddress, userName);
+    	}
+    }
+    public void replicate(String[] fileReplicateList, List<File> files )
     {
 		//get files to replicate
-		if (fileReplicateList == null) {
-			return;
+		if (ntn.numberOfNodes() != 1) {	
+			fileReplicateList = ntn.replicationAnswer();
+			for( int i = 0; i< fileReplicateList.length; i++ )
+			{
+				String name = Toolkit.createBindLocation(fileReplicateList[i], Constants.SUFFIX_NODE_RMI);
+				try {
+					//TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, files.get(i), null);
+					TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, files.get(i), null);
+					Thread t = new Thread(tcpSender);
+					t.start();
+					INodeToNode ntnI = (INodeToNode) Naming.lookup(name);
+					ntnI.startReceive(myIPAddress, files.get(i).getName());
+					t.join();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}	
+				
+			}
 		}
-		fileReplicateList = ntn.replicationAnswer();
-		for( int i = 0; i< fileReplicateList.length; i++ )
-		{
-			String name = Toolkit.createBindLocation(fileReplicateList[i], Constants.SUFFIX_NODE_RMI);
-			try {
-				//TCPUtil tcpSender = new TCPUtil(null, 20000, Mode.SEND, files.get(i), null);
-				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, files.get(i), null);
-				Thread t = new Thread(tcpSender);
-				t.start();
-				INodeToNode ntnI = (INodeToNode) Naming.lookup(name);
-				ntnI.startReceive(myIPAddress, files.get(i).getName());
-				t.join();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}	
-			
-		}
-		updater( ntn, myIPAddress, userName);
+		ReplicaterUtil r = new ReplicaterUtil(ntn, myIPAddress, userName);
+		Thread t2 = new Thread(r);
+		t2.start();
 	}
     
 
