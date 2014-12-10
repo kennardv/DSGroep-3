@@ -63,7 +63,7 @@ public class TCPUtil extends Thread {
     	File transferFile = file;
     	byte[] bytearray  = new byte [(int)transferFile.length()];
     	FileInputStream fin = null;
-    	
+    	System.out.println(bytearray.length);
     	try {
     		fin = new FileInputStream(transferFile);
     	} catch (IOException e) { }
@@ -115,6 +115,7 @@ public class TCPUtil extends Thread {
     	System.out.println("part2");
 
     	int filesize=1022386; 
+    				 
 	    int bytesRead;
 	    int currentTot = 0;
 
