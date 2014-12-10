@@ -105,9 +105,10 @@ public class Client {
 		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
 
 		//replicate files
-		replicate();
+		ReplicaterUtil replicatUtil = new ReplicaterUtil();
+	    replicatUtil.replicate(fileReplicateList, ntn, files, this.myIPAddress, this.currentHash );
 
-		//listen for packets
+	    //listen for packets
 		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
 		Thread t = new Thread(this.udpUtilListener);
 		t.start();
@@ -124,6 +125,7 @@ public class Client {
 	 */
 	void bootstrap() throws UnknownHostException {
 		//bind remote object at location
+
 		this.rmiBindLocation = Toolkit.createBindLocation(InetAddress.getLocalHost().getHostAddress(), Constants.SUFFIX_NODE_RMI);
 		bindRemoteObject(this.rmiBindLocation, this.ntn);
 	}
@@ -414,6 +416,7 @@ public class Client {
 
 		try {
 			//update previous node's next hash
+			System.out.println("prevpath:" + previousPath);
 			ntnI = (NodeToNodeInterface) Naming.lookup(previousPath);
 			ntnI.updateNextHash(neighbourHashes[1]);
 
@@ -422,6 +425,7 @@ public class Client {
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 
 			//lookup server remote object
+
 			//String serverPath = Toolkit.createBindLocation(serverIp, Constants.RMI_SUFFIX_NODE);
 			stnI = (ServerToNodeInterface) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {

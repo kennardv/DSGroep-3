@@ -99,12 +99,38 @@ public class ServerToNode extends UnicastRemoteObject implements ServerToNodeInt
 		c = this.clientMap.getClientMap().get(nodeHash);
 		return c.getIpaddress();
 	}
+	@Override
+	public int getnewFileReplicationNode(int filehash, int clientHashedName) throws RemoteException {
+		int previousNode = 0;
+		boolean done = false;
 
+	    Set<Integer> keys = this.clientMap.getClientMap().keySet();
+	    Iterator<Integer> itr = keys.iterator();
+	    while(itr.hasNext() && done == false)
+	    {	
+	    	previousNode = itr.next();
+	    	
+	    	
+	    	if((filehash > previousNode) && (clientHashedName != previousNode ))
+		    {
+	    		done = true;
+		    }
+	    }
+	    
+	    
+		return previousNode;
+	}
 	@Override
 	public int[] getPreviousAndNextNodeHash(int hash) throws RemoteException {
 		//Object type because can't cast to int array
+		
 		Object[] tmp = this.clientMap.getClientMap().keySet().toArray();
 		int[] keys = new int[tmp.length];
+		System.out.println("lengte:" + tmp.length);
+		if(tmp.length <= 1)
+		{
+			return null;
+		}
 		//cast all elements to int
 		for (int i = 0; i < tmp.length; i++) {
 			keys[i] = (int)tmp[i];
