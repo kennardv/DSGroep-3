@@ -19,6 +19,7 @@ import be.uantwerpen.server.Constants;
 import rmi.implementations.NodeToNode;
 import rmi.interfaces.INodeToNode;
 import rmi.interfaces.IServerToNode;
+import utils.Callback;
 import utils.Toolkit;
 import enumerations.Mode;
 import networking.*;
@@ -28,12 +29,21 @@ public class ReplicaterUtil extends Thread{
 	private NodeToNode ntn;
 	private String myIPAddress;
 	private int userName;
+	private Callback failureCallback;
 	
-	public ReplicaterUtil(NodeToNode ntn, String myIPAddress, int userName)
+	/**
+	 * 
+	 * @param ntn
+	 * @param myIPAddress
+	 * @param userName
+	 * @param callback
+	 */
+	public ReplicaterUtil(NodeToNode ntn, String myIPAddress, int userName, Callback callback)
 	{
 		this.ntn = ntn;
 		this.myIPAddress = myIPAddress;
 		this.userName = userName;
+		this.failureCallback = callback;
 	}
 	
     public void run()
@@ -63,7 +73,9 @@ public class ReplicaterUtil extends Thread{
 				try {
 					ntnI = (INodeToNode) Naming.lookup(name);
 				} catch (MalformedURLException | RemoteException | NotBoundException e) {
-					//failure() call but this method is in Client
+					//FAILURE() MUST BE CALLED HERE
+					//USE IT LIKE THIS
+					//this.callback.invoke(hash)
 					e.printStackTrace();
 				}
 				try {
@@ -78,12 +90,13 @@ public class ReplicaterUtil extends Thread{
 				}
 			}
 		}
-		ReplicaterUtil r = new ReplicaterUtil(ntn, myIPAddress, userName);
+		Callback callback = new Callback(this, "failure");
+		ReplicaterUtil r = new ReplicaterUtil(ntn, myIPAddress, userName, callback);
 		Thread t2 = new Thread(r);
 		t2.start();
 	}
 
-    public void updater( NodeToNode ntn, String myIPAddress, int userName )
+    public void updater(NodeToNode ntn, String myIPAddress, int userName )
     {
         Path myDir = Paths.get(Constants.MY_FILES_PATH);       
         
@@ -115,7 +128,9 @@ public class ReplicaterUtil extends Thread{
                 try {
 					stni = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 				} catch (MalformedURLException | RemoteException | NotBoundException e) {
-					//failure() call but this method is in Client
+					//FAILURE() MUST BE CALLED HERE
+					//USE IT LIKE THIS
+					//this.callback.invoke(hash)
 					e.printStackTrace();
 				}
                 int previousNode;
@@ -124,7 +139,9 @@ public class ReplicaterUtil extends Thread{
 					previousNode = stni.getnewFileReplicationNode(Toolkit.hashString(newFile.getName()), userName);
 					name = Toolkit.createBindLocation(stni.getNodeIPAddress(previousNode),  Constants.SUFFIX_NODE_RMI);
 				} catch (RemoteException e) {
-					//failure() call but this method is in Client
+					//FAILURE() MUST BE CALLED HERE
+					//USE IT LIKE THIS
+					//this.callback.invoke(hash)
 					e.printStackTrace();
 				}
         			
@@ -140,7 +157,9 @@ public class ReplicaterUtil extends Thread{
 				try {
 					ntnI = (INodeToNode) Naming.lookup(name);
 				} catch (MalformedURLException | RemoteException | NotBoundException e) {
-					//failure() call but this method is in Client
+					//FAILURE() MUST BE CALLED HERE
+					//USE IT LIKE THIS
+					//this.callback.invoke(hash)
 					e.printStackTrace();
 				}
 				try {

@@ -8,14 +8,12 @@ import java.io.InputStreamReader;
 
 public class Consolelistener extends Thread {
 	
-	
 	   private String threadName;
 	   private Client client;
        private String s = null;
        private int hash;
 
 	   public Consolelistener(Client client, int hash){
-	       //threadName = name;
 	       System.out.println("Creating " +  threadName );
 	       this.client = client;
 	       this.hash = hash;

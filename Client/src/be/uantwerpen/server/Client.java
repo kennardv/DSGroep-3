@@ -4,6 +4,7 @@ import enumerations.*;
 import networking.*;
 import rmi.implementations.*;
 import rmi.interfaces.*;
+import utils.Callback;
 import utils.Consolelistener;
 import utils.Toolkit;
 
@@ -22,7 +23,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = false;
+	boolean useLocalHost = true;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -40,7 +41,7 @@ public class Client {
 	private Registry registry = null;
 	private NodeToNode ntn = null;
 	private INodeToNode ntnI = null;
-	private IServerToNode stnI = null;
+	//private IServerToNode stnI = null;
 	private String rmiBindLocation = null;
 
 	//TCP vars
@@ -81,7 +82,8 @@ public class Client {
 		try {
 			System.out.println(Constants.SERVER_PATH_RMI);
 			System.out.println(myIPAddress);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
+			Constants.ISERVER_TO_NODE = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
+			//stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -107,8 +109,9 @@ public class Client {
 		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
 
 		//replicate files
-		ReplicaterUtil replicatUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash);
-	    replicatUtil.replicate(fileReplicateList, files );
+		Callback callback = new Callback(this, "failure");
+		ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash, callback);
+	    replicaterUtil.replicate(fileReplicateList, files );
 
 	    //listen for packets
 		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
@@ -237,14 +240,14 @@ public class Client {
 
 		try {
 			//get previous and next node of failing node
-			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
+			neighbourHashes = Constants.ISERVER_TO_NODE.getPreviousAndNextNodeHash(hash); //stnI.getPreviousAndNextNodeHash(hash);
 			//compute paths for nodes to update
-			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
-			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
+			previousPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
+			nextPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
 
 			//get ip of neighbour nodes
-			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
-			nextIP = stnI.getNodeIPAddress(neighbourHashes[1]);
+			previousIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]);
+			nextIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]);
 
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -280,16 +283,13 @@ public class Client {
 			ntnI = (INodeToNode) Naming.lookup(nextPath);
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 
-			//lookup server remote object
-			//String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}
 
 		try {
 			//remove node from server
-			stnI.removeNode(hash);
+			Constants.ISERVER_TO_NODE.removeNode(hash);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -298,8 +298,8 @@ public class Client {
 		InetAddress host = null;
 		try {
 			try {
-				host = InetAddress.getByName(stnI.getNodeIPAddress(hash));
-				System.out.println(InetAddress.getByName(stnI.getNodeIPAddress(hash)));
+				host = InetAddress.getByName(Constants.ISERVER_TO_NODE.getNodeIPAddress(hash));
+				System.out.println(InetAddress.getByName(Constants.ISERVER_TO_NODE.getNodeIPAddress(hash)));
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -318,17 +318,10 @@ public class Client {
 
 	void failure(){
 		//variables
-		try {
-			//lookup server remote object
-			//String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
-		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			e.printStackTrace();
-		}
 
 		try {
 			//remove node from server
-			stnI.removeNode(this.currentHash);
+			Constants.ISERVER_TO_NODE.removeNode(this.currentHash);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -381,14 +374,14 @@ public class Client {
 		try {
 			System.out.println("Getting previous and next node of node that's shutting down");
 			//get previous and next node of failing node
-			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
+			neighbourHashes = Constants.ISERVER_TO_NODE.getPreviousAndNextNodeHash(hash);
 			//compute paths for nodes to update
-			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
-			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
+			previousPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
+			nextPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
 
 			//get ip of neighbour nodes
-			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
-			nextIP = stnI.getNodeIPAddress(neighbourHashes[1]);
+			previousIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]);
+			nextIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]);
 
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -426,10 +419,6 @@ public class Client {
 			ntnI = (INodeToNode) Naming.lookup(nextPath);
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 
-			//lookup server remote object
-
-			//String serverPath = Toolkit.createBindLocation(serverIp, Constants.RMI_SUFFIX_NODE);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -437,7 +426,7 @@ public class Client {
 		try {
 			System.out.println("Removing node from nameserver");
 			//remove node from server
-			stnI.removeNode(hash);
+			Constants.ISERVER_TO_NODE.removeNode(hash);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

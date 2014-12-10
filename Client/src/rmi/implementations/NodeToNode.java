@@ -1,6 +1,7 @@
 package rmi.implementations;
 
 import agents.*;
+import be.uantwerpen.server.Constants;
 import rmi.interfaces.*;
 import utils.Toolkit;
 import networking.*;
@@ -25,7 +26,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 		super();
 	}
 	
-	public void startFileListAgent(FileListAgent agent, IServerToNode stnI, int currentHash, String suffix) {
+	public void startFileListAgent(FileListAgent agent, int currentHash, String suffix) {
 		//make new thread with argument: agent
 		Thread t = new Thread(agent);
 		
@@ -43,8 +44,8 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 		int nextNode = 0;
 		String name = null;
 		try {
-			nextNode = stnI.getNextNodeHash(currentHash);
-			name = stnI.getNodeIPAddress(nextNode);
+			nextNode = Constants.ISERVER_TO_NODE.getNextNodeHash(currentHash);
+			name = Constants.ISERVER_TO_NODE.getNodeIPAddress(nextNode);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,7 +59,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 			e.printStackTrace();
 		}
 		try {
-			ntnI.startFileListAgent(agent, stnI, nextNode, suffix);
+			ntnI.startFileListAgent(agent, nextNode, suffix);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
