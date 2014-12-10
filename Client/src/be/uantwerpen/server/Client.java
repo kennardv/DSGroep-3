@@ -22,7 +22,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = true;
+	boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -79,6 +79,8 @@ public class Client {
 		//lookup server remote object
 		//serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
 		try {
+			System.out.println(Constants.SERVER_PATH_RMI);
+			System.out.println(myIPAddress);
 			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (NotBoundException e) {
 			e.printStackTrace();
