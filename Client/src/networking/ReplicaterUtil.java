@@ -21,7 +21,7 @@ public class ReplicaterUtil {
     public void replicate(String[] fileReplicateList, NodeToNode ntn, List<File> files, String myIPAddress, int userName  )
     {
 		//get files to replicate
-		if (fileReplicateList == null) {
+		if (ntn.numberOfNodes() == 1) {
 			return;
 		}
 		fileReplicateList = ntn.replicationAnswer();

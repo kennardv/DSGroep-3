@@ -185,11 +185,11 @@ public class Client {
 		System.out.println("Hashes: Previous: " + this.previousHash + ". Own: " + this.currentHash + ". Next: " + this.nextHash);
 
 		//Agent initialization
-		if(ntn.numberOfNodes() == 2){
+		/*if(ntn.numberOfNodes() == 2){
 			System.out.println("Start file list agent");
 			this.fileListAgent = new FileListAgent(this.currentHash, Constants.SERVER_PATH_RMI);
 			this.ntn.startFileListAgent(this.fileListAgent, this.stnI, this.currentHash, Constants.SUFFIX_NODE_RMI);
-		}
+		}*/
 
 		//unbind object from location
 		if (useLocalHost) {
