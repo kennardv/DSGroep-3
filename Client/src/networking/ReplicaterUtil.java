@@ -43,6 +43,7 @@ public class ReplicaterUtil extends Thread{
 
     {
 		//get files to replicate
+
 		if (ntn.numberOfNodes() != 1) {	
 			fileReplicateList = ntn.replicationAnswer();
 			for( int i = 0; i< fileReplicateList.length; i++ )
@@ -61,6 +62,7 @@ public class ReplicaterUtil extends Thread{
 				}	
 				
 			}
+
 		}
 		ReplicaterUtil r = new ReplicaterUtil(ntn, myIPAddress, userName);
 		Thread t2 = new Thread(r);
