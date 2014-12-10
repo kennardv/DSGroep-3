@@ -17,9 +17,7 @@ import utils.Toolkit;
 import enumerations.Mode;
 import networking.*;
 public class ReplicaterUtil {
-	
-	
-    
+
     public void replicate(String[] fileReplicateList, NodeToNode ntn, List<File> files, String myIPAddress, int userName  )
     {
 		//get files to replicate
@@ -45,7 +43,6 @@ public class ReplicaterUtil {
 		}
 		updater( ntn, myIPAddress, userName);
 	}
-    
 
     public void updater( NodeToNode ntn, String myIPAddress, int userName )
     {
