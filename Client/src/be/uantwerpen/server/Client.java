@@ -108,9 +108,6 @@ public class Client {
 
 		//replicate files
 		ReplicaterUtil replicatUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash);
-		System.out.println(fileReplicateList);
-		System.out.println("kfirjfjrfrf");
-		System.out.println(files);
 	    replicatUtil.replicate(fileReplicateList, files );
 
 	    //listen for packets

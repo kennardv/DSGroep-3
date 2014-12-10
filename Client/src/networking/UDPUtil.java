@@ -130,6 +130,7 @@ public class UDPUtil extends Thread {
 				socket.receive(dgram); 
 				
 				try {
+					//extract Protocol from message
 					List<Object> message = readDatagramPacket(dgram);
 					this.receiveProtocol = (Protocol) message.get(0);
 					int[] neighbours = null;
@@ -140,7 +141,7 @@ public class UDPUtil extends Thread {
 						this.client.updateHashes((int)message.get(1), dgram.getAddress().getHostAddress(), neighbours);
 						break;
 					case SHUTDOWN:
-						System.out.println("Shutdown");
+						System.out.println("Shutdown message received");
 						this.client.checkForNTNUpdate((Position)message.get(1));
 						break;
 					case FAILURE:
@@ -179,12 +180,6 @@ public class UDPUtil extends Thread {
      * containing hashed name and ip address
      * @param filenames
      * array of filenames
-     * @param shutdown
-     * @return 
-     * List<Object>.
-     * index 0: Protocol 
-     * index 1: clientNameHash
-     * index 2: filenames
      */
     public void createDiscoveryMessage(int clientNameHash, int[] filenames) {
      	List<Object> message = new ArrayList<Object>();
