@@ -26,9 +26,10 @@ public class NameServer {
 		// bind rmi object
 		try {
 			stn = new ServerToNode(this.clientMap);
-			Naming.bind("//" + InetAddress.getLocalHost().getHostAddress() + "/" + Constants.RMI_SUFFIX_SERVER, stn);
-		} catch (MalformedURLException | RemoteException | UnknownHostException
-				| AlreadyBoundException e) {
+			String path = "//" + InetAddress.getLocalHost().getHostAddress() + "/" + Constants.RMI_SUFFIX_SERVER;
+			Naming.bind(path, stn);
+			System.out.println("Bound remote object at " + path);
+		} catch (MalformedURLException | RemoteException | UnknownHostException | AlreadyBoundException e) {
 			e.printStackTrace();
 		}
 		ntnI = null;
