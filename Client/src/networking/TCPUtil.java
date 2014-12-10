@@ -67,7 +67,7 @@ public class TCPUtil extends Thread {
     	try {
     		fin = new FileInputStream(transferFile);
     	} catch (IOException e) { }
-    	
+
     	BufferedInputStream bin = null;
     	OutputStream os = null;
     	
