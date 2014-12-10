@@ -107,7 +107,6 @@ public class NameServer {
 							    }
 						    }
 						    Client c = this.clientMap.getClientMap().get(previousNode);
-						    
 						    fileReplicateLocation[i] = c.getIpaddress();
 						}
 					}

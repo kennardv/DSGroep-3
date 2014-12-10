@@ -47,7 +47,8 @@ public class XMLMarshaller {
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 	
 
-			 //Marshal the employees list in console
+			//Marshal the employees list in console
+			//Application hangs when this is left out..
 		    m.marshal(clientMap, System.out);
 		     
 		    //Marshal the employees list in file
