@@ -103,7 +103,7 @@ public class ReplicaterUtil extends Thread{
             }
            
         } catch (Exception e) {
-            System.out.println("Error: " + e.toString());
+            System.err.println("Error: " + e.toString());
         }
     }
 }
