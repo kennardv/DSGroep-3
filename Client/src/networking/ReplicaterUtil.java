@@ -95,7 +95,13 @@ public class ReplicaterUtil extends Thread{
 		Thread t2 = new Thread(r);
 		t2.start();
 	}
-
+    
+    /**
+     * WERKWOORD!
+     * @param ntn
+     * @param myIPAddress
+     * @param userName
+     */
     public void updater(NodeToNode ntn, String myIPAddress, int userName )
     {
         Path myDir = Paths.get(Constants.MY_FILES_PATH);       

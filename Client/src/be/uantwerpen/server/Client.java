@@ -65,6 +65,33 @@ public class Client {
 
 	//ctor
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
+		init();
+
+		//bind remote object
+		bootstrap();
+		//multicast and process answers
+		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
+
+		//replicate files
+		Callback callback = new Callback(this, "failure");
+		ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash, callback);
+	    replicaterUtil.replicate(fileReplicateList, files );
+
+	    //listen for packets
+		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
+		Thread t = new Thread(this.udpUtilListener);
+		t.start();
+
+		this.conslisten = new Consolelistener(this, this.currentHash);
+		Thread t2 = new Thread(this.conslisten);
+		t2.start();
+	}
+	
+	/**
+	 * Initialize and fill in all needed variables 
+	 * MOET MSS NOG WA MEER OPGEDEELD WORDEN
+	 */
+	void init() throws RemoteException, UnknownHostException, MalformedURLException {
 		if (!useLocalHost) {
 			myIPAddress = Inet4Address.getLocalHost().getHostAddress();
 		} else {
@@ -101,26 +128,6 @@ public class Client {
 		for (int i = 0; i< files.size(); i++) {
 			this.filenames[i] = Toolkit.hashString(this.files.get(i).getName());
 		}
-
-
-		//bind remote object
-		bootstrap();
-		//multicast and process answers
-		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
-
-		//replicate files
-		Callback callback = new Callback(this, "failure");
-		ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash, callback);
-	    replicaterUtil.replicate(fileReplicateList, files );
-
-	    //listen for packets
-		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
-		Thread t = new Thread(this.udpUtilListener);
-		t.start();
-
-		this.conslisten = new Consolelistener(this, this.currentHash);
-		Thread t2 = new Thread(this.conslisten);
-		t2.start();
 	}
 
 	/**
