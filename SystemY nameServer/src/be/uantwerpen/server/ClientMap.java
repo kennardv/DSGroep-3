@@ -70,4 +70,14 @@ public class ClientMap {
 	public int getLastAddedKey() {
 		return this.lastAddedKey;
 	}
+	
+	/**
+	 * This method clears the TreeMap member variable 
+	 * and clears the XML file
+	 */
+	public void clear() {
+		this.clientMap.clear();
+		marshaller.jaxbObjectToXML(this);
+		System.out.println("Cleared XML file");
+	}
 }
