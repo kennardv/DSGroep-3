@@ -102,7 +102,6 @@ public class Client {
 			this.filenames[i] = Toolkit.hashString(this.files.get(i).getName());
 		}
 
-
 		//bind remote object
 		bootstrap();
 		//multicast and process answers
@@ -327,38 +326,7 @@ public class Client {
 		}
 	}
 
-	// Not available (see shutdown2)
-    public void shutdown(List<Object> message) throws IOException {		
-        System.out.println("Shutting down..");
-
-        ntn.decreaseNumberOfNodes(1);
-        Boolean shutdown = true;
-        int[] neighbours = {nextHash, previousHash};
-
-        System.out.println("Sending Multicast");
-        //create message and multicast it
-        Object obj = message; 
-        message.remove(2);
-        message.add(2, shutdown);
-        message.add(3, neighbours);
-        DatagramSocket socket = new DatagramSocket();
-        ByteArrayOutputStream byteArr = new ByteArrayOutputStream();
-        ObjectOutput objOut = new ObjectOutputStream(byteArr);
-        objOut.writeObject(obj);
-        System.out.println("Object written");
-        byte[] b = byteArr.toByteArray();
-        DatagramPacket dgram;
-        dgram = new DatagramPacket(b, b.length, InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
-
-        socket.send(dgram);
-        System.out.println("send");
-
-        System.out.println("Closing client");
-        System.exit(1);
-	}
-    // end shutdown
-
-    public void shutdown2(int hash){
+    public void shutdown(int hash){
         System.out.println("Shutting down..");
 
 		//variables
@@ -402,8 +370,8 @@ public class Client {
         System.out.println("Sending message to previous and next neighbour");
 		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND, Protocol.SHUTDOWN);
 		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND, Protocol.SHUTDOWN);
-		udpUtilPrevious.createFailureMessage(Position.PREVIOUS);
-		udpUtilNext.createFailureMessage(Position.NEXT);
+		udpUtilPrevious.createShutdownMessage(Position.PREVIOUS);
+		udpUtilNext.createShutdownMessage(Position.NEXT);
 		Thread t1 = new Thread(udpUtilPrevious);
 		t1.start();
 		Thread t2 = new Thread(udpUtilNext);
@@ -437,18 +405,16 @@ public class Client {
 
     public void checkForNTNUpdate(Position position) {
 		if (position == Position.PREVIOUS){
-			//wait untill property is updated
+			//wait until property is updated
 			while(ntn.nextHash() == -1){
-
+				
 			}
 			this.nextHash = ntn.nextHash();
-		} else if(position == Position.NEXT)
-		{
-			//wait untill property is updated
+		} else if(position == Position.NEXT) {
+			//wait until property is updated
 			while(ntn.nextHash() == -1){
-
+				
 			}
-			
 			this.previousHash = ntn.previousHash();
 		}
 
@@ -474,7 +440,6 @@ public class Client {
 			String name = Toolkit.createBindLocation(receivedIPAddress, Constants.SUFFIX_NODE_RMI);
 			ntnI = (INodeToNode) Naming.lookup(name);
 			
-
 			//I am the only node -- SPECIAL CASE FOR FIRST NODE
 			if (this.previousHash == this.currentHash && this.nextHash == this.currentHash) {
 				//set all hashes to my own because i'm the only node
@@ -560,7 +525,7 @@ public class Client {
     }
 
     /**
-     * This method blocks untill console receives input
+     * This method blocks until console receives input
      */
     String readFromConsole(String message) {
     	/******************************************/

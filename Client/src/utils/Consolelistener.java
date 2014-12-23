@@ -29,7 +29,7 @@ public class Consolelistener extends Thread {
 				e.printStackTrace();
 			}
 			if(this.s.equals("shutdown")){
-				this.client.shutdown2(this.hash);
+				this.client.shutdown(this.hash);
 			}
 	   }
 }

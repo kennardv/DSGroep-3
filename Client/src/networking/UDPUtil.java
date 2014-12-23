@@ -200,10 +200,10 @@ public class UDPUtil extends Thread {
      	this.message = message;
      }
     
-    public void createShutdownMessage() {
+    public void createShutdownMessage(Position position) {
      	List<Object> message = new ArrayList<Object>();
      	message.add(Protocol.SHUTDOWN);
-     	//message.add();
+     	message.add(position);
      	
      	this.message = message;
      }
