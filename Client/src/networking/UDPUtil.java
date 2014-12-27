@@ -44,7 +44,7 @@ public class UDPUtil extends Thread {
 	 * @param protocol
 	 * Discovery, shutdown, ...
 	 */
-	public UDPUtil(Client client, InetAddress receiverIP, Mode mode, Protocol protocol) {
+	public UDPUtil(Client client, InetAddress receiverIP, Mode mode) {
 		this.client = client;
 		this.receiverIP = receiverIP;
 		this.mode = mode;

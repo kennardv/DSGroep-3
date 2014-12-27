@@ -156,7 +156,7 @@ public class Client {
 		//List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
 
 		//create message and multicast it
-		UDPUtil udpUtil = new UDPUtil(this, ip, Mode.SEND, Protocol.DISCOVERY);
+		UDPUtil udpUtil = new UDPUtil(this, ip, Mode.SEND);
 		udpUtil.createDiscoveryMessage(this.currentHash, this.filenames);
 		Thread t = new Thread(udpUtil);
 		t.start();
@@ -272,8 +272,8 @@ public class Client {
 
 		//create failure messages
 		//send message to previous and next neighbour
-		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND, Protocol.FAILURE);
-		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND, Protocol.FAILURE);
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND);
 		udpUtilPrevious.createFailureMessage(Position.PREVIOUS);
 		udpUtilNext.createFailureMessage(Position.NEXT);
 		Thread t1 = new Thread(udpUtilPrevious);
@@ -376,8 +376,8 @@ public class Client {
 		//create shutdown messages
 		//send message to previous and next neighbour
         System.out.println("Sending message to previous and next neighbour");
-		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND, Protocol.SHUTDOWN);
-		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND, Protocol.SHUTDOWN);
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND);
 		udpUtilPrevious.createShutdownMessage(Position.PREVIOUS);
 		udpUtilNext.createShutdownMessage(Position.NEXT);
 		Thread t1 = new Thread(udpUtilPrevious);
@@ -477,23 +477,6 @@ public class Client {
 			}
 			
 			System.out.println("waitForClients hashes set : Previous: " + this.previousHash + ". Current: " + this.currentHash + ". Next: " + this.nextHash);
-
-			//////////////////////////////////////////////////////////////////////////
-			//////////////////////////// LEFTOVER OLD CODE ///////////////////////////
-			//////////////////////////////////////////////////////////////////////////
-			/*if(neighbours != null){
-				if(nextHash == receivedHash){
-			        //System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
-					nextHash = neighbours[0];
-				}
-				else if(previousHash == receivedHash){
-					//System.out.println("Changing next node from " + previousHash + " to " + neighbours[1]);
-					previousHash = neighbours[1];
-				}
-				System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-			}*/
-			//////////////////////////////////////////////////////////////////////////
-			//////////////////////////////////////////////////////////////////////////
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			failure(receivedHash);

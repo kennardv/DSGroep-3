@@ -20,7 +20,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	private int numberOfNodes = -1;
 	private String[] replicationAnswer;
 	private String ipAddress = "localhost";
-	private List<String> fileList;
+	private List<Integer> fileList;
 	
 	public NodeToNode() throws RemoteException{
 		super();
@@ -176,7 +176,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	}
 
 	@Override
-	public void updateFileList(List<String> fileList) throws RemoteException {
+	public void updateFileList(List<Integer> fileList) throws RemoteException {
 		this.fileList = fileList;
 		System.out.println("fileList " + this.fileList.size());
 	}

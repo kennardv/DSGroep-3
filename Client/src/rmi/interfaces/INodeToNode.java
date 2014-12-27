@@ -17,5 +17,5 @@ public interface INodeToNode extends Remote {
 	public void startFileRecoveryAgent(FileRecoveryAgent agent) throws RemoteException;
    	public void updatePreviousHash(int hash) throws RemoteException;
    	public void updateNextHash(int hash) throws RemoteException;
-   	public void updateFileList(List<String> fileList) throws RemoteException;
+   	public void updateFileList(List<Integer> fileList) throws RemoteException;
 }

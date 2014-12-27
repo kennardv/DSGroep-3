@@ -78,31 +78,7 @@ public class NameServer extends Thread {
 			
 			this.clientMap.add(hashedName, ip, filenames);
 			
-			String[] fileReplicateLocation = null;
-			if(this.clientMap.getClientMap().size() > 1)
-			{
-				fileReplicateLocation = new String[filenames.size()];
-				for (int i = 0; i < filenames.size(); i++) {
-					int previousNode = 0;
-					boolean done = false;
-
-				    Set<Integer> keys = this.clientMap.getClientMap().keySet();
-				    Iterator<Integer> itr = keys.iterator();
-				    while(itr.hasNext() && done == false)
-				    {	
-				    	previousNode = itr.next();
-				    	//need to set the length to i
-				    	//nick
-				    	
-				    	if((filenames.get(filenames.size() - 1) > previousNode) && (hashedName != previousNode ))
-					    {
-				    		done = true;
-					    }
-				    }
-				    Client c = this.clientMap.getClientMap().get(previousNode);
-				    fileReplicateLocation[i] = c.getIpaddress();
-				}
-			}
+			String[] fileReplicateLocation = getFileReplicationLocation(hashedName, filenames);
 			
 			try {
 				notifyClient(ip, fileReplicateLocation);
@@ -110,6 +86,35 @@ public class NameServer extends Thread {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private String[] getFileReplicationLocation(int hashedName, List<Integer> filenames) {
+		String[] fileReplicateLocation = null;
+		if(this.clientMap.getClientMap().size() > 1)
+		{
+			fileReplicateLocation = new String[filenames.size()];
+			for (int i = 0; i < filenames.size(); i++) {
+				int previousNode = 0;
+				boolean done = false;
+
+			    Set<Integer> keys = this.clientMap.getClientMap().keySet();
+			    Iterator<Integer> itr = keys.iterator();
+			    while(itr.hasNext() && done == false)
+			    {	
+			    	previousNode = itr.next();
+			    	//need to set the length to i
+			    	//nick
+			    	
+			    	if((filenames.get(filenames.size() - 1) > previousNode) && (hashedName != previousNode ))
+				    {
+			    		done = true;
+				    }
+			    }
+			    Client c = this.clientMap.getClientMap().get(previousNode);
+			    fileReplicateLocation[i] = c.getIpaddress();
+			}
+		}
+		return fileReplicateLocation;
 	}
 	
 	/**
@@ -130,7 +135,7 @@ public class NameServer extends Thread {
 	}
 	
 	/**
-	 * NOT WORKING
+	 * NOT TESTED
 	 * This method is used in the shutdown hook
 	 *  to clean up when the application is closed
 	 */
