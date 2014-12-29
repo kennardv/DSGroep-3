@@ -29,15 +29,17 @@ public class FileListAgent implements Runnable, Serializable {
 		List<Integer> filesOnNode = new ArrayList<Integer>();
 		
 		for (File f : tmp) {
-			System.out.println("file: " + f.getName());
 			filesOnNode.add(Toolkit.hashString(f.getName()));
 		}
 		
 		//if the file wasn't found yet, add it to found list
+		System.out.println(foundFiles.size());
 		for (Integer f : filesOnNode) {
 			//int k = hashString(f);
-			if (!foundFiles.get(f) || foundFiles.size() == 0) {
-				foundFiles.put(f, false);
+			System.out.println("siuze" + foundFiles.size());
+			if( foundFiles.get(f) == null || foundFiles.size() == 1)
+			{
+				foundFiles.put(f, false);	
 			}
 		}
 		
