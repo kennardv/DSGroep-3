@@ -11,6 +11,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
 
+import enumerations.Protocol;
+
 public class NameServer {
 	ClientMap clientMap = new ClientMap();
 	ServerToNode stn = null;
@@ -62,7 +64,9 @@ public class NameServer {
 					Object o = in.readObject();
 					// pull values from message and store
 					List message = (List) o;
-
+					if (message.get(0) == Protocol.SHUTDOWN) {
+						return;
+					}
 					clientHashedName = (int)message.get(1);
 					
 					System.out.println("Received dgram from " + dgram.getAddress().getHostAddress());

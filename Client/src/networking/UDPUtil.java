@@ -132,7 +132,7 @@ public class UDPUtil extends Thread {
 				try {
 					List<Object> message = readDatagramPacket(dgram);
 					this.receiveProtocol = (Protocol) message.get(0);
-					
+
 					int[] neighbours = null;
 					
 					//decide what to do depending on protocol
@@ -142,6 +142,8 @@ public class UDPUtil extends Thread {
 						break;
 					case SHUTDOWN:
 						System.out.println("Shutdown");
+						System.out.println("positie: " + (Position)message.get(1));
+
 						this.client.checkForNTNUpdate((Position)message.get(1));
 						break;
 					case FAILURE:
