@@ -20,4 +20,10 @@ public interface INodeToNode extends Remote {
    	public void updatePreviousHash(int hash) throws RemoteException;
    	public void updateNextHash(int hash) throws RemoteException;
    	public void updateFileList(TreeMap<Integer, Boolean> fileList) throws RemoteException;
+	public void setLockRequest(int fileHash) throws RemoteException;
+	public int getLockRequest() throws RemoteException;
+	public void setPreviousLock(int previousLock) throws RemoteException;
+	public int getPreviousLock() throws RemoteException;
+
+
 }

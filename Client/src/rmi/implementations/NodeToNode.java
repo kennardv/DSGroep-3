@@ -22,7 +22,8 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	private int numberOfNodes = -1;
 	private String[] replicationAnswer;
 	private String ipAddress = "localhost";
-	//private List<Integer> fileList;
+	private int lockRequest = -1;
+	private int previousLock = -1;
 	TreeMap<Integer, Boolean> fileList = new TreeMap<Integer, Boolean>();
 	
 	public NodeToNode() throws RemoteException{
@@ -178,6 +179,21 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 		this.previousHash = -1;
 		this.nextHash = -1;
 	}
+	public void setLockRequest(int fileHash)
+	{
+		lockRequest = fileHash;
+	}
+	public int getLockRequest() 
+	{
+		return lockRequest;
+	}
+	public void setPreviousLock(int previousLock) {
+		this.previousLock = previousLock;
+	}
+	public int getPreviousLock() {
+		return previousLock;
+	}
+
 
 	@Override
 	public void updateFileList(TreeMap<Integer, Boolean> fileList) throws RemoteException {

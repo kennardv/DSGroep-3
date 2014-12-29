@@ -30,14 +30,14 @@ public class FileListAgent implements Runnable, Serializable {
 	
 	@Override
 	public void run() {
-		System.out.println("foundfiles: " + foundFiles.size());
 
-		System.out.println("current node: " + currentNode);
+		System.out.println("foundFiles " + foundFiles.size());
 		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
 		TreeMap<Integer, Boolean> filesOnNode = new TreeMap<Integer, Boolean>();
 		
 		for (File f : tmp) {
 			filesOnNode.put(Toolkit.hashString(f.getName()), false);
+			System.out.println("Adding file: " + f.getName());
 		}
 		
 		
@@ -46,24 +46,18 @@ public class FileListAgent implements Runnable, Serializable {
 		Set<Integer> keys = filesOnNode.keySet();
 	    Iterator<Integer> itr = keys.iterator();
 		System.out.println("foundfiles: " + foundFiles.size());
-		int l = 0;
-	    while(itr.hasNext())	
-	    {
-	    	l++;
-	    	System.out.println("uitgevoerd: " + l);
-	    	if( foundFiles.get(itr.next()) == null || foundFiles.size() == 0)
+
+	    while(itr.hasNext())
+	    {	
+	    	int key = itr.next();
+	    	if( foundFiles.get(key) == null || foundFiles.size() == 0)
 			{
-				foundFiles.put(itr.next(), false);	
+				foundFiles.put(key, false);
+				System.out.println("Adding files to foundFiles " + key);
 			}
 	    }
 		
-		//Update list on current node
 
-		/*for (Integer key : foundFiles.keySet()) {
-			if (filesOnNode.get(key) == null || filesOnNode.size() == 0) {
-				filesOnNode.put(key, false);
-			}
-		}*/
 		System.out.println("foundfiles: " + foundFiles.size());
 		IServerToNode stnI = null;
 		INodeToNode ntnI = null;
@@ -73,8 +67,19 @@ public class FileListAgent implements Runnable, Serializable {
 			path = Toolkit.createBindLocation(path, "ntn");
 			ntnI = (INodeToNode) Naming.lookup(path);
 			ntnI.updateFileList(foundFiles);
+			if(ntnI.getLockRequest() != -1)
+			{
+				foundFiles.put(ntnI.getLockRequest(),true);
+			}
+			if(ntnI.getPreviousLock() != -1 && ntnI.getLockRequest() == -1)
+			{
+				foundFiles.put(ntnI.getPreviousLock(),false);
+				ntnI.setPreviousLock(-1);
+				
+			}
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		
