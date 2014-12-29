@@ -14,7 +14,7 @@ import utils.Toolkit;
 
 public class FileListAgent implements Runnable, Serializable {
 	
-	HashMap<Integer, Boolean> foundFiles = new HashMap<Integer, Boolean>();
+	TreeMap<Integer, Boolean> foundFiles = new TreeMap<Integer, Boolean>();
 	private int currentNode;
 	private String serverPath = null;
 	
@@ -23,38 +23,39 @@ public class FileListAgent implements Runnable, Serializable {
 		this.serverPath = serverPath;
 	}
 	
-	public void setCurrentNode(int hash)
-	{
-		this.currentNode = currentNode;
-		this.serverPath = serverPath;
+
+	public void setCurrentNode(int hash) {
+		this.currentNode = hash;
 	}
 	
 	@Override
 	public void run() {
-		System.out.println("currentnode: " + currentNode);
+
+		System.out.println("current node: " + currentNode);
 		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
-		List<Integer> filesOnNode = new ArrayList<Integer>();
+		TreeMap<Integer, Boolean> filesOnNode = new TreeMap<Integer, Boolean>();
 		
 		for (File f : tmp) {
-			filesOnNode.add(Toolkit.hashString(f.getName()));
+			filesOnNode.put(Toolkit.hashString(f.getName()), false);
 		}
+		
 		
 		//if the file wasn't found yet, add it to found list
 
-		System.out.println(foundFiles.size());
-		for (Integer f : filesOnNode) {
-			//int k = hashString(f);
-			System.out.println("siuze" + foundFiles.size());
-			if( foundFiles.get(f) == null || foundFiles.size() == 1)
+		Set<Integer> keys = filesOnNode.keySet();
+	    Iterator<Integer> itr = keys.iterator();
+	    while(itr.hasNext())
+	    {	
+	    	if( foundFiles.get(itr.next()) == null || foundFiles.size() == 0)
 			{
-				foundFiles.put(f, false);	
+				foundFiles.put(itr.next(), false);	
 			}
-		}
+	    }
 		
 		//Update list on current node
 		for (Integer key : foundFiles.keySet()) {
-			if (!filesOnNode.contains(key)) {
-				filesOnNode.add(key);
+			if (filesOnNode.get(key) == null || filesOnNode.size() == 0) {
+				filesOnNode.put(key, false);
 			}
 		}
 		
@@ -72,7 +73,6 @@ public class FileListAgent implements Runnable, Serializable {
 		}
 		
 		//if lock request on current node and file not locked -> lock in foundFiles map
-		System.out.println("FileListAgent");
 		//unlock files downloaded by current node
 	}
 }

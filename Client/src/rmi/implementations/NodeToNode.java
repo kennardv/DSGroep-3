@@ -12,7 +12,9 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	private int nextHash = -1;
@@ -20,7 +22,8 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	private int numberOfNodes = -1;
 	private String[] replicationAnswer;
 	private String ipAddress = "localhost";
-	private List<Integer> fileList;
+	//private List<Integer> fileList;
+	TreeMap<Integer, Boolean> fileList = new TreeMap<Integer, Boolean>();
 	
 	public NodeToNode() throws RemoteException{
 		super();
@@ -177,7 +180,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	}
 
 	@Override
-	public void updateFileList(List<Integer> fileList) throws RemoteException {
+	public void updateFileList(TreeMap<Integer, Boolean> fileList) throws RemoteException {
 		this.fileList = fileList;
 		System.out.println("fileList " + this.fileList.size());
 	}
