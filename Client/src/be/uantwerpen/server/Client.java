@@ -4,6 +4,7 @@ import enumerations.*;
 import networking.*;
 import rmi.implementations.*;
 import rmi.interfaces.*;
+import utils.Callback;
 import utils.Consolelistener;
 import utils.Toolkit;
 
@@ -22,7 +23,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = false;
+	boolean useLocalHost = true;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -40,7 +41,7 @@ public class Client {
 	private Registry registry = null;
 	private NodeToNode ntn = null;
 	private INodeToNode ntnI = null;
-	private IServerToNode stnI = null;
+	//private IServerToNode stnI = null;
 	private String rmiBindLocation = null;
 
 	//TCP vars
@@ -64,6 +65,33 @@ public class Client {
 
 	//ctor
 	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
+		init();
+
+		//bind remote object
+		bootstrap();
+		//multicast and process answers
+		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
+
+		//replicate files
+		Callback callback = new Callback(this, "failure");
+		ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash, callback);
+	    replicaterUtil.replicate(fileReplicateList, files );
+
+	    //listen for packets
+		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
+		Thread t = new Thread(this.udpUtilListener);
+		t.start();
+
+		this.conslisten = new Consolelistener(this, this.currentHash);
+		Thread t2 = new Thread(this.conslisten);
+		t2.start();
+	}
+	
+	/**
+	 * Initialize and fill in all needed variables 
+	 * MOET MSS NOG WA MEER OPGEDEELD WORDEN
+	 */
+	void init() throws RemoteException, UnknownHostException, MalformedURLException {
 		if (!useLocalHost) {
 			myIPAddress = Inet4Address.getLocalHost().getHostAddress();
 		} else {
@@ -81,7 +109,8 @@ public class Client {
 		try {
 			System.out.println(Constants.SERVER_PATH_RMI);
 			System.out.println(myIPAddress);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
+			Constants.ISERVER_TO_NODE = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
+			//stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -99,28 +128,6 @@ public class Client {
 		for (int i = 0; i< files.size(); i++) {
 			this.filenames[i] = Toolkit.hashString(this.files.get(i).getName());
 		}
-
-
-		//bind remote object
-		bootstrap();
-		//multicast and process answers
-		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
-
-		//replicate files
-		ReplicaterUtil replicatUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash);
-		System.out.println(fileReplicateList);
-		System.out.println("kfirjfjrfrf");
-		System.out.println(files);
-	    replicatUtil.replicate(fileReplicateList, files );
-
-	    //listen for packets
-		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
-		Thread t = new Thread(this.udpUtilListener);
-		t.start();
-
-		this.conslisten = new Consolelistener(this, this.currentHash);
-		Thread t2 = new Thread(this.conslisten);
-		t2.start();
 	}
 
 	/**
@@ -149,7 +156,7 @@ public class Client {
 		//List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
 
 		//create message and multicast it
-		UDPUtil udpUtil = new UDPUtil(this, ip, Mode.SEND, Protocol.DISCOVERY);
+		UDPUtil udpUtil = new UDPUtil(this, ip, Mode.SEND);
 		udpUtil.createDiscoveryMessage(this.currentHash, this.filenames);
 		Thread t = new Thread(udpUtil);
 		t.start();
@@ -240,14 +247,14 @@ public class Client {
 
 		try {
 			//get previous and next node of failing node
-			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
+			neighbourHashes = Constants.ISERVER_TO_NODE.getPreviousAndNextNodeHash(hash); //stnI.getPreviousAndNextNodeHash(hash);
 			//compute paths for nodes to update
-			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
-			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
+			previousPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
+			nextPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
 
 			//get ip of neighbour nodes
-			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
-			nextIP = stnI.getNodeIPAddress(neighbourHashes[1]);
+			previousIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]);
+			nextIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]);
 
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -265,8 +272,8 @@ public class Client {
 
 		//create failure messages
 		//send message to previous and next neighbour
-		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND, Protocol.FAILURE);
-		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND, Protocol.FAILURE);
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND);
 		udpUtilPrevious.createFailureMessage(Position.PREVIOUS);
 		udpUtilNext.createFailureMessage(Position.NEXT);
 		Thread t1 = new Thread(udpUtilPrevious);
@@ -283,16 +290,13 @@ public class Client {
 			ntnI = (INodeToNode) Naming.lookup(nextPath);
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 
-			//lookup server remote object
-			//String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixNode);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}
 
 		try {
 			//remove node from server
-			stnI.removeNode(hash);
+			Constants.ISERVER_TO_NODE.removeNode(hash);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -301,8 +305,8 @@ public class Client {
 		InetAddress host = null;
 		try {
 			try {
-				host = InetAddress.getByName(stnI.getNodeIPAddress(hash));
-				System.out.println(InetAddress.getByName(stnI.getNodeIPAddress(hash)));
+				host = InetAddress.getByName(Constants.ISERVER_TO_NODE.getNodeIPAddress(hash));
+				System.out.println(InetAddress.getByName(Constants.ISERVER_TO_NODE.getNodeIPAddress(hash)));
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -321,54 +325,16 @@ public class Client {
 
 	void failure(){
 		//variables
-		try {
-			//lookup server remote object
-			//String serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
-		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			e.printStackTrace();
-		}
 
 		try {
 			//remove node from server
-			stnI.removeNode(this.currentHash);
+			Constants.ISERVER_TO_NODE.removeNode(this.currentHash);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 	}
 
-	// Not available (see shutdown2)
-    public void shutdown(List<Object> message) throws IOException {		
-        System.out.println("Shutting down..");
-
-        ntn.decreaseNumberOfNodes(1);
-        Boolean shutdown = true;
-        int[] neighbours = {nextHash, previousHash};
-
-        System.out.println("Sending Multicast");
-        //create message and multicast it
-        Object obj = message; 
-        message.remove(2);
-        message.add(2, shutdown);
-        message.add(3, neighbours);
-        DatagramSocket socket = new DatagramSocket();
-        ByteArrayOutputStream byteArr = new ByteArrayOutputStream();
-        ObjectOutput objOut = new ObjectOutputStream(byteArr);
-        objOut.writeObject(obj);
-        System.out.println("Object written");
-        byte[] b = byteArr.toByteArray();
-        DatagramPacket dgram;
-        dgram = new DatagramPacket(b, b.length, InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
-
-        socket.send(dgram);
-        System.out.println("send");
-
-        System.out.println("Closing client");
-        System.exit(1);
-	}
-    // end shutdown
-
-    public void shutdown2(int hash){
+    public void shutdown(int hash){
         System.out.println("Shutting down..");
 
 		//variables
@@ -384,14 +350,14 @@ public class Client {
 		try {
 			System.out.println("Getting previous and next node of node that's shutting down");
 			//get previous and next node of failing node
-			neighbourHashes = stnI.getPreviousAndNextNodeHash(hash);
+			neighbourHashes = Constants.ISERVER_TO_NODE.getPreviousAndNextNodeHash(hash);
 			//compute paths for nodes to update
-			previousPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
-			nextPath = Toolkit.createBindLocation(stnI.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
+			previousPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]), Constants.SUFFIX_NODE_RMI);
+			nextPath = Toolkit.createBindLocation(Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]), Constants.SUFFIX_NODE_RMI);
 
 			//get ip of neighbour nodes
-			previousIP = stnI.getNodeIPAddress(neighbourHashes[0]);
-			nextIP = stnI.getNodeIPAddress(neighbourHashes[1]);
+			previousIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[0]);
+			nextIP = Constants.ISERVER_TO_NODE.getNodeIPAddress(neighbourHashes[1]);
 
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -410,10 +376,10 @@ public class Client {
 		//create shutdown messages
 		//send message to previous and next neighbour
         System.out.println("Sending message to previous and next neighbour");
-		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND, Protocol.SHUTDOWN);
-		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND, Protocol.SHUTDOWN);
-		udpUtilPrevious.createFailureMessage(Position.PREVIOUS);
-		udpUtilNext.createFailureMessage(Position.NEXT);
+		udpUtilPrevious = new UDPUtil(this, inetAddressPrevious, Mode.SEND);
+		udpUtilNext = new UDPUtil(this, inetAddressNext, Mode.SEND);
+		udpUtilPrevious.createShutdownMessage(Position.PREVIOUS);
+		udpUtilNext.createShutdownMessage(Position.NEXT);
 		Thread t1 = new Thread(udpUtilPrevious);
 		t1.start();
 		Thread t2 = new Thread(udpUtilNext);
@@ -429,10 +395,6 @@ public class Client {
 			ntnI = (INodeToNode) Naming.lookup(nextPath);
 			ntnI.updatePreviousHash(neighbourHashes[0]);
 
-			//lookup server remote object
-
-			//String serverPath = Toolkit.createBindLocation(serverIp, Constants.RMI_SUFFIX_NODE);
-			stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -440,7 +402,7 @@ public class Client {
 		try {
 			System.out.println("Removing node from nameserver");
 			//remove node from server
-			stnI.removeNode(hash);
+			Constants.ISERVER_TO_NODE.removeNode(hash);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -451,18 +413,16 @@ public class Client {
 
     public void checkForNTNUpdate(Position position) {
 		if (position == Position.PREVIOUS){
-			//wait untill property is updated
+			//wait until property is updated
 			while(ntn.nextHash() == -1){
-
+				
 			}
 			this.nextHash = ntn.nextHash();
-		} else if(position == Position.NEXT)
-		{
-			//wait untill property is updated
+		} else if(position == Position.NEXT) {
+			//wait until property is updated
 			while(ntn.nextHash() == -1){
-
+				
 			}
-			
 			this.previousHash = ntn.previousHash();
 		}
 
@@ -488,7 +448,6 @@ public class Client {
 			String name = Toolkit.createBindLocation(receivedIPAddress, Constants.SUFFIX_NODE_RMI);
 			ntnI = (INodeToNode) Naming.lookup(name);
 			
-
 			//I am the only node -- SPECIAL CASE FOR FIRST NODE
 			if (this.previousHash == this.currentHash && this.nextHash == this.currentHash) {
 				//set all hashes to my own because i'm the only node
@@ -518,23 +477,6 @@ public class Client {
 			}
 			
 			System.out.println("waitForClients hashes set : Previous: " + this.previousHash + ". Current: " + this.currentHash + ". Next: " + this.nextHash);
-
-			//////////////////////////////////////////////////////////////////////////
-			//////////////////////////// LEFTOVER OLD CODE ///////////////////////////
-			//////////////////////////////////////////////////////////////////////////
-			/*if(neighbours != null){
-				if(nextHash == receivedHash){
-			        //System.out.println("Changing next node from " + nextHash + " to " + neighbours[0]);
-					nextHash = neighbours[0];
-				}
-				else if(previousHash == receivedHash){
-					//System.out.println("Changing next node from " + previousHash + " to " + neighbours[1]);
-					previousHash = neighbours[1];
-				}
-				System.out.println(previousHash + " "  + ownHash + " " + nextHash);
-			}*/
-			//////////////////////////////////////////////////////////////////////////
-			//////////////////////////////////////////////////////////////////////////
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			failure(receivedHash);
@@ -574,7 +516,7 @@ public class Client {
     }
 
     /**
-     * This method blocks untill console receives input
+     * This method blocks until console receives input
      */
     String readFromConsole(String message) {
     	/******************************************/

@@ -14,7 +14,7 @@ import utils.Toolkit;
 
 public class FileListAgent implements Runnable, Serializable {
 	
-	HashMap<String, Boolean> foundFiles = new HashMap<String, Boolean>();
+	HashMap<Integer, Boolean> foundFiles = new HashMap<Integer, Boolean>();
 	private int currentNode;
 	private String serverPath = null;
 	
@@ -26,14 +26,14 @@ public class FileListAgent implements Runnable, Serializable {
 	@Override
 	public void run() {
 		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
-		List<String> filesOnNode = null;
+		List<Integer> filesOnNode = null;
 		
 		for (File f : tmp) {
-			filesOnNode.add(f.getName());
+			filesOnNode.add(Toolkit.hashString(f.getName()));
 		}
 		
 		//if the file wasn't found yet, add it to found list
-		for (String f : filesOnNode) {
+		for (Integer f : filesOnNode) {
 			//int k = hashString(f);
 			if (!foundFiles.get(f)) {
 				foundFiles.put(f, false);
@@ -41,7 +41,7 @@ public class FileListAgent implements Runnable, Serializable {
 		}
 		
 		//Update list on current node
-		for (String key : foundFiles.keySet()) {
+		for (Integer key : foundFiles.keySet()) {
 			if (!filesOnNode.contains(key)) {
 				filesOnNode.add(key);
 			}
@@ -61,7 +61,7 @@ public class FileListAgent implements Runnable, Serializable {
 		}
 		
 		//if lock request on current node and file not locked -> lock in foundFiles map
-		System.out.println("Agentzzz");
+		System.out.println("FileListAgent");
 		//unlock files downloaded by current node
 	}
 }
