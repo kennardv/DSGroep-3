@@ -30,6 +30,7 @@ public class FileListAgent implements Runnable, Serializable {
 	
 	@Override
 	public void run() {
+		System.out.println("foundfiles: " + foundFiles.size());
 
 		System.out.println("current node: " + currentNode);
 		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
@@ -44,8 +45,12 @@ public class FileListAgent implements Runnable, Serializable {
 
 		Set<Integer> keys = filesOnNode.keySet();
 	    Iterator<Integer> itr = keys.iterator();
-	    while(itr.hasNext())
-	    {	
+		System.out.println("foundfiles: " + foundFiles.size());
+		int l = 0;
+	    while(itr.hasNext())	
+	    {
+	    	l++;
+	    	System.out.println("uitgevoerd: " + l);
 	    	if( foundFiles.get(itr.next()) == null || foundFiles.size() == 0)
 			{
 				foundFiles.put(itr.next(), false);	
@@ -53,12 +58,13 @@ public class FileListAgent implements Runnable, Serializable {
 	    }
 		
 		//Update list on current node
-		for (Integer key : foundFiles.keySet()) {
+
+		/*for (Integer key : foundFiles.keySet()) {
 			if (filesOnNode.get(key) == null || filesOnNode.size() == 0) {
 				filesOnNode.put(key, false);
 			}
-		}
-		
+		}*/
+		System.out.println("foundfiles: " + foundFiles.size());
 		IServerToNode stnI = null;
 		INodeToNode ntnI = null;
 		try {
@@ -66,7 +72,7 @@ public class FileListAgent implements Runnable, Serializable {
 			String path = stnI.getNodeIPAddress(currentNode);
 			path = Toolkit.createBindLocation(path, "ntn");
 			ntnI = (INodeToNode) Naming.lookup(path);
-			ntnI.updateFileList(filesOnNode);
+			ntnI.updateFileList(foundFiles);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
