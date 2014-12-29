@@ -34,10 +34,19 @@ public class FileListAgent implements Runnable, Serializable {
 		}
 		
 		//if the file wasn't found yet, add it to found list
+		System.out.println("siuze" + foundFiles.size());
+
 		for (Integer f : filesOnNode) {
 			//int k = hashString(f);
-			if (!foundFiles.get(f) || foundFiles.size() == 0) {
-				foundFiles.put(f, false);
+			System.out.println("siuze" + foundFiles.size());
+			if ( foundFiles.size() == 1) {
+				foundFiles.put(f, false);	
+
+			}
+			else if( !foundFiles.get(f))
+			{
+				
+				foundFiles.put(f, false);	
 			}
 		}
 		
