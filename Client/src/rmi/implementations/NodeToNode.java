@@ -59,6 +59,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 			e.printStackTrace();
 		}
 		try {
+			agent.setCurrentNode(nextNode);
 			ntnI.startFileListAgent(agent, nextNode, suffix);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
