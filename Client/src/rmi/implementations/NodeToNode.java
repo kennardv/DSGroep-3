@@ -23,7 +23,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	private String[] replicationAnswer;
 	private String ipAddress = "localhost";
 	//private List<Integer> fileList;
-	TreeMap<Integer, Boolean> fileList = new TreeMap()<Integer, Boolean>();
+	TreeMap<Integer, Boolean> fileList = new TreeMap<Integer, Boolean>();
 	
 	public NodeToNode() throws RemoteException{
 		super();

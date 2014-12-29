@@ -43,18 +43,18 @@ public class FileListAgent implements Runnable, Serializable {
 	    Iterator<Integer> itr = keys.iterator();
 	    while(itr.hasNext())
 	    {	
-	    	if( foundFiles.get(itr.next()) == null || foundFiles.size() == 1)
+	    	if( foundFiles.get(itr.next()) == null || foundFiles.size() == 0)
 			{
 				foundFiles.put(itr.next(), false);	
 			}
 	    }
 		
 		//Update list on current node
-		for (Integer key : foundFiles.keySet()) {
-			if (!filesOnNode.get(key)) {
+		/*for (Integer key : foundFiles.keySet()) {
+			if (filesOnNode.get(key) == null || filesOnNode.size() == 0) {
 				filesOnNode.put(key, false);
 			}
-		}
+		}*/
 		
 		IServerToNode stnI = null;
 		INodeToNode ntnI = null;
@@ -63,7 +63,7 @@ public class FileListAgent implements Runnable, Serializable {
 			String path = stnI.getNodeIPAddress(currentNode);
 			path = Toolkit.createBindLocation(path, "ntn");
 			ntnI = (INodeToNode) Naming.lookup(path);
-			ntnI.updateFileList(filesOnNode);
+			ntnI.updateFileList(foundFiles);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
