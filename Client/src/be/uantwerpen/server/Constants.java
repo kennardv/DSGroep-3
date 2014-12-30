@@ -8,7 +8,7 @@ import utils.Toolkit;
 public final class Constants {
 	public static final String SUFFIX_NODE_RMI = "ntn";
 	public static final String SUFFIX_SERVER_RMI = "stn";
-	public static final String SERVER_IP = "localhost"; //localhost or 192.168.1.x
+	public static final String SERVER_IP = "192.168.1.1"; //localhost or 192.168.1.x
 	public static final String SERVER_PATH_RMI = Toolkit.createBindLocation(SERVER_IP, SUFFIX_SERVER_RMI);
 	
 	//public static final String CLIENT_PATH_RMI = Toolkit.createBindLocation(InetAddress.getLocalHost().getHostAddress(), RMI_SUFFIX_NODE);

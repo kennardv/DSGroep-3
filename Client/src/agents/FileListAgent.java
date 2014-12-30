@@ -14,7 +14,7 @@ import utils.Toolkit;
 
 public class FileListAgent implements Runnable, Serializable {
 	
-	HashMap<Integer, Boolean> foundFiles = new HashMap<Integer, Boolean>();
+	TreeMap<Integer, Boolean> foundFiles = new TreeMap<Integer, Boolean>();
 	private int currentNode;
 	private String serverPath = null;
 	
@@ -23,30 +23,42 @@ public class FileListAgent implements Runnable, Serializable {
 		this.serverPath = serverPath;
 	}
 	
+
+	public void setCurrentNode(int hash) {
+		this.currentNode = hash;
+	}
+	
 	@Override
 	public void run() {
+
+		System.out.println("foundFiles " + foundFiles.size());
 		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
-		List<Integer> filesOnNode = null;
+		TreeMap<Integer, Boolean> filesOnNode = new TreeMap<Integer, Boolean>();
 		
 		for (File f : tmp) {
-			filesOnNode.add(Toolkit.hashString(f.getName()));
+			filesOnNode.put(Toolkit.hashString(f.getName()), false);
+			System.out.println("Adding file: " + f.getName());
 		}
+		
 		
 		//if the file wasn't found yet, add it to found list
-		for (Integer f : filesOnNode) {
-			//int k = hashString(f);
-			if (!foundFiles.get(f)) {
-				foundFiles.put(f, false);
+
+		Set<Integer> keys = filesOnNode.keySet();
+	    Iterator<Integer> itr = keys.iterator();
+		System.out.println("foundfiles: " + foundFiles.size());
+
+	    while(itr.hasNext())
+	    {	
+	    	int key = itr.next();
+	    	if( foundFiles.get(key) == null || foundFiles.size() == 0)
+			{
+				foundFiles.put(key, false);
+				System.out.println("Adding files to foundFiles " + key);
 			}
-		}
+	    }
 		
-		//Update list on current node
-		for (Integer key : foundFiles.keySet()) {
-			if (!filesOnNode.contains(key)) {
-				filesOnNode.add(key);
-			}
-		}
-		
+
+		System.out.println("foundfiles: " + foundFiles.size());
 		IServerToNode stnI = null;
 		INodeToNode ntnI = null;
 		try {
@@ -54,14 +66,24 @@ public class FileListAgent implements Runnable, Serializable {
 			String path = stnI.getNodeIPAddress(currentNode);
 			path = Toolkit.createBindLocation(path, "ntn");
 			ntnI = (INodeToNode) Naming.lookup(path);
-			ntnI.updateFileList(filesOnNode);
+			ntnI.updateFileList(foundFiles);
+			if(ntnI.getLockRequest() != -1)
+			{
+				foundFiles.put(ntnI.getLockRequest(),true);
+			}
+			if(ntnI.getPreviousLock() != -1 && ntnI.getLockRequest() == -1)
+			{
+				foundFiles.put(ntnI.getPreviousLock(),false);
+				ntnI.setPreviousLock(-1);
+				
+			}
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		
 		//if lock request on current node and file not locked -> lock in foundFiles map
-		System.out.println("FileListAgent");
 		//unlock files downloaded by current node
 	}
 }

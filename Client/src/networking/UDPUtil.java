@@ -133,6 +133,7 @@ public class UDPUtil extends Thread {
 					//extract Protocol from message
 					List<Object> message = readDatagramPacket(dgram);
 					this.receiveProtocol = (Protocol) message.get(0);
+
 					int[] neighbours = null;
 					
 					//decide what to do depending on protocol
@@ -141,6 +142,7 @@ public class UDPUtil extends Thread {
 						this.client.updateHashes((int)message.get(1), dgram.getAddress().getHostAddress(), neighbours);
 						break;
 					case SHUTDOWN:
+
 						System.out.println("Shutdown message received");
 						this.client.checkForNTNUpdate((Position)message.get(1));
 						break;

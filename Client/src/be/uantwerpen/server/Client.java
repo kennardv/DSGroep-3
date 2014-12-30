@@ -23,7 +23,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	boolean useLocalHost = true;
+	boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -152,15 +152,12 @@ public class Client {
 	 * Port to send on
 	 */
 	void discover(InetAddress ip, int port) {
-		//fill array with info
-		//List<Object> message = createDiscoveryMessage(this.currentHash, this.filenames);
 
 		//create message and multicast it
 		UDPUtil udpUtil = new UDPUtil(this, ip, Mode.SEND);
 		udpUtil.createDiscoveryMessage(this.currentHash, this.filenames);
 		Thread t = new Thread(udpUtil);
 		t.start();
-		//sendDatagramPacket(message, ip, port);
 
 		while ((ntn.nextHash() == -1 || ntn.numberOfNodes() == -1))
 		{
@@ -195,11 +192,11 @@ public class Client {
 		System.out.println("Hashes: Previous: " + this.previousHash + ". Own: " + this.currentHash + ". Next: " + this.nextHash);
 
 		//Agent initialization
-		/*if(ntn.numberOfNodes() == 2){
+		if(ntn.numberOfNodes() == 2){
 			System.out.println("Start file list agent");
 			this.fileListAgent = new FileListAgent(this.currentHash, Constants.SERVER_PATH_RMI);
-			this.ntn.startFileListAgent(this.fileListAgent, this.stnI, this.currentHash, Constants.SUFFIX_NODE_RMI);
- 		}*/
+			this.ntn.startFileListAgent(this.fileListAgent, this.currentHash, Constants.SUFFIX_NODE_RMI);
+ 		}
 
 		//unbind object from location
 		if (useLocalHost) {
