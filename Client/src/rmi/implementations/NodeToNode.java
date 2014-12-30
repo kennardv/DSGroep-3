@@ -21,11 +21,11 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	private String[] replicationAnswer;
 	private String ipAddress = "localhost";
 	private List<Integer> fileList;
-	
+
 	public NodeToNode() throws RemoteException{
 		super();
 	}
-	
+
 	public void startFileListAgent(FileListAgent agent, int currentHash, String suffix) {
 		//make new thread with argument: agent
 		Thread t = new Thread(agent);
