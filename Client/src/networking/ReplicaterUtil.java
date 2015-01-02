@@ -56,7 +56,8 @@ public class ReplicaterUtil extends Thread{
     
     public void replicate(String[] fileReplicateList, List<File> files ) {
 		//get files to replicate
-		if (ntn.numberOfNodes() != 1) {	
+    	System.out.println("number of files:" + files.size());
+		if (ntn.numberOfNodes() > 1) {	
 			fileReplicateList = ntn.replicationAnswer();
 			for( int i = 0; i< fileReplicateList.length; i++ )
 			{

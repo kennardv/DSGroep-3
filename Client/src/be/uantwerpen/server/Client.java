@@ -72,10 +72,7 @@ public class Client {
 		//multicast and process answers
 		discover(InetAddress.getByName(Constants.MULTICAST_IP), Constants.SOCKET_PORT_UDP);
 
-		//replicate files
-		Callback callback = new Callback(this, "failure");
-		ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash, callback);
-	    replicaterUtil.replicate(fileReplicateList, files );
+		
 
 	    //listen for packets
 		this.udpUtilListener = new UDPUtil(this, Mode.RECEIVE);
@@ -189,6 +186,12 @@ public class Client {
 		//set client's hash fields
 		this.nextHash = ntn.nextHash();
 		this.previousHash = ntn.previousHash();
+		//replicate files
+				System.out.println("replication start");
+				Callback callback = new Callback(this, "failure");
+				ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash, callback);
+			    replicaterUtil.replicate(fileReplicateList, files );
+			    System.out.println("end call0");
 		System.out.println("Hashes: Previous: " + this.previousHash + ". Own: " + this.currentHash + ". Next: " + this.nextHash);
 
 		//Agent initialization

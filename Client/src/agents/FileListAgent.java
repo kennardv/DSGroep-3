@@ -31,13 +31,12 @@ public class FileListAgent implements Runnable, Serializable {
 	@Override
 	public void run() {
 
-		System.out.println("foundFiles " + foundFiles.size());
+		//System.out.println("foundFiles " + foundFiles.size());
 		List<File> tmp = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
 		TreeMap<Integer, Boolean> filesOnNode = new TreeMap<Integer, Boolean>();
 		
 		for (File f : tmp) {
 			filesOnNode.put(Toolkit.hashString(f.getName()), false);
-			System.out.println("Adding file: " + f.getName());
 		}
 		
 		
@@ -45,7 +44,7 @@ public class FileListAgent implements Runnable, Serializable {
 
 		Set<Integer> keys = filesOnNode.keySet();
 	    Iterator<Integer> itr = keys.iterator();
-		System.out.println("foundfiles: " + foundFiles.size());
+		//System.out.println("foundfiles: " + foundFiles.size());
 
 	    while(itr.hasNext())
 	    {	
@@ -53,12 +52,12 @@ public class FileListAgent implements Runnable, Serializable {
 	    	if( foundFiles.get(key) == null || foundFiles.size() == 0)
 			{
 				foundFiles.put(key, false);
-				System.out.println("Adding files to foundFiles " + key);
+				//System.out.println("Adding files to foundFiles " + key);
 			}
 	    }
 		
 
-		System.out.println("foundfiles: " + foundFiles.size());
+		//System.out.println("foundfiles: " + foundFiles.size());
 		IServerToNode stnI = null;
 		INodeToNode ntnI = null;
 		try {

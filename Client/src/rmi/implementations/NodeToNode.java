@@ -66,8 +66,8 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 			agent.setCurrentNode(nextNode);
 			ntnI.startFileListAgent(agent, nextNode, suffix);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//TODO: stoppen bij een shutdown
+			//e.printStackTrace();
 		}
 	}
 	
@@ -198,6 +198,6 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 	@Override
 	public void updateFileList(TreeMap<Integer, Boolean> fileList) throws RemoteException {
 		this.fileList = fileList;
-		System.out.println("fileList " + this.fileList.size());
+		//System.out.println("fileList " + this.fileList.size());
 	}
 }
