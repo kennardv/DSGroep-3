@@ -75,7 +75,7 @@ public class ServerToNode extends UnicastRemoteObject implements IServerToNode {
 			while (it.hasNext())
 			{
 			  int i = it.next();
-			  if (i != nodeHash)
+			  if (i == nodeHash)
 			    this.clientMap.remove(i);
 			  	System.out.println("Special case: Removed " + i);
 			}
