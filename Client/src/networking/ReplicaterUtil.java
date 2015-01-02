@@ -181,4 +181,9 @@ public class ReplicaterUtil extends Thread{
             }
         }
     }
+    
+    
+    public void shutdownRep(){
+    	
+    }
 }
