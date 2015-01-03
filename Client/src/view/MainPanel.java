@@ -12,6 +12,10 @@ public class MainPanel extends JFrame {
 	private JLabel lblConnectionStatus = new JLabel("Not connected");
     
     public MainPanel() {
+    	buildPanel();
+    }
+    
+    public void buildPanel() {
     	JPanel mainPanel = new JPanel();
     	this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	this.setSize(500,500);

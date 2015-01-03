@@ -484,9 +484,7 @@ public class MainController {
     void bindRemoteObject(String path, NodeToNode ntn) {
     	try {
 			Naming.bind(path, ntn);
-		} catch (MalformedURLException | RemoteException
-				| AlreadyBoundException e) {
-			// TODO Auto-generated catch block
+		} catch (MalformedURLException | RemoteException | AlreadyBoundException e) {
 			e.printStackTrace();
 		}
     }
