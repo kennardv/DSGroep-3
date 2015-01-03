@@ -80,7 +80,8 @@ public class MainController {
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
-		model.setNtn(new NodeToNode());
+		NodeToNode ntn = new NodeToNode();
+		model.setNtn(ntn);
 
 		//Give client a name from console input
 		model.setNameClient(username);
@@ -123,7 +124,7 @@ public class MainController {
 	 */
 	void bootstrap() throws UnknownHostException {
 		//bind remote object at location
-
+		System.out.println("model tekst= " + Toolkit.createBindLocation(InetAddress.getLocalHost().getHostAddress(), Constants.SUFFIX_NODE_RMI));
 		model.setRmiBindLocation(Toolkit.createBindLocation(InetAddress.getLocalHost().getHostAddress(), Constants.SUFFIX_NODE_RMI));
 		bindRemoteObject(model.getRmiBindLocation(), model.getNtn());
 	}
@@ -191,9 +192,9 @@ public class MainController {
  		}
 
 		//unbind object from location
-		if (model.useLocalHost) {
-			unbindRemoteObject(model.getRmiBindLocation());
-		}
+		//if (model.useLocalHost) {
+			//unbindRemoteObject(model.getRmiBindLocation());
+		//}
 	}
 
 	/**
@@ -531,7 +532,7 @@ public class MainController {
 		public void actionPerformed(ActionEvent e) {
 			String username = null;
 			try {
-				username = view.getName();
+				username = view.getUserName();
 				if (username.trim().isEmpty() || username.equals("")) {
 					throw new IllegalArgumentException("Input can't be empty!");
 				}
