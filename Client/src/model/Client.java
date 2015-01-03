@@ -24,7 +24,7 @@ public class Client {
 	/************* Set this for lonely testing ******************/
 	/************************************************************/
 	/************************************************************/
-	public boolean useLocalHost = true;
+	public boolean useLocalHost = false;
 	/************************************************************/
 	/************************************************************/
 	/************************************************************/
@@ -153,7 +153,7 @@ public class Client {
 	}
 
 	public String getRmiBindLocation() {
-		return rmiBindLocation;
+		return this.rmiBindLocation;
 	}
 
 	public void setRmiBindLocation(String rmiBindLocation) {

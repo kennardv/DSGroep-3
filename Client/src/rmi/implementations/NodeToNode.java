@@ -57,6 +57,7 @@ public class NodeToNode extends UnicastRemoteObject implements INodeToNode {
 		name = Toolkit.createBindLocation(name, suffix); //"//" + stnI.getNextNodeHash(currentHash) + "/ntn";
 		INodeToNode ntnI = null;
 		try {
+			
 			ntnI = (INodeToNode) Naming.lookup(name);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
