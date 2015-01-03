@@ -57,8 +57,11 @@ public class ReplicaterUtil extends Thread{
     public void replicate(String[] fileReplicateList, List<File> files ) {
 		//get files to replicate
     	System.out.println("number of files:" + files.size());
-		if (ntn.numberOfNodes() > 1) {	
+    	// If # nodes is greater then 1
+		if (ntn.numberOfNodes() > 1) {
+			// get fileReplicateList
 			fileReplicateList = ntn.replicationAnswer();
+			// for every file in myfiles, send (via thread) to replicates-map at receiver
 			for( int i = 0; i< fileReplicateList.length; i++ )
 			{
 				String name = Toolkit.createBindLocation(fileReplicateList[i], Constants.SUFFIX_NODE_RMI);
@@ -181,10 +184,5 @@ public class ReplicaterUtil extends Thread{
 				}
             }
         }
-    }
-    
-    
-    public void shutdownRep(){
-    	
     }
 }
