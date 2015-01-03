@@ -6,8 +6,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import controller.MainController;
+import model.Client;
 import utils.Toolkit;
-import be.uantwerpen.server.Client;
 import be.uantwerpen.server.Constants;
 
 public class UDPUtil extends Thread {
@@ -20,7 +21,8 @@ public class UDPUtil extends Thread {
 	private Protocol sendProtocol;
 	private Protocol receiveProtocol;
 	
-	private Client client;
+	//private Client client;
+	private MainController client;
 	
 	/**
 	 * Listener ctor.
@@ -28,7 +30,7 @@ public class UDPUtil extends Thread {
 	 * @param port
 	 * @param mode
 	 */
-	public UDPUtil(Client client, Mode mode) {
+	public UDPUtil(MainController client, Mode mode) {
 		this.client = client;
 		this.mode = mode;
 	}
@@ -44,7 +46,7 @@ public class UDPUtil extends Thread {
 	 * @param protocol
 	 * Discovery, shutdown, ...
 	 */
-	public UDPUtil(Client client, InetAddress receiverIP, Mode mode) {
+	public UDPUtil(MainController client, InetAddress receiverIP, Mode mode) {
 		this.client = client;
 		this.receiverIP = receiverIP;
 		this.mode = mode;

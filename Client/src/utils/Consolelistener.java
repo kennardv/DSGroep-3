@@ -6,14 +6,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import controller.MainController;
+import model.Client;
+
 public class Consolelistener extends Thread {
 	
 	   private String threadName;
-	   private Client client;
+	   private MainController client;
        private String s = null;
        private int hash;
 
-	   public Consolelistener(Client client, int hash){
+	   public Consolelistener(MainController client, int hash){
 	       System.out.println("Creating " +  threadName );
 	       this.client = client;
 	       this.hash = hash;

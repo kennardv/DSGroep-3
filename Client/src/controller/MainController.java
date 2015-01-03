@@ -1,72 +1,104 @@
-package be.uantwerpen.server;
+package controller;
 
-import enumerations.*;
-import networking.*;
-import rmi.implementations.*;
-import rmi.interfaces.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.util.List;
+
+import networking.ReplicaterUtil;
+import networking.TCPUtil;
+import networking.UDPUtil;
+import rmi.implementations.NodeToNode;
+import rmi.interfaces.INodeToNode;
+import rmi.interfaces.IServerToNode;
+import agents.FileListAgent;
+import be.uantwerpen.server.Constants;
+import enumerations.Mode;
+import enumerations.Position;
+import model.Client;
 import utils.Callback;
 import utils.Consolelistener;
 import utils.Toolkit;
+import view.MainPanel;
 
-import java.net.*;
-import java.net.UnknownHostException;
-import java.io.*;
-import java.rmi.*;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.util.*;
-
-import agents.FileListAgent;
-
-public class Client {
-
-	/************* Set this for lonely testing ******************/
-	/************************************************************/
-	/************************************************************/
-	boolean useLocalHost = false;
-	/************************************************************/
-	/************************************************************/
-	/************************************************************/
-
-
-	//Info
-	String nameClient = null;
-	List<File> files = null;
-	int[] filenames = null;
-
-	//my hashes
-	private int previousHash, currentHash, nextHash;
-
-	//RMI vars
-	private Registry registry = null;
-	private NodeToNode ntn = null;
-	private INodeToNode ntnI = null;
-	//private IServerToNode stnI = null;
-	private String rmiBindLocation = null;
-
-	//TCP vars
-	private String multicastAddress = null;
-
-	private String myIPAddress = null;
-
-	private Protocol sendProtocol;
-	private Protocol receiveProtocol;
-
-	//UDP vars
+/**
+ * 
+ * @author Kennard
+ *
+ */
+public class MainController {
+	
+	private Client model;
+	private MainPanel view;
+	private ActionListener actionListener;
+	
 	private UDPUtil udpUtilListener = null;
-	private Consolelistener conslisten;
+	private Consolelistener conslisten = null;
+	
+	public MainController(Client model, MainPanel view) {
+		this.model = model;
+		this.view = view;
+		
+		this.view.addStartListener(new StartListener());
+	}
+	
+	/**
+	 * 
+	 * @param username
+	 * @throws RemoteException
+	 * @throws UnknownHostException
+	 * @throws MalformedURLException
+	 */
+	public void init(String username) throws RemoteException, UnknownHostException, MalformedURLException {
+		if (!this.model.useLocalHost) {
+			model.setMyIPAddress(Inet4Address.getLocalHost().getHostAddress());
+		} else {
+			model.setMyIPAddress("localhost");
+		}
 
-	//file replication
-	public String[] fileReplicateList = null;
+		///////////// INIT VARIABLES HERE /////////////
+		//create registry if it doesn't exist yet
+		try {
+			model.setRegistry(LocateRegistry.createRegistry(1099));
+		} catch (RemoteException e) {
+		}
+		//lookup server remote object
+		try {
+			Constants.ISERVER_TO_NODE = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
+			//stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		}
+		model.setNtn(new NodeToNode());
 
-	//Agents
-	private FileListAgent fileListAgent = null;
+		//Give client a name from console input
+		model.setNameClient(username);
+        //this.nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
+		//set own to hashed own name
+		model.setCurrentHash(Toolkit.hashString(model.getNameClient()));
 
+		//get all file paths
+		model.setFiles(Toolkit.listFilesInDir(Constants.MY_FILES_PATH));
 
-	//ctor
-	public Client() throws RemoteException, InterruptedException, IOException, ClassNotFoundException {
-		init();
-
+		//this.filenames = new int[this.files.size()];
+		int[] tmp = new int[model.getFiles().size()];
+		for (int i = 0; i< model.getFiles().size(); i++) {
+			tmp[i] = Toolkit.hashString(model.getFiles().get(i).getName());
+		}
+		model.setFilenames(tmp);
+		
+		/***********************************************************************************/
 		//bind remote object
 		bootstrap();
 		//multicast and process answers
@@ -79,54 +111,11 @@ public class Client {
 		Thread t = new Thread(this.udpUtilListener);
 		t.start();
 
-		this.conslisten = new Consolelistener(this, this.currentHash);
+		this.conslisten = new Consolelistener(this, model.getCurrentHash());
 		Thread t2 = new Thread(this.conslisten);
 		t2.start();
 	}
 	
-	/**
-	 * Initialize and fill in all needed variables 
-	 * MOET MSS NOG WA MEER OPGEDEELD WORDEN
-	 */
-	void init() throws RemoteException, UnknownHostException, MalformedURLException {
-		if (!useLocalHost) {
-			myIPAddress = Inet4Address.getLocalHost().getHostAddress();
-		} else {
-			myIPAddress = "localhost";
-		}
-
-		///////////// INIT VARIABLES HERE /////////////
-		//create registry if it doesn't exist yet
-		try {
-			registry = LocateRegistry.createRegistry(1099);
-		} catch (RemoteException e) {
-		}
-		//lookup server remote object
-		//serverPath = Toolkit.createBindLocation(serverIp, this.rmiSuffixServer);
-		try {
-			System.out.println(Constants.SERVER_PATH_RMI);
-			System.out.println(myIPAddress);
-			Constants.ISERVER_TO_NODE = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
-			//stnI = (IServerToNode) Naming.lookup(Constants.SERVER_PATH_RMI);
-		} catch (NotBoundException e) {
-			e.printStackTrace();
-		}
-		this.ntn = new NodeToNode();
-
-		//Give client a name from console input
-        this.nameClient = readFromConsole("(UNIQUE NAMES) Please enter client name: ");
-		//set own to hashed own name
-		this.currentHash = Toolkit.hashString(this.nameClient);
-
-		//get all file paths
-		this.files = Toolkit.listFilesInDir(Constants.MY_FILES_PATH);
-
-		this.filenames = new int[this.files.size()];
-		for (int i = 0; i< files.size(); i++) {
-			this.filenames[i] = Toolkit.hashString(this.files.get(i).getName());
-		}
-	}
-
 	/**
 	 * Bind a remote object
 	 * @return remote object's bind location
@@ -135,8 +124,8 @@ public class Client {
 	void bootstrap() throws UnknownHostException {
 		//bind remote object at location
 
-		this.rmiBindLocation = Toolkit.createBindLocation(InetAddress.getLocalHost().getHostAddress(), Constants.SUFFIX_NODE_RMI);
-		bindRemoteObject(this.rmiBindLocation, this.ntn);
+		model.setRmiBindLocation(Toolkit.createBindLocation(InetAddress.getLocalHost().getHostAddress(), Constants.SUFFIX_NODE_RMI));
+		bindRemoteObject(model.getRmiBindLocation(), model.getNtn());
 	}
 
 	/**
@@ -149,10 +138,11 @@ public class Client {
 	 * Port to send on
 	 */
 	void discover(InetAddress ip, int port) {
-
+		NodeToNode ntn = model.getNtn();
+		
 		//create message and multicast it
 		UDPUtil udpUtil = new UDPUtil(this, ip, Mode.SEND);
-		udpUtil.createDiscoveryMessage(this.currentHash, this.filenames);
+		udpUtil.createDiscoveryMessage(model.getCurrentHash(), model.getFilenames());
 		Thread t = new Thread(udpUtil);
 		t.start();
 
@@ -165,12 +155,12 @@ public class Client {
 			{
 				System.out.println("No neighbours! All hashes set to own");
 				//set next and previous hash equal to own hash
-				ntn.setNextHash(this.currentHash);
-				ntn.setPreviousHash(this.currentHash);
+				ntn.setNextHash(model.getCurrentHash());
+				ntn.setPreviousHash(model.getCurrentHash());
 			} else if (ntn.numberOfNodes() > 1) {
 				System.out.println(ntn.numberOfNodes() + " neighbours. Setting hashes to hashes from previous node.");
-				this.nextHash = ntn.nextHash();
-				this.previousHash = ntn.previousHash();
+				model.setNextHash(ntn.nextHash());
+				model.setPreviousHash(ntn.previousHash());
 			}
 			try {
 				//wait 100 ms
@@ -184,26 +174,25 @@ public class Client {
 		System.out.println("Total connected clients: " + (ntn.numberOfNodes())); //waarom +1?
 
 		//set client's hash fields
-		this.nextHash = ntn.nextHash();
-		this.previousHash = ntn.previousHash();
+		model.setNextHash(ntn.nextHash());
+		model.setPreviousHash(ntn.previousHash());
 		//replicate files
-				System.out.println("replication start");
-				Callback callback = new Callback(this, "failure");
-				ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, this.myIPAddress, this.currentHash, callback);
-			    replicaterUtil.replicate(fileReplicateList, files );
-			    System.out.println("end call0");
-		System.out.println("Hashes: Previous: " + this.previousHash + ". Own: " + this.currentHash + ". Next: " + this.nextHash);
+		System.out.println("replication start");
+		Callback callback = new Callback(this, "failure");
+		ReplicaterUtil replicaterUtil = new ReplicaterUtil(ntn, model.getMyIPAddress(), model.getCurrentHash(), callback);
+	    replicaterUtil.replicate(model.getFileReplicateList(), model.getFiles() );
+		System.out.println("Hashes: Previous: " + model.getPreviousHash() + ". Own: " + model.getCurrentHash() + ". Next: " + model.getNextHash());
 
 		//Agent initialization
 		if(ntn.numberOfNodes() == 2){
 			System.out.println("Start file list agent");
-			this.fileListAgent = new FileListAgent(this.currentHash, Constants.SERVER_PATH_RMI);
-			this.ntn.startFileListAgent(this.fileListAgent, this.currentHash, Constants.SUFFIX_NODE_RMI);
+			model.setFileListAgent(new FileListAgent(model.getCurrentHash(), Constants.SERVER_PATH_RMI));
+			model.getNtn().startFileListAgent(model.getFileListAgent(), model.getCurrentHash(), Constants.SUFFIX_NODE_RMI);
  		}
 
 		//unbind object from location
-		if (useLocalHost) {
-			unbindRemoteObject(this.rmiBindLocation);
+		if (model.useLocalHost) {
+			unbindRemoteObject(model.getRmiBindLocation());
 		}
 	}
 
@@ -212,19 +201,19 @@ public class Client {
 	 */
 	void replicate() {
 		//get files to replicate
-		if (fileReplicateList == null) {
+		if (model.getFileReplicateList() == null) {
 			return;
 		}
-		fileReplicateList = ntn.replicationAnswer();
-		for( int i = 0; i< fileReplicateList.length; i++ )
+		model.setFileReplicateList(model.getNtn().replicationAnswer());
+		for( int i = 0; i< model.getFileReplicateList().length; i++ )
 		{
-			String name = Toolkit.createBindLocation(fileReplicateList[i], Constants.SUFFIX_NODE_RMI);
+			String name = Toolkit.createBindLocation(model.getFileReplicateList()[i], Constants.SUFFIX_NODE_RMI);
 			try {
-				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, files.get(i), null);
+				TCPUtil tcpSender = new TCPUtil(null, Mode.SEND, model.getFiles().get(i), null);
 				Thread t = new Thread(tcpSender);
 				t.start();
 				INodeToNode ntnI = (INodeToNode) Naming.lookup(name);
-				ntnI.startReceive(myIPAddress, files.get(i).getName());
+				ntnI.startReceive(model.getMyIPAddress(), model.getFiles().get(i).getName());
 				t.join();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -283,12 +272,12 @@ public class Client {
 
 		try {
 			//update previous node's next hash
-			ntnI = (INodeToNode) Naming.lookup(previousPath);
-			ntnI.updateNextHash(neighbourHashes[1]);
+			model.setNtnI((INodeToNode) Naming.lookup(previousPath));
+			model.getNtnI().updateNextHash(neighbourHashes[1]);
 
 			//update next node's previous hash
-			ntnI = (INodeToNode) Naming.lookup(nextPath);
-			ntnI.updatePreviousHash(neighbourHashes[0]);
+			model.setNtnI((INodeToNode) Naming.lookup(nextPath));
+			model.getNtnI().updatePreviousHash(neighbourHashes[0]);
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
@@ -328,7 +317,7 @@ public class Client {
 
 		try {
 			//remove node from server
-			Constants.ISERVER_TO_NODE.removeNode(this.currentHash);
+			Constants.ISERVER_TO_NODE.removeNode(model.getCurrentHash());
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -388,12 +377,12 @@ public class Client {
 		try {
 			//update previous node's next hash
 			System.out.println("prevpath:" + previousPath);
-			ntnI = (INodeToNode) Naming.lookup(previousPath);
-			ntnI.updateNextHash(neighbourHashes[1]);
+			model.setNtnI((INodeToNode) Naming.lookup(previousPath));
+			model.getNtnI().updateNextHash(neighbourHashes[1]);
 
 			//update next node's previous hash
-			ntnI = (INodeToNode) Naming.lookup(nextPath);
-			ntnI.updatePreviousHash(neighbourHashes[0]);
+			model.setNtnI((INodeToNode) Naming.lookup(nextPath));
+			model.getNtnI().updatePreviousHash(neighbourHashes[0]);
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();
@@ -414,16 +403,16 @@ public class Client {
     public void checkForNTNUpdate(Position position) {
 		if (position == Position.PREVIOUS){
 			//wait until property is updated
-			while(ntn.nextHash() == -1){
+			while(model.getNtn().nextHash() == -1){
 				
 			}
-			this.nextHash = ntn.nextHash();
+			model.setNextHash(model.getNtn().nextHash());
 		} else if(position == Position.NEXT) {
 			//wait until property is updated
-			while(ntn.nextHash() == -1){
+			while(model.getNtn().nextHash() == -1){
 				
 			}
-			this.previousHash = ntn.previousHash();
+			model.setPreviousHash(model.getNtn().previousHash());
 		}
 
 		try {
@@ -432,7 +421,7 @@ public class Client {
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
-		System.out.println("checkForNTNUpdate hashes set : Previous: " + this.previousHash + ". Current: " + this.currentHash + ". Next: " + this.nextHash);
+		System.out.println("checkForNTNUpdate hashes set : Previous: " + model.getPreviousHash() + ". Current: " + model.getCurrentHash() + ". Next: " + model.getNextHash());
 	}
 
 	/**
@@ -446,37 +435,37 @@ public class Client {
 	public void updateHashes(int receivedHash, String receivedIPAddress, int[] neighbours) {
 		try {
 			String name = Toolkit.createBindLocation(receivedIPAddress, Constants.SUFFIX_NODE_RMI);
-			ntnI = (INodeToNode) Naming.lookup(name);
+			model.setNtnI((INodeToNode) Naming.lookup(name));
 			
 			//I am the only node -- SPECIAL CASE FOR FIRST NODE
-			if (this.previousHash == this.currentHash && this.nextHash == this.currentHash) {
+			if (model.getPreviousHash() == model.getCurrentHash() && model.getNextHash() == model.getCurrentHash()) {
 				//set all hashes to my own because i'm the only node
-				this.nextHash = receivedHash;
-				this.previousHash = receivedHash;
-				ntnI.answerDiscovery(this.currentHash, this.currentHash);
+				model.setNextHash(receivedHash);
+				model.setPreviousHash(receivedHash);
+				model.getNtnI().answerDiscovery(model.getCurrentHash(), model.getCurrentHash());
 			}
 			//I am the previous node
-			if (receivedHash > this.currentHash) {
+			if (receivedHash > model.getCurrentHash()) {
 				//I am the largest node
-				if (receivedHash < this.nextHash || ((receivedHash > this.currentHash) && (this.currentHash > this.nextHash))) {
+				if (receivedHash < model.getNextHash() || ((receivedHash > model.getCurrentHash()) && (model.getCurrentHash() > model.getNextHash()))) {
 					//after this I'm not the largest anymore, I sit in between, the new node becomes the largest
-					int tmp = this.nextHash;
-					this.nextHash = receivedHash;
-					ntnI.answerDiscovery(this.currentHash, tmp);
+					int tmp = model.getNextHash();
+					model.setNextHash(receivedHash);
+					model.getNtnI().answerDiscovery(model.getCurrentHash(), tmp);
 				}
 				//I am the lowest node
-				else if((receivedHash > this.previousHash) && (this.previousHash >= this.nextHash)) {
+				else if((receivedHash > model.getPreviousHash()) && (model.getPreviousHash() >= model.getNextHash())) {
 					//set my previous to the largest -> smallest connects to largest
-					this.previousHash = receivedHash;
+					model.setPreviousHash(receivedHash);
 				}
 			}
 			//I am the next node
-			else if ((receivedHash > this.previousHash) && (receivedHash < this.currentHash)) {
+			else if ((receivedHash > model.getPreviousHash()) && (receivedHash < model.getCurrentHash())) {
 				//something bigger than my previous hash but smaller than me came in
-				this.previousHash = receivedHash;
+				model.setPreviousHash(receivedHash);
 			}
 			
-			System.out.println("waitForClients hashes set : Previous: " + this.previousHash + ". Current: " + this.currentHash + ". Next: " + this.nextHash);
+			System.out.println("waitForClients hashes set : Previous: " + model.getPreviousHash() + ". Current: " + model.getCurrentHash() + ". Next: " + model.getNextHash());
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			failure(receivedHash);
@@ -534,9 +523,30 @@ public class Client {
         /******************************************/
         return str;
     }
-
-	public static void main(String argv[]) throws InterruptedException, IOException, ClassNotFoundException {
-		Client client = new Client();
-		
+	
+	/**
+	 * 
+	 * @author Kennard
+	 *
+	 */
+	class StartListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			String username = null;
+			try {
+				username = view.getName();
+				if (username.trim().isEmpty() || username.equals("")) {
+					throw new IllegalArgumentException("Input can't be empty!");
+				}
+			} catch (IllegalArgumentException ex) {
+				view.setConnectionStatus(ex.getMessage());
+			}
+			
+			try {
+				init(username);
+				view.setConnectionStatus("Connected");
+			} catch (RemoteException | UnknownHostException | MalformedURLException e1) {
+				view.setConnectionStatus("Connection failed!");
+			}
+		}
 	}
 }

@@ -62,8 +62,8 @@ public class FileListAgent implements Runnable, Serializable {
 		INodeToNode ntnI = null;
 		try {
 			stnI = (IServerToNode) Naming.lookup(this.serverPath);
-			String path = stnI.getNodeIPAddress(currentNode);
-			path = Toolkit.createBindLocation(path, "ntn");
+			String path = stnI.getNodeIPAddress(this.currentNode);
+			path = Toolkit.createBindLocation(path, Constants.SUFFIX_NODE_RMI);
 			ntnI = (INodeToNode) Naming.lookup(path);
 			ntnI.updateFileList(foundFiles);
 			if(ntnI.getLockRequest() != -1)

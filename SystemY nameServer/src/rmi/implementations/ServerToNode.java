@@ -61,7 +61,7 @@ public class ServerToNode extends UnicastRemoteObject implements IServerToNode {
 				}
 			}
 		}
-		System.out.println("getNeighbourNodes returning " + neighbours[0] + " and " + neighbours[1]);
+		//System.out.println("getNeighbourNodes returning " + neighbours[0] + " and " + neighbours[1]);
 		return neighbours;
 	}
 
@@ -97,7 +97,7 @@ public class ServerToNode extends UnicastRemoteObject implements IServerToNode {
 	public String getNodeIPAddress(int nodeHash) throws RemoteException {
 		Client c = null;
 		c = this.clientMap.getClientMap().get(nodeHash);
-		System.out.println("getNodeIPAddress returning " + c.getIpaddress());
+		//System.out.println("getNodeIPAddress returning " + c.getIpaddress());
 		return c.getIpaddress();
 	}
 	@Override
@@ -177,7 +177,7 @@ public class ServerToNode extends UnicastRemoteObject implements IServerToNode {
 				}
 			}
 		}
-		System.out.println("getNextNodeHash returning " + nextHash);
+		//System.out.println("getNextNodeHash returning " + nextHash);
 		return nextHash;
 	}
 }
